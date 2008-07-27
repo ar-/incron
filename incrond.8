@@ -1,4 +1,4 @@
-.TH "incrond" "8" "0.5.2" "Lukas Jelinek" "incron documentation"
+.TH "incrond" "8" "0.5.3" "Lukas Jelinek" "incron documentation"
 .SH "NAME"
 incrond \- inotify cron (incron) daemon
 
@@ -26,7 +26,7 @@ The daemon itself is currently not protected against looping. If a command execu
 
 \fB\-f <FILE>\fR (or \fB\-\-config=<FILE>\fR) option specifies another location for the configuration file (/etc/incron.conf is used by default). 
 .SH "SEE ALSO"
-incrontab(1), incrontab(5)
+incrontab(1), incrontab(5), incron.conf(5)
 .SH "BUGS"
 incrond is currently not resistent against looping. Recursive monitoring (whole subtrees) has not been implemented yet.
 .SH "AUTHOR"

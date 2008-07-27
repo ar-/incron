@@ -1,4 +1,4 @@
-.TH "incrontab" "5" "0.5.2" "Lukas Jelinek" "incron documentation"
+.TH "incrontab" "5" "0.5.3" "Lukas Jelinek" "incron documentation"
 .SH "NAME"
 incrontab \- tables for driving inotify cron (incron)
 .SH "DESCRIPTION"
@@ -37,7 +37,7 @@ The third example is used for monitoring the /home directory for newly create fi
 And the final line shows how to use numeric event mask instead of textual one. The value 12 is exactly the same as IN_ATTRIB,IN_CLOSE_WRITE.
 
 .SH "SEE ALSO"
-incrond(8), incrontab(1)
+incrond(8), incrontab(1), incron.conf(5)
 .SH "AUTHOR"
 Lukas Jelinek <lukas@aiken.cz>
 .SH "COPYING"

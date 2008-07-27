@@ -1,3 +1,11 @@
+0.5.3    2007-02-08
+* bug related to ignoring new tables fixed (#0000142)
+* explicit typecasting in execlp() call (#0000145)
+* memory leak related to loaded tables fixed (#0000144)
+* documentation for 'incrontab -d' added (#0000146)
+* man page for incron.conf added (#0000147)
+
+
 0.5.2    2007-02-04
 * lockfile permissions changed to 0644 (reopened #0000137)
 * incorrect reporting of removing non-existing tables fixed (#0000141)

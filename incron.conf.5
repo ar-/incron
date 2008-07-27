@@ -1,0 +1,44 @@
+.TH "incron.conf" "5" "0.5.3" "Lukas Jelinek" "incron documentation"
+.SH "NAME"
+/etc/incron.conf \- main config file for inotify cron (incron)
+.SH "DESCRIPTION"
+The file \fI/etc/incron.conf\fR contains default settings for the program
+.BR incrond.
+Each line holds a single value pair in the form \fIoption\fR = \fIvalue\fR.
+Comment lines must have a hash sign (#) in the first line.
+.P
+The valid configuration options are:
+.TP 
+\fBsystem_table_dir\fP
+This directory is examined by incrond for system table files.
+.BR Default : \fI/etc/incron.d\fR
+.TP 
+\fBuser_table_dir\fP
+This directory is examined by incrond for user table files.
+.BR Default : \fI/var/spool/incron\fR
+.TP 
+\fBallowed_users\fP
+This file contains users allowed to use incron.
+.BR Default : \fI/etc/incron.allow\fR
+.TP 
+\fBdenied_users\fP
+This file contains users denied to use incron.
+.BR Default : \fI/etc/incron.deny\fR
+.TP 
+\fBlockfile_dir\fP
+This directory is used for creating a lock avoiding to run multiple instances
+of incrond.
+.BR Default : \fI/var/run\fR
+.TP 
+\fBlockfile_name\fP
+This name (appended by '.pid') is used for creating a lock avoiding to run multiple instances of incrond.
+.BR Default : \fIincrond\fR
+.TP 
+\fBeditor\fP
+This name or path is used to run as an editor for editting incron tables. Default \fIno editor\fR is given, system editor used, this option overide this.
+.SH "SEE ALSO"
+incrond(8), incrontab(1), incrontab(5)
+.SH "AUTHOR"
+Lukas Jelinek <lukas@aiken.cz>
+.SH "COPYING"
+This program is free software. It can be used, redistributed and/or modified under the terms of the GNU General Public License, version 2.

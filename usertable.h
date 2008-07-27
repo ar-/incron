@@ -103,6 +103,17 @@ public:
     return m_pPoll;
   }
   
+  /// Rebuilds the poll array data.
+  void Rebuild();
+  
+  /// Removes all registered user tables.
+  /**
+   * It doesn't cause poll data rebuilding.
+   */
+  inline void Clear()
+  {
+    m_maps.clear();
+  }
   
 private:
   int m_iPipeFd;    ///< pipe file descriptor
@@ -113,9 +124,6 @@ private:
   FDUT_MAP m_maps;  ///< watch-to-usertable mapping
   size_t m_size;    ///< poll data size
   struct pollfd* m_pPoll; ///< poll data array
-  
-  /// Rebuilds the poll array data.
-  void Rebuild();
   
   /// Processes events on the table management inotify object. 
   void ProcessMgmtEvents();

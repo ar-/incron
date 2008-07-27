@@ -108,7 +108,7 @@ void on_signal(int signo)
 
 
 
-/// Attempts to load all user incron tables.
+/// Attempts to load all (user and system) incron tables.
 /**
  * Loaded tables are registered for processing events.
  * 
@@ -191,6 +191,24 @@ void load_tables(EventDispatcher* pEd) throw (InotifyException)
   closedir(d);
 }
 
+/// Deallocates all memory used by incron tables and unregisters them from the dispatcher.
+/**
+ * \param[in] pEd event dispatcher 
+ */
+void free_tables(EventDispatcher* pEd)
+{
+  pEd->Clear();
+  
+  SUT_MAP::iterator it = g_ut.begin();
+  while (it != g_ut.end()) {
+    UserTable* pUt = (*it).second;
+    delete pUt;
+    it++;
+  }
+  
+  g_ut.clear();
+}
+
 /// Prepares a 'dead/done child' notification pipe.
 /**
  * This function returns no value at all and on error it
@@ -235,11 +253,13 @@ void prepare_pipe()
  * \param[in] longCmd long form of command
  * \return true = string accepted, false = otherwise
  */  
+ /*
 bool check_parameter(const char* s, const char* shortCmd, const char* longCmd)
 {
   return strcmp(s, shortCmd)  == 0
       || strcmp(s, longCmd)   == 0;
 }
+*/
 
 /// Initializes a poll array.
 /**
@@ -314,7 +334,7 @@ int main(int argc, char** argv)
   if (AppArgs::ExistsOption("kill")) {
     fprintf(stderr, "attempting to terminate a running instance of incrond...\n");
     if (app.Terminate()) {
-      fprintf(stderr, "instance(s) notified, going down\n");
+      fprintf(stderr, "the instance notified, going down\n");
       return 0;
     }
     else { 
@@ -386,7 +406,7 @@ int main(int argc, char** argv)
     in.SetNonBlock(true);
     in.SetCloseOnExec(true);
     
-    uint32_t wm = IN_CLOSE_WRITE | IN_DELETE | IN_MOVE | IN_DELETE_SELF | IN_UNMOUNT;
+    uint32_t wm = IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_MOVE | IN_DELETE_SELF | IN_UNMOUNT;
     InotifyWatch stw(sysBase, wm);
     in.Add(stw);
     InotifyWatch utw(userBase, wm);
@@ -402,6 +422,8 @@ int main(int argc, char** argv)
       ret = 1;
       goto error;
     }
+    
+    ed.Rebuild(); // not too efficient, but simple 
     
     signal(SIGTERM, on_signal);
     signal(SIGINT, on_signal);
@@ -423,6 +445,8 @@ int main(int argc, char** argv)
       }
       
     }
+    
+    free_tables(&ed);
     
     if (g_cldPipe[0] != -1)
       close(g_cldPipe[0]);

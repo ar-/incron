@@ -51,13 +51,14 @@ install:	all install-man
 	$(INSTALL) -m 0755 -o $(USER) -d $(SYSDATADIR)
 	$(INSTALL) -m 0644 -o $(USER) incron.conf.example $(CFGDIR)
 
-install-man:	incrontab.1 incrontab.5 incrond.8
+install-man:	incrontab.1 incrontab.5 incrond.8 incron.conf.5
 	$(INSTALL) -m 0755 -d $(MANPATH)/man1
 	$(INSTALL) -m 0755 -d $(MANPATH)/man5
 	$(INSTALL) -m 0755 -d $(MANPATH)/man8
 	$(INSTALL) -m 0644 incrontab.1 $(MANPATH)/man1
 	$(INSTALL) -m 0644 incrontab.5 $(MANPATH)/man5
 	$(INSTALL) -m 0644 incrond.8 $(MANPATH)/man8
+	$(INSTALL) -m 0644 incron.conf.5 $(MANPATH)/man5
 
 uninstall:	uninstall-man
 	[ -d $(PREFIX) ]
@@ -68,7 +69,8 @@ uninstall:	uninstall-man
 uninstall-man:
 	rm -f $(MANPATH)/man1/incrontab.1
 	rm -f $(MANPATH)/man5/incrontab.5
-	rm -f $(MANPATH)/man8/incrontab.8
+	rm -f $(MANPATH)/man8/incrond.8
+	rm -f $(MANPATH)/man5/incron.conf.5
 
 update:		uninstall install
 
@@ -80,7 +82,7 @@ release:
 	cp *.cpp $(RELEASEDIR)
 	cp incron.conf.example $(RELEASEDIR)
 	cp Makefile CHANGELOG COPYING LICENSE-GPL LICENSE-LGPL LICENSE-X11 README TODO VERSION $(RELEASEDIR)
-	cp incrond.8 incrontab.1 incrontab.5 $(RELEASEDIR)
+	cp incrond.8 incrontab.1 incrontab.5 incron.conf.5 $(RELEASEDIR)
 	tar -c -f $(RELEASE).tar -C $(RELEASEDIR)/.. $(RELEASE)
 	bzip2 -9 $(RELEASE).tar
 	tar -c -f $(RELEASE).tar -C $(RELEASEDIR)/.. $(RELEASE)

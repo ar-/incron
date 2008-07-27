@@ -279,7 +279,7 @@ bool edit_table(const std::string& rUser)
         goto end;
       }    
       
-      execlp(e, e, s, NULL);
+      execlp(e, e, s, (const char*) NULL);
       _exit(1);
     }
     else if (pid > 0) {
