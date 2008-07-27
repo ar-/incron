@@ -1,4 +1,10 @@
-0.5.0
+0.5.1 2007-01-28
+* lockfile location problems fixed (#0000137)
+* lockfile configuration failure fixed (#0000140)
+* CRLFs inside LICENCE-GPL changed to LFs (#0000138)
+
+
+0.5.0 2007-01-27
 * based on inotify-cxx 0.7.1
 * bug related to events names fixed (#0000134)
 * instance locking (only one instance allowed - also fixes #0000136)

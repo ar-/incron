@@ -298,9 +298,18 @@ int main(int argc, char** argv)
     return 0;
   }
   
-  AppInstance app("incrond");
-  
   IncronCfg::Init();
+  
+  std::string cfg;
+  if (!AppArgs::GetOption("config", cfg))
+    cfg = INCRON_CONFIG;
+  IncronCfg::Load(cfg);
+  
+  std::string lckdir;
+  IncronCfg::GetValue("lockfile_dir", lckdir);
+  std::string lckfile;
+  IncronCfg::GetValue("lockfile_name", lckfile);
+  AppInstance app(lckfile, lckdir);
   
   if (AppArgs::ExistsOption("kill")) {
     fprintf(stderr, "attempting to terminate a running instance of incrond...\n");
@@ -321,11 +330,6 @@ int main(int argc, char** argv)
   openlog(INCROND_NAME, INCRON_LOG_OPTS, INCRON_LOG_FACIL);
   
   syslog(LOG_NOTICE, "starting service (version %s, built on %s %s)", INCRON_VERSION, __DATE__, __TIME__);
-  
-  std::string cfg;
-  if (!AppArgs::GetOption("config", cfg))
-    cfg = INCRON_CONFIG;
-  IncronCfg::Load(cfg);
   
   AppArgs::Destroy();
   

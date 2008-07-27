@@ -25,6 +25,9 @@
 #include <string>
 
 
+#define APPLOCK_BASEDIR "/var/run"
+
+
 /// Exception class.
 /**
  * This class provides information about occurred errors.
@@ -64,8 +67,12 @@ public:
   /// Constructor.
   /**
    * \param[in] rName application name
+   * \param[in] rBase lockfile base directory
+   * 
+   * \attention If an empty base directory is given it is replaced by
+   *            the default value.
    */
-  AppInstance(const std::string& rName);
+  AppInstance(const std::string& rName, const std::string& rBase = APPLOCK_BASEDIR);
   
   /// Destructor.
   ~AppInstance();
@@ -109,12 +116,10 @@ public:
   bool SendSignal(int iSigNo) const;
   
 protected:
-  bool DoLock(const char* path);
-
-  std::string GetLockfile() const;
+  bool DoLock();
   
 private:
-  std::string m_name;
+  std::string m_path;
   bool m_fLocked;
 };
 

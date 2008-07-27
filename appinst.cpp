@@ -26,19 +26,19 @@
 
 #include "appinst.h"
 
-#ifdef APPINST_LOCK_DIRECTORY
-#define LOCKDIR APPINST_LOCK_DIRECTORY
-#else
-#define LOCKDIR "/tmp"
-#endif // APPINST_LOCK_DIRECTORY
-
   
 
-AppInstance::AppInstance(const std::string& rName)
-: m_name(rName),
-  m_fLocked(false)
+AppInstance::AppInstance(const std::string& rName, const std::string& rBase)
+: m_fLocked(false)
 {
+  std::string base(rBase);
+  if (base.empty())
+    base = APPLOCK_BASEDIR;
   
+  if (base[base.length()-1] == '/')
+    m_path = base + rName + ".pid";
+  else
+    m_path = base + "/" + rName + ".pid";
 }
 
 AppInstance::~AppInstance()
@@ -48,9 +48,9 @@ AppInstance::~AppInstance()
   } catch (AppInstException e) {}
 }
 
-bool AppInstance::DoLock(const char* path)
+bool AppInstance::DoLock()
 {
-  int fd = open(path, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+  int fd = open(m_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
   if (fd != -1) {
     FILE* f = fdopen(fd, "w");
     if (f == NULL) {
@@ -80,13 +80,11 @@ bool AppInstance::DoLock(const char* path)
 
 bool AppInstance::Lock()
 {
-  std::string fn = GetLockfile();
-  
   for (int i=0; i<100; i++) {
-    if (DoLock(fn.c_str()))
+    if (DoLock())
       return true;
     
-    FILE* f = fopen(fn.c_str(), "r");
+    FILE* f = fopen(m_path.c_str(), "r");
     if (f == NULL) {
       if (errno != ENOENT)
         throw AppInstException(errno);
@@ -114,7 +112,7 @@ bool AppInstance::Lock()
       if (errno != ESRCH)
         throw AppInstException(errno);
         
-      res = unlink(fn.c_str());
+      res = unlink(m_path.c_str());
       if (res != 0 && errno != ENOENT)
         throw AppInstException(errno);
     }
@@ -128,7 +126,7 @@ void AppInstance::Unlock()
   if (!m_fLocked)
     return;
     
-  if (unlink(GetLockfile().c_str()) != 0 && errno != ENOENT)
+  if (unlink(m_path.c_str()) != 0 && errno != ENOENT)
     throw AppInstException(errno);
     
   m_fLocked = false;
@@ -139,7 +137,7 @@ bool AppInstance::Exists() const
   if (m_fLocked)
     return true;
   
-  FILE* f = fopen(GetLockfile().c_str(), "r");
+  FILE* f = fopen(m_path.c_str(), "r");
   if (f == NULL) {
     if (errno == ENOENT)
       return false;
@@ -167,7 +165,7 @@ bool AppInstance::Exists() const
 
 bool AppInstance::SendSignal(int iSigNo) const
 {
-  FILE* f = fopen(GetLockfile().c_str(), "r");
+  FILE* f = fopen(m_path.c_str(), "r");
   if (f == NULL) {
     if (errno == ENOENT)
       return false;
@@ -196,7 +194,3 @@ bool AppInstance::SendSignal(int iSigNo) const
   return ok;
 }
 
-std::string AppInstance::GetLockfile() const
-{
-  return std::string(LOCKDIR) + "/" + m_name + ".pid";
-}
