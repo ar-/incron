@@ -106,11 +106,18 @@ bool remove_table(const std::string& rUser)
   
   std::string tp(IncronTab::GetUserTablePath(rUser));
  
-  if (unlink(tp.c_str()) != 0 && errno != ENOENT) {
-    fprintf(stderr, "cannot remove table for user '%s': %s\n", rUser.c_str(), strerror(errno));
-    return false;
+  if (unlink(tp.c_str()) != 0) {
+    if (errno == ENOENT) {
+      fprintf(stderr, "table for user '%s' does not exist\n", rUser.c_str());
+      return true;
+    }
+    else {
+      fprintf(stderr, "cannot remove table for user '%s': %s\n", rUser.c_str(), strerror(errno));
+      return false;
+    }
   }
-  
+
+  fprintf(stderr, "table for user '%s' successfully removed\n", rUser.c_str());  
   return true;
 }
 

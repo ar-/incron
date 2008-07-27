@@ -313,7 +313,7 @@ int main(int argc, char** argv)
   
   if (AppArgs::ExistsOption("kill")) {
     fprintf(stderr, "attempting to terminate a running instance of incrond...\n");
-    if (app.SendSignal(SIGTERM)) {
+    if (app.Terminate()) {
       fprintf(stderr, "instance(s) notified, going down\n");
       return 0;
     }

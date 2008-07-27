@@ -115,12 +115,23 @@ public:
    */ 
   bool SendSignal(int iSigNo) const;
   
+  /// Terminates an instance of this application.
+  /**
+   * This method doesn't terminate the current instance.
+   * 
+   * \return true = success, false = otherwise
+   */
+  inline bool Terminate() const
+  {
+    return SendSignal(SIGTERM);
+  }
+  
 protected:
   bool DoLock();
   
 private:
-  std::string m_path;
-  bool m_fLocked;
+  std::string m_path; ///< lock path
+  bool m_fLocked;     ///< locked yes/no
 };
 
 #endif /*APPINST_H_*/

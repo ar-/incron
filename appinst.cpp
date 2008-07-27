@@ -26,6 +26,8 @@
 
 #include "appinst.h"
 
+/// Lockfile permissions (currently 0644)
+#define APPLOCK_PERM (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
   
 
 AppInstance::AppInstance(const std::string& rName, const std::string& rBase)
@@ -50,7 +52,7 @@ AppInstance::~AppInstance()
 
 bool AppInstance::DoLock()
 {
-  int fd = open(m_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+  int fd = open(m_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, APPLOCK_PERM);
   if (fd != -1) {
     FILE* f = fdopen(fd, "w");
     if (f == NULL) {

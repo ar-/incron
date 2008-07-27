@@ -1,10 +1,15 @@
-0.5.1 2007-01-28
+0.5.2    2007-02-04
+* lockfile permissions changed to 0644 (reopened #0000137)
+* incorrect reporting of removing non-existing tables fixed (#0000141)
+
+
+0.5.1    2007-01-28
 * lockfile location problems fixed (#0000137)
 * lockfile configuration failure fixed (#0000140)
 * CRLFs inside LICENCE-GPL changed to LFs (#0000138)
 
 
-0.5.0 2007-01-27
+0.5.0    2007-01-27
 * based on inotify-cxx 0.7.1
 * bug related to events names fixed (#0000134)
 * instance locking (only one instance allowed - also fixes #0000136)
