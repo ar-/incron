@@ -399,8 +399,8 @@ int main(int argc, char** argv)
       &&  AppArgs::AddOption("types",   't', AAT_NO_VALUE, false)
       &&  AppArgs::AddOption("reload",  'd', AAT_NO_VALUE, false)
       &&  AppArgs::AddOption("user",    'u', AAT_MANDATORY_VALUE, false)
-      &&  AppArgs::AddOption("config",  'f', AAT_MANDATORY_VALUE, false))
-      &&  AppArgs::AddOption("version", 'V', AAT_NO_VALUE, false))
+      &&  AppArgs::AddOption("config",  'f', AAT_MANDATORY_VALUE, false)
+      &&  AppArgs::AddOption("version", 'V', AAT_NO_VALUE, false)))
   {
     fprintf(stderr, "error while initializing application");
     return 1;
@@ -464,6 +464,15 @@ int main(int argc, char** argv)
   }
   else if (getpwnam(user.c_str()) == NULL) {
     fprintf(stderr, "user '%s' not found\n", user.c_str());
+    return 1;
+  }
+  else if ( setenv("LOGNAME",   pwd.pw_name,   1) != 0
+        ||  setenv("USER",      pwd.pw_name,   1) != 0
+        ||  setenv("USERNAME",  pwd.pw_name,   1) != 0
+        ||  setenv("HOME",      pwd.pw_dir,    1) != 0
+        ||  setenv("SHELL",     pwd.pw_shell,  1) != 0)
+  {
+    perror("cannot set environment variables");
     return 1;
   }
   

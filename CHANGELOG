@@ -1,3 +1,8 @@
+0.5.5    2007-02-14
+* another bug related to environment variables fixed (#0000151)
+* -V (--version) malfunction fixed (#0000150)
+
+
 0.5.4    2007-02-11
 * bug related to persisting environment fixed (#0000149)
 * incrond(8) man page updated to explain how the environment is treated

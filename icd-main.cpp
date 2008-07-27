@@ -294,8 +294,8 @@ int main(int argc, char** argv)
       &&  AppArgs::AddOption("help",        'h', AAT_NO_VALUE, false)
       &&  AppArgs::AddOption("foreground",  'n', AAT_NO_VALUE, false)
       &&  AppArgs::AddOption("kill",        'k', AAT_NO_VALUE, false)
-      &&  AppArgs::AddOption("config",      'f', AAT_MANDATORY_VALUE, false))
-      &&  AppArgs::AddOption("version",     'V', AAT_NO_VALUE, false))
+      &&  AppArgs::AddOption("config",      'f', AAT_MANDATORY_VALUE, false)
+      &&  AppArgs::AddOption("version",     'V', AAT_NO_VALUE, false)))
   {
     fprintf(stderr, "error while initializing application");
     return 1;
