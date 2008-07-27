@@ -103,21 +103,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 /// Program arguments
 static struct argp argp = { options, parse_opt, args_doc, doc };
 
-/// Unlink a file with temporarily changed UID.
-/**
- * \param[in] file file to unlink
- * \param[in] uid UID for unlink processing
- * 
- * \attention No error checking is done!
- */
-void unlink_suid(const char* file, uid_t uid)
-{
-  uid_t iu = geteuid();
-  seteuid(uid);
-  if (unlink(file) != 0)
-    perror("cannot remove temporary file");
-  seteuid(iu);
-}
+
 
 /// Copies a file to an user table.
 /**
@@ -207,15 +193,18 @@ bool edit_table(const char* user)
     fprintf(stderr, "cannot find user %s: %s\n", user, strerror(errno));
     return false;
   }
+  
   uid_t uid = ppwd->pw_uid;
+  uid_t gid = ppwd->pw_gid;
   
   char s[NAME_MAX];
   strcpy(s, "/tmp/incron.table-XXXXXX");
   
   uid_t iu = geteuid();
+  uid_t ig = getegid();
 
-  if (seteuid(uid) != 0) {
-    fprintf(stderr, "cannot change effective UID to %i: %s\n", (int) uid, strerror(errno));
+  if (seteuid(uid) != 0 || setegid(gid) != 0) {
+    fprintf(stderr, "cannot change effective UID/GID for user %s: %s\n", user, strerror(errno));
     return false;
   }
   
@@ -225,44 +214,45 @@ bool edit_table(const char* user)
     return false;
   }
   
+  bool ok = false;
+  FILE* out = NULL;
+  FILE* in = NULL;
+  time_t mt = (time_t) 0;
+  const char* e = NULL;
+  
   if (fchmod(fd, 0644) != 0) {
     fprintf(stderr, "cannot change mode of temporary file: %s\n", strerror(errno));
     close(fd);
-    unlink_suid(s, uid);
-    return false;
+    goto end;
   }
   
-  if (seteuid(iu) != 0) {
-    fprintf(stderr, "cannot change effective UID: %s\n", strerror(errno));
+  if (seteuid(iu) != 0 || setegid(ig) != 0) {
+    fprintf(stderr, "cannot change effective UID/GID: %s\n", strerror(errno));
     close(fd);
-    unlink_suid(s, uid);
-    return false;
+    goto end;
   }
     
-  FILE* out = fdopen(fd, "w");
+  out = fdopen(fd, "w");
   if (out == NULL) {
     fprintf(stderr, "cannot write to temporary file: %s\n", strerror(errno));
     close(fd);
-    unlink_suid(s, uid);
-    return false;
+    goto end;
   }
   
-  FILE* in = fopen(tp.c_str(), "r");
+  in = fopen(tp.c_str(), "r");
   if (in == NULL) {
     if (errno == ENOENT) {
       in = fopen("/dev/null", "r");
       if (in == NULL) {
         fprintf(stderr, "cannot get empty table for %s: %s\n", user, strerror(errno));
         fclose(out);
-        unlink_suid(s, uid);
-        return false;
+        goto end;
       }
     }
     else {
       fprintf(stderr, "cannot read old table for %s: %s\n", user, strerror(errno));
       fclose(out);
-      unlink_suid(s, uid);
-      return false;
+      goto end;
     }
   }
   
@@ -276,68 +266,69 @@ bool edit_table(const char* user)
   struct stat st;
   if (stat(s, &st) != 0) {
     fprintf(stderr, "cannot stat temporary file: %s\n", strerror(errno));
-    unlink_suid(s, uid);
-    return false;
+    goto end;
   }
   
-  time_t mt = st.st_mtime;
+  mt = st.st_mtime;
   
-  const char* e = getenv("EDITOR");
+  e = getenv("EDITOR");
   if (e == NULL)
     e = INCRON_DEFAULT_EDITOR;
   
-  pid_t pid = fork();
-  if (pid == 0) {
-    if (setuid(uid) != 0) {
-      fprintf(stderr, "cannot set user %s: %s\n", user, strerror(errno));
-      return false;
-    }    
-    
-    execlp(e, e, s, NULL);
-    _exit(1);
-  }
-  else if (pid > 0) {
-    int status;
-    if (wait(&status) != pid) {
-      perror("error while waiting for editor");
-      unlink_suid(s, uid);
-      return false;
+  {
+    pid_t pid = fork();
+    if (pid == 0) {
+      if (setuid(uid) != 0 || setgid(gid) != 0) {
+        fprintf(stderr, "cannot set user %s: %s\n", user, strerror(errno));
+        goto end;
+      }    
+      
+      execlp(e, e, s, NULL);
+      _exit(1);
     }
-    if (!(WIFEXITED(status)) || WEXITSTATUS(status) != 0) {
-      perror("editor finished with error");
-      unlink_suid(s, uid);
-      return false;
+    else if (pid > 0) {
+      int status;
+      if (wait(&status) != pid) {
+        perror("error while waiting for editor");
+        goto end;
+      }
+      if (!(WIFEXITED(status)) || WEXITSTATUS(status) != 0) {
+        perror("editor finished with error");
+        goto end;
+      }
     }
-  }
-  else {
-    perror("cannot start editor");
-    unlink_suid(s, uid);
-    return false;
+    else {
+      perror("cannot start editor");
+      goto end;
+    }
   }
   
   if (stat(s, &st) != 0) {
     fprintf(stderr, "cannot stat temporary file: %s\n", strerror(errno));
-    unlink_suid(s, uid);
-    return false;
+    goto end;
   }
   
   if (st.st_mtime == mt) {
     fprintf(stderr, "table unchanged\n");
-    unlink_suid(s, uid);
-    return true;
+    ok = true;
+    goto end;
   }
   
-  InCronTab ict;
-  if (!ict.Load(s) || !ict.Save(tp)) {
-    fprintf(stderr, "cannot move temporary table: %s\n", strerror(errno));
-    unlink(s);
-    return false;
+  {
+    InCronTab ict;
+    if (!ict.Load(s) || !ict.Save(tp)) {
+      fprintf(stderr, "cannot move temporary table: %s\n", strerror(errno));
+      goto end;
+    }
   }
   
+  ok = true;
   fprintf(stderr, "table updated\n");
   
-  unlink_suid(s, uid);
-  return true;
+end:  
+  
+  unlink(s);
+  return ok;
 }
 
 

@@ -211,6 +211,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     struct passwd* pwd = getpwnam(m_user.c_str());
     if (    pwd == NULL                 // user not found
         ||  setuid(pwd->pw_uid) != 0    // setting UID failed
+        ||  setgid(pwd->pw_gid) != 0    // setting GID failed
         ||  execvp(argv[0], argv) != 0) // exec failed
     {
       _exit(1);

@@ -1,3 +1,10 @@
+0.3.3    2006-12-15
+* based on inotify-cxx 0.5.3
+* "GID ignorance" bug fixed (#0000109)
+* "zombie bug" fixed (#0000105)
+* code cleanup and simplifying
+
+
 0.3.2    2006-12-02
 * problems with reiserfs fixed (#0000104)
 

@@ -27,7 +27,7 @@
 #define INCRON_TAB_NAME "incrontab"
 
 /// Application version (release)
-#define INCRON_VERSION "0.3.2"
+#define INCRON_VERSION "0.3.3"
 
 /// Address for sending bugs
 #define INCRON_BUG_ADDRESS "<bugs@aiken.cz>"

@@ -66,7 +66,10 @@ uninstall-man:
 	rm -f $(MANPATH)/man5/incrontab.5
 	rm -f $(MANPATH)/man8/incrontab.8
 
+update:		uninstall install
+
 release:
+	doxygen
 	mkdir -p $(RELEASEDIR)
 	cp -r doc $(RELEASEDIR)
 	cp *.h $(RELEASEDIR)
@@ -94,7 +97,7 @@ release-clean:
 	rm -f $(RELEASE).zip
 	rm -f sha1.txt
 
-.PHONY:	all clean distclean install install-man uninstall uninstall-man release release-clean
+.PHONY:	all clean distclean install install-man uninstall uninstall-man release release-clean update
 
 .POSIX:
 

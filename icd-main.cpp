@@ -16,6 +16,7 @@
 #include <map>
 #include <signal.h>
 #include <wait.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <dirent.h>
 #include <syslog.h>
@@ -48,17 +49,39 @@ SUT_MAP g_ut;
 /// Finish program yes/no
 volatile bool g_fFinish = false;
 
+/// Pipe for notifying about dead children
+int g_cldPipe[2];
+
+// Buffer for emptying child pipe
+#define CHILD_PIPE_BUF_LEN 32
+char g_cldPipeBuf[CHILD_PIPE_BUF_LEN];
+
 
 /// Handles a signal.
 /**
  * For SIGTERM and SIGINT it sets the program finish variable.
+ * For SIGCHLD it writes a character into the notification pipe
+ * (this is a workaround made due to disability to reliably
+ * wait for dead children).
  * 
  * \param[in] signo signal number
  */
 void on_signal(int signo)
 {
-  if (signo == SIGTERM || signo == SIGINT)
-    g_fFinish = true;
+  switch (signo) {
+    case SIGTERM:
+    case SIGINT:
+      g_fFinish = true;
+      break;
+    case SIGCHLD:
+      // first empty pipe (to prevent internal buffer overflow)
+      do {} while (read(g_cldPipe[0], g_cldPipeBuf, CHILD_PIPE_BUF_LEN) > 0);
+      
+      // now write one character
+      write(g_cldPipe[1], "X", 1);
+      break;
+    default:;
+  }
 }
 
 /// Checks whether an user exists and has permission to use incron.
@@ -125,6 +148,31 @@ void load_tables(Inotify* pIn, EventDispatcher* pEd) throw (InotifyException)
   closedir(d);
 }
 
+/// Prepares a 'dead/done child' notification pipe.
+/**
+ * This function returns no value at all and on error it
+ * throws an exception.
+ */
+void prepare_pipe()
+{
+  g_cldPipe[0] = -1;
+  g_cldPipe[1] = -1;
+  
+  if (pipe(g_cldPipe) != 0)
+      throw InotifyException("cannot create notification pipe", errno, NULL);
+  
+  for (int i=0; i<2; i++) {
+    int res = fcntl(g_cldPipe[i], F_GETFL);
+    if (res == -1)
+      throw InotifyException("cannot get pipe flags", errno, NULL);
+    
+    res |= O_NONBLOCK;
+        
+    if (fcntl(g_cldPipe[i], F_SETFL, res) == -1)
+      throw InotifyException("cannot set pipe flags", errno, NULL);
+  }
+}
+
 /// Main application function.
 /**
  * \param[in] argc argument count
@@ -155,12 +203,14 @@ int main(int argc, char** argv)
       return 1;
     }
     
+    if (DAEMON)
+      daemon(0, 0);
+    
+    prepare_pipe();
+    
     signal(SIGTERM, on_signal);
     signal(SIGINT, on_signal);
     signal(SIGCHLD, on_signal);
-    
-    if (DAEMON)
-      daemon(0, 0);
     
     uint32_t wm = IN_CLOSE_WRITE | IN_DELETE | IN_MOVE | IN_DELETE_SELF | IN_UNMOUNT;
     InotifyWatch watch(INCRON_TABLE_BASE, wm);
@@ -170,23 +220,32 @@ int main(int argc, char** argv)
     
     InotifyEvent e;
     
-    struct pollfd pfd;
-    pfd.fd = in.GetDescriptor();
-    pfd.events = (short) POLLIN;
-    pfd.revents = (short) 0;
+    struct pollfd pfd[2];
+    pfd[0].fd = in.GetDescriptor();
+    pfd[0].events = (short) POLLIN;
+    pfd[0].revents = (short) 0;
+    pfd[1].fd = g_cldPipe[0];
+    pfd[1].events = (short) POLLIN;
+    pfd[1].revents = (short) 0;
     
     while (!g_fFinish) {
       
-      int res = poll(&pfd, 1, -1);
+      int res = poll(pfd, 2, -1);
+      
       if (res > 0) {
-        in.WaitForEvents(true);
+        if (pfd[1].revents & ((short) POLLIN)) {
+          char c;
+          while (read(pfd[1].fd, &c, 1) > 0) {}
+          UserTable::FinishDone();
+        }
+        else {
+          in.WaitForEvents(true);
+        }
       }
       else if (res < 0) {
         if (errno != EINTR)
           throw InotifyException("polling failed", errno, NULL);
       }
-      
-      UserTable::FinishDone();
       
       while (in.GetEvent(e)) {
         
@@ -223,8 +282,14 @@ int main(int argc, char** argv)
         else {
           ed.DispatchEvent(e);
         }
+        
       }
     }
+    
+    if (g_cldPipe[0] != -1)
+      close(g_cldPipe[0]);
+    if (g_cldPipe[1] != -1)
+      close(g_cldPipe[1]);
   } catch (InotifyException e) {
     int err = e.GetErrorNumber();
     syslog(LOG_CRIT, "*** unhandled exception occurred ***");
