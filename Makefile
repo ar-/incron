@@ -40,7 +40,7 @@ distclean: clean
 
 install:	all
 	[ -d $(PREFIX) ]
-	useradd -M -s /sbin/nologin $(USER)
+	useradd -M -s /sbin/nologin $(USER) || useradd -s /sbin/nologin $(USER)
 	$(INSTALL) -m 04755 -o $(USER) incrontab $(PREFIX)/bin/
 	$(INSTALL) -m 0755 incrond $(PREFIX)/sbin/
 	$(INSTALL) -m 0755 -o $(USER) -d $(DATADIR)

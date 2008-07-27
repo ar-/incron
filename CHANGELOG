@@ -1,3 +1,11 @@
+0.2.1    2006-10-14
+* based on inotify-cxx 0.4.1 (it should also fix crashing as described in #0000085)
+* build failure (due to missing 'useradd -M') on some distributions has been fixed
+  (#0000094)
+* tarball structure has been fixed (#0000089)
+* documentation slightly improved
+
+
 0.2.0    2006-10-04
 * based on inotify-cxx 0.3.1
 * better signal handling (no "dirty" wait() in a handler)

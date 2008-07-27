@@ -27,19 +27,28 @@
 
 #include "usertable.h"
 
+/// Daemon yes/no
 #define DAEMON true
 
+/// Application name
 #define INCRON_APP_NAME "incrond"
+
+/// Logging options (console as fallback, log PID)
 #define INCRON_LOG_OPTS (LOG_CONS | LOG_PID)
+
+/// Logging facility (use CRON)
 #define INCRON_LOG_FACIL LOG_CRON
 
 
+/// User name to user table mapping definition
 typedef std::map<std::string, UserTable*> SUT_MAP;
 
-
+/// User name to user table mapping table
 SUT_MAP g_ut;
 
+/// Finish program yes/no
 volatile bool g_fFinish = false;
+
 
 /// Handles a signal.
 /**
@@ -156,7 +165,7 @@ int main(int argc, char** argv)
     
     struct pollfd pfd;
     pfd.fd = in.GetDescriptor();
-    pfd.events = POLLIN;
+    pfd.events = (short) POLLIN;
     pfd.revents = (short) 0;
     
     while (!g_fFinish) {

@@ -29,10 +29,10 @@
 #define INCRON_DEFAULT_EDITOR "vim"
 
 
-const char* argp_program_version = "incrontab 0.1.0";
+const char* argp_program_version = "incrontab 0.3.0";
 const char* argp_program_bug_address = "<bugs@aiken.cz>";
 
-static char doc[] = "Table manipulator for incrond (inotify Cron daemon)";
+static char doc[] = "Table manipulator for incrond (inotify cron daemon)";
 
 static char args_doc[] = "FILE";
 
@@ -44,22 +44,31 @@ static struct argp_option options[] = {
   { 0 }
 };
 
-enum
+/// incrontab operations
+typedef enum
 {
-  OPER_NONE,
-  OPER_LIST,
-  OPER_REMOVE,
-  OPER_EDIT
-};
+  OPER_NONE,    /// nothing
+  OPER_LIST,    /// list table
+  OPER_REMOVE,  /// remove table
+  OPER_EDIT     /// edit table
+} InCronTab_Operation_t;
 
+/// incrontab arguments
 struct arguments
 {
-  char *user;
-  int oper;
-  char *file;
+  char *user;     /// user name
+  int oper;       /// operation code
+  char *file;     /// file to import
 };
 
-static error_t parse_opt (int key, char *arg, struct argp_state *state)
+/// Parses the program options (arguments).
+/**
+ * \param[in] key argument key (name)
+ * \param[in] arg argument value
+ * \param[out] state options setting
+ * \return 0 on success, ARGP_ERR_UNKNOWN on unknown argument(s)
+ */
+static error_t parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct arguments* arguments = (struct arguments*) state->input;
      
@@ -90,9 +99,16 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-
+/// Program arguments
 static struct argp argp = { options, parse_opt, args_doc, doc };
 
+/// Unlink a file with temporarily changed UID.
+/**
+ * \param[in] file file to unlink
+ * \param[in] uid UID for unlink processing
+ * 
+ * \attention No error checking is done!
+ */
 void unlink_suid(const char* file, uid_t uid)
 {
   uid_t iu = geteuid();
@@ -101,6 +117,12 @@ void unlink_suid(const char* file, uid_t uid)
   seteuid(iu);
 }
 
+/// Copies a file to an user table.
+/**
+ * \param[in] path path to file
+ * \param[in] user user name
+ * \return true = success, false = failure
+ */
 bool copy_from_file(const char* path, const char* user)
 {
   InCronTab tab;
@@ -121,6 +143,11 @@ bool copy_from_file(const char* path, const char* user)
   return true;
 }
 
+/// Removes an user table.
+/**
+ * \param[in] user user name
+ * \return true = success, false = failure
+ */ 
 bool remove_table(const char* user)
 {
   std::string tp(InCronTab::GetUserTablePath(user));
@@ -133,6 +160,13 @@ bool remove_table(const char* user)
   return true;
 }
 
+/// Lists an user table.
+/**
+ * \param[in] user user name
+ * \return true = success, false = failure
+ * 
+ * \attention Listing is currently done through 'cat'.
+ */
 bool list_table(const char* user)
 {
   std::string tp(InCronTab::GetUserTablePath(user));
@@ -153,6 +187,15 @@ bool list_table(const char* user)
   return system(cmd.c_str()) == 0;
 }
 
+/// Allows to edit an user table.
+/**
+ * \param[in] user user name
+ * \return true = success, false = failure
+ * 
+ * \attention This function is very complex and may contain
+ *            various bugs including security ones. Please keep
+ *            it in mind..
+ */
 bool edit_table(const char* user)
 {
   std::string tp(InCronTab::GetUserTablePath(user));

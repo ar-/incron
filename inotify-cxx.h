@@ -30,9 +30,13 @@
 #include <deque>
 #include <map>
 
-// Please ensure that the following headers take the right place.
+// Please ensure that the following headers take the right place
 #include <sys/inotify.h>
+
+// Use this if syscalls not defined
+#ifndef __NR_inotify_init
 #include <sys/inotify-syscalls.h>
+#endif // __NR_inotify_init
 
 /// Event struct size
 #define INOTIFY_EVENT_SIZE (sizeof(struct inotify_event))
@@ -318,6 +322,18 @@ public:
     return (uint32_t) m_uMask;
   }
   
+  /// Sets the watch event mask.
+  /**
+   * If the watch is active (added to an instance of Inofify)
+   * this method may fail due to unsuccessful re-setting
+   * the watch in the kernel.
+   * 
+   * \param[in] uMask event mask
+   * 
+   * \throw InotifyException thrown if changing fails
+   */
+  void SetMask(uint32_t uMask) throw (InotifyException);   
+  
   /// Returns the appropriate inotify class instance.
   /**
    * \return inotify instance
@@ -327,11 +343,24 @@ public:
     return m_pInotify;
   }
   
-  inline void SetEnabled(bool fEnabled)
-  {
-    m_fEnabled = fEnabled;
-  }  
+  /// Enables/disables the watch.
+  /**
+   * If the watch is active (added to an instance of Inofify)
+   * this method may fail due to unsuccessful re-setting
+   * the watch in the kernel.
+   * 
+   * Re-setting the current state has no effect.
+   * 
+   * \param[in] fEnabled set enabled yes/no
+   * 
+   * \throw InotifyException thrown if enabling/disabling fails
+   */
+  void SetEnabled(bool fEnabled) throw (InotifyException);
   
+  /// Checks whether the watch is enabled.
+  /**
+   * \return true = enables, false = disabled
+   */
   inline bool IsEnabled() const
   {
     return m_fEnabled;
@@ -350,6 +379,9 @@ private:
 
 /// Mapping from watch descriptors to watch objects.
 typedef std::map<int32_t, InotifyWatch*> IN_WATCH_MAP;
+
+/// Mapping from paths to watch objects.
+typedef std::map<std::string, InotifyWatch*> IN_WP_MAP;
 
 
 /// inotify class
@@ -421,11 +453,14 @@ public:
   
   /// Returns the count of watches.
   /**
+   * This is the total count of all watches (regardless whether
+   * enabled or not).
+   * 
    * \return count of watches
    */
   inline size_t GetWatchCount() const
   {
-    return (size_t) m_watches.size();
+    return (size_t) m_paths.size();
   }
   
   /// Waits for inotify events.
@@ -499,14 +534,27 @@ public:
     return PeekEvent(&rEvt);
   }
   
-  /// Searches for a watch.
+  /// Searches for a watch by a watch descriptor.
   /**
    * It tries to find a watch by the given descriptor.
    * 
    * \param[in] iDescriptor watch descriptor
-   * \return found descriptor; NULL if no such watch exists
+   * \return pointer to a watch; NULL if no such watch exists
    */
   InotifyWatch* FindWatch(int iDescriptor);
+  
+  /// Searches for a watch by a filesystem path.
+  /**
+   * It tries to find a watch by the given filesystem path.
+   * 
+   * \param[in] rPath filesystem path
+   * \return pointer to a watch; NULL if no such watch exists
+   * 
+   * \attention The path must be exactly identical to the one
+   *            used for the searched watch. Be careful about
+   *            absolute/relative and case-insensitive paths.
+   */
+   InotifyWatch* FindWatch(const std::string& rPath);
   
   /// Returns the file descriptor.
   /**
@@ -538,9 +586,12 @@ public:
 
 private: 
   int m_fd;                             ///< file descriptor
-  IN_WATCH_MAP m_watches;               ///< watches
+  IN_WATCH_MAP m_watches;               ///< watches (by descriptors)
+  IN_WP_MAP m_paths;                    ///< watches (by paths)
   unsigned char m_buf[INOTIFY_BUFLEN];  ///< buffer for events
   std::deque<InotifyEvent> m_events;    ///< event queue
+  
+  friend class InotifyWatch;
 };
 
 
