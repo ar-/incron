@@ -2,6 +2,8 @@
 PREFIX = /usr/local
 DATADIR = /var/spool/incron
 MANPATH = /usr/share/man
+RELEASE = incron-`cat VERSION`
+RELEASEDIR = /tmp/$(RELEASE)
 
 USER = root
 
@@ -64,8 +66,35 @@ uninstall-man:
 	rm -f $(MANPATH)/man5/incrontab.5
 	rm -f $(MANPATH)/man8/incrontab.8
 
+release:
+	mkdir -p $(RELEASEDIR)
+	cp -r doc $(RELEASEDIR)
+	cp *.h $(RELEASEDIR)
+	cp *.cpp $(RELEASEDIR)
+	cp Makefile CHANGELOG COPYING LICENSE-GPL LICENSE-LGPL LICENSE-X11 README TODO VERSION $(RELEASEDIR)
+	cp incrond.8 incrontab.1 incrontab.5 $(RELEASEDIR)
+	tar -c -f $(RELEASE).tar -C $(RELEASEDIR)/.. $(RELEASE)
+	bzip2 -9 $(RELEASE).tar
+	tar -c -f $(RELEASE).tar -C $(RELEASEDIR)/.. $(RELEASE)
+	gzip --best $(RELEASE).tar
+	echo #!/bin/sh > myzip
+	echo cd $(RELEASEDIR)/.. >> myzip
+	echo zip -r -9 `pwd`/$(RELEASE).zip $(RELEASE) >> myzip
+	chmod 0700 myzip
+	./myzip
+	rm -f myzip
+	sha1sum $(RELEASE).tar.bz2 > sha1.txt
+	sha1sum $(RELEASE).tar.gz >> sha1.txt
+	sha1sum $(RELEASE).zip >> sha1.txt
+	rm -rf $(RELEASEDIR)
 
-.PHONY:	all clean distclean install install-man uninstall uninstall-man
+release-clean:
+	rm -f $(RELEASE).tar.bz2
+	rm -f $(RELEASE).tar.gz
+	rm -f $(RELEASE).zip
+	rm -f sha1.txt
+
+.PHONY:	all clean distclean install install-man uninstall uninstall-man release release-clean
 
 .POSIX:
 

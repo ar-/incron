@@ -21,6 +21,7 @@
 #include <syslog.h>
 #include <errno.h>
 #include <sys/poll.h>
+#include <sys/stat.h>
 
 #include "inotify-cxx.h"
 
@@ -100,7 +101,15 @@ void load_tables(Inotify* pIn, EventDispatcher* pEd) throw (InotifyException)
   struct dirent* pDe = NULL;
   while ((pDe = readdir(d)) != NULL) {
     std::string un(pDe->d_name);
-    if (pDe->d_type == DT_REG && un != "." && un != "..") {
+    
+    bool ok = pDe->d_type == DT_REG;
+    if (pDe->d_type == DT_UNKNOWN) {
+      struct stat st;
+      if (stat(pDe->d_name, &st) == 0)
+        ok = S_ISREG(st.st_mode);
+    }
+    
+    if (ok) {
       if (check_user(pDe->d_name)) {
         syslog(LOG_INFO, "loading table for user %s", pDe->d_name);
         UserTable* pUt = new UserTable(pIn, pEd, un);

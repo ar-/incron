@@ -1,3 +1,7 @@
+0.3.2    2006-12-02
+* problems with reiserfs fixed (#0000104)
+
+
 0.3.1    2006-11-24
 * user manual added
 * incron tables now owned by root (also fixes #0000103)
