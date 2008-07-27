@@ -50,6 +50,87 @@
  */
 #define IN_EXC_MSG(msg) (std::string(__PRETTY_FUNCTION__) + ": " + msg)
 
+/// inotify-cxx thread safety
+/**
+ * If this symbol is defined you can use this interface safely
+ * threaded applications. Remember that it slightly degrades
+ * performance.
+ * 
+ * Even if INOTIFY_THREAD_SAFE is defined some classes stay
+ * unsafe. If you must use them (must you?) in more than one
+ * thread concurrently you need to implement explicite locking.
+ * 
+ * You need not to define INOTIFY_THREAD_SAFE in that cases
+ * where the application is multithreaded but all the inotify
+ * infrastructure will be managed only in one thread. This is
+ * the recommended way.
+ * 
+ * Locking may fail (it is very rare but not impossible). In this
+ * case an exception is thrown. But if unlocking fails in case
+ * of an error it does nothing (this failure is ignored).
+ */
+#ifdef INOTIFY_THREAD_SAFE
+
+#include <pthread.h>
+
+#define IN_LOCK_DECL mutable pthread_rwlock_t __m_lock;
+
+#define IN_LOCK_INIT \
+  { \
+    pthread_rwlockattr_t attr; \
+    int res = 0; \
+    if ((res = pthread_rwlockattr_init(&attr)) != 0) \
+      throw InotifyException(IN_EXC_MSG("cannot initialize lock attributes"), res, this); \
+    if ((res = pthread_rwlockattr_setkind_np(&attr, PTHREAD_RWLOCK_PREFER_WRITER_NP)) != 0) \
+      throw InotifyException(IN_EXC_MSG("cannot set lock kind"), res, this); \
+    if ((res = pthread_rwlock_init(&__m_lock, &attr)) != 0) \
+      throw InotifyException(IN_EXC_MSG("cannot initialize lock"), res, this); \
+    pthread_rwlockattr_destroy(&attr); \
+  }
+ 
+#define IN_LOCK_DONE pthread_rwlock_destroy(&__m_lock);
+
+#define IN_READ_BEGIN \
+  { \
+    int res = pthread_rwlock_rdlock(&__m_lock); \
+    if (res != 0) \
+      throw InotifyException(IN_EXC_MSG("locking for reading failed"), res, (void*) this); \
+  }
+  
+#define IN_READ_END \
+  { \
+    int res = pthread_rwlock_unlock(&__m_lock); \
+    if (res != 0) \
+      throw InotifyException(IN_EXC_MSG("unlocking failed"), res, (void*) this); \
+  }
+  
+#define IN_READ_END_NOTHROW pthread_rwlock_unlock(&__m_lock);
+  
+#define IN_WRITE_BEGIN \
+  { \
+    int res = pthread_rwlock_wrlock(&__m_lock); \
+    if (res != 0) \
+      throw InotifyException(IN_EXC_MSG("locking for writing failed"), res, (void*) this); \
+  }
+  
+#define IN_WRITE_END IN_READ_END
+#define IN_WRITE_END_NOTHROW IN_READ_END_NOTHROW
+
+#else // INOTIFY_THREAD_SAFE
+
+#define IN_LOCK_DECL
+#define IN_LOCK_INIT
+#define IN_LOCK_DONE
+#define IN_READ_BEGIN
+#define IN_READ_END
+#define IN_READ_END_NOTHROW
+#define IN_WRITE_BEGIN
+#define IN_WRITE_END
+#define IN_WRITE_END_NOTHROW
+
+#endif // INOTIFY_THREAD_SAFE
+
+
 
 
 // forward declaration
@@ -58,6 +139,14 @@ class Inotify;
 
 
 /// Class for inotify exceptions
+/**
+ * This class allows to acquire information about exceptional
+ * events. It makes easier to log or display error messages
+ * and to identify problematic code locations.
+ * 
+ * Although this class is basically thread-safe it is not intended
+ * to be shared between threads.
+ */
 class InotifyException
 {
 public:
@@ -114,6 +203,10 @@ protected:
 /**
  * It holds all information about inotify event and provides
  * access to its particular values.
+ * 
+ * This class is not (and is not intended to be) thread-safe
+ * and therefore it must not be used concurrently in multiple
+ * threads.
  */
 class InotifyEvent
 {
@@ -271,6 +364,12 @@ private:
 
 
 /// inotify watch class
+/**
+ * It holds information about the inotify watch on a particular
+ * inode.
+ * 
+ * If the INOTIFY_THREAD_SAFE is defined this class is thread-safe.
+ */
 class InotifyWatch
 {
 public:
@@ -289,11 +388,14 @@ public:
     m_wd((int32_t) -1),
     m_fEnabled(fEnabled)
   {
-    
+    IN_LOCK_INIT
   }
   
   /// Destructor.
-  ~InotifyWatch() {}
+  ~InotifyWatch()
+  {
+    IN_LOCK_DONE
+  }
   
   /// Returns the watch descriptor.
   /**
@@ -324,7 +426,7 @@ public:
   
   /// Sets the watch event mask.
   /**
-   * If the watch is active (added to an instance of Inofify)
+   * If the watch is active (added to an instance of Inotify)
    * this method may fail due to unsuccessful re-setting
    * the watch in the kernel.
    * 
@@ -345,7 +447,7 @@ public:
   
   /// Enables/disables the watch.
   /**
-   * If the watch is active (added to an instance of Inofify)
+   * If the watch is active (added to an instance of Inotify)
    * this method may fail due to unsuccessful re-setting
    * the watch in the kernel.
    * 
@@ -374,6 +476,8 @@ private:
   int32_t m_wd;         ///< watch descriptor
   Inotify* m_pInotify;  ///< inotify object
   bool m_fEnabled;      ///< events enabled yes/no
+  
+  IN_LOCK_DECL
 };
 
 
@@ -385,6 +489,12 @@ typedef std::map<std::string, InotifyWatch*> IN_WP_MAP;
 
 
 /// inotify class
+/**
+ * It holds information about the inotify device descriptor
+ * and manages the event queue.
+ * 
+ * If the INOTIFY_THREAD_SAFE is defined this class is thread-safe.
+ */
 class Inotify
 {
 public:
@@ -457,10 +567,29 @@ public:
    * enabled or not).
    * 
    * \return count of watches
+   * 
+   * \sa GetEnabledCount()
    */
   inline size_t GetWatchCount() const
   {
-    return (size_t) m_paths.size();
+    IN_READ_BEGIN
+    size_t n = (size_t) m_paths.size();
+    IN_READ_END
+    return n;
+  }
+  
+  /// Returns the count of enabled watches.
+  /**
+   * \return count of enabled watches
+   * 
+   * \sa GetWatchCount()
+   */  
+  inline size_t GetEnabledCount() const
+  {
+    IN_READ_BEGIN
+    size_t n = (size_t) m_watches.size();
+    IN_READ_END
+    return n;
   }
   
   /// Waits for inotify events.
@@ -484,7 +613,13 @@ public:
    * 
    * \return count of events
    */
-  int GetEventCount();
+  inline size_t GetEventCount()
+  {
+    IN_READ_BEGIN
+    size_t n = (size_t) m_events.size();
+    IN_READ_END
+    return n;
+  }
   
   /// Extracts a queued inotify event.
   /**
@@ -591,8 +726,11 @@ private:
   unsigned char m_buf[INOTIFY_BUFLEN];  ///< buffer for events
   std::deque<InotifyEvent> m_events;    ///< event queue
   
+  IN_LOCK_DECL
+  
   friend class InotifyWatch;
 };
 
 
 #endif //_INOTIFYCXX_H_
+

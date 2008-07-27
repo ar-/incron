@@ -203,69 +203,101 @@ void InotifyEvent::DumpTypes(std::string& rStr) const
 
 void InotifyWatch::SetMask(uint32_t uMask) throw (InotifyException)
 {
+  IN_WRITE_BEGIN
+  
   if (m_wd != -1) {
     int wd = inotify_add_watch(m_pInotify->GetDescriptor(), m_path.c_str(), uMask);
-    if (wd != m_wd)
+    if (wd != m_wd) {
+      IN_WRITE_END_NOTHROW
       throw InotifyException(IN_EXC_MSG("changing mask failed"), wd == -1 ? errno : EINVAL, this); 
+    }
   }
   
   m_uMask = uMask;
+  
+  IN_WRITE_END
 }
 
 void InotifyWatch::SetEnabled(bool fEnabled) throw (InotifyException)
 {
-  if (fEnabled == m_fEnabled)
+  IN_WRITE_BEGIN
+  
+  if (fEnabled == m_fEnabled) {
+    IN_WRITE_END_NOTHROW
     return;
+  }
   
   if (m_pInotify != NULL) {
     if (fEnabled) {
       m_wd = inotify_add_watch(m_pInotify->GetDescriptor(), m_path.c_str(), m_uMask);
-      if (m_wd == -1)
+      if (m_wd == -1) {
+        IN_WRITE_END_NOTHROW
         throw InotifyException(IN_EXC_MSG("enabling watch failed"), errno, this);
+      }
       m_pInotify->m_watches.insert(IN_WATCH_MAP::value_type(m_wd, this));
     }
     else {
-      if (inotify_rm_watch(m_pInotify->GetDescriptor(), m_wd) != 0)
+      if (inotify_rm_watch(m_pInotify->GetDescriptor(), m_wd) != 0) {
+        IN_WRITE_END_NOTHROW
         throw InotifyException(IN_EXC_MSG("disabling watch failed"), errno, this);
+      }
       m_pInotify->m_watches.erase(m_wd);
       m_wd = -1;
     }
   }
   
   m_fEnabled = fEnabled;
+  
+  IN_WRITE_END
 }
 
 
 Inotify::Inotify() throw (InotifyException)
 {
+  IN_LOCK_INIT
+  
   m_fd = inotify_init();
-  if (m_fd == -1)
+  if (m_fd == -1) {
+    IN_LOCK_DONE
     throw InotifyException(IN_EXC_MSG("inotify init failed"), errno, NULL);
+  }
 }
   
 Inotify::~Inotify()
 {
   Close();
+  
+  IN_LOCK_DONE
 }
 
 void Inotify::Close()
 {
+  IN_WRITE_BEGIN
+  
   if (m_fd != -1) {
     RemoveAll();
     close(m_fd);
     m_fd = -1;
   }
+  
+  IN_WRITE_END
 }
 
 void Inotify::Add(InotifyWatch* pWatch) throw (InotifyException)
 {
+  IN_WRITE_BEGIN
+  
   // invalid descriptor - this case shouldn't occur - go away
-  if (m_fd == -1)
+  if (m_fd == -1) {
+    IN_WRITE_END_NOTHROW
     throw InotifyException(IN_EXC_MSG("invalid file descriptor"), EBUSY, this);
+  }
 
   // this path already watched - go away  
-  if (FindWatch(pWatch->GetPath()) != NULL)
+  if (FindWatch(pWatch->GetPath()) != NULL) {
+    IN_WRITE_END_NOTHROW
     throw InotifyException(IN_EXC_MSG("path already watched"), EBUSY, this);
+  }
   
   // for enabled watch
   if (pWatch->IsEnabled()) {
@@ -274,8 +306,10 @@ void Inotify::Add(InotifyWatch* pWatch) throw (InotifyException)
     int wd = inotify_add_watch(m_fd, pWatch->GetPath().c_str(), pWatch->GetMask());
     
     // adding failed - go away
-    if (wd == -1)
+    if (wd == -1) {
+      IN_WRITE_END_NOTHROW
       throw InotifyException(IN_EXC_MSG("adding watch failed"), errno, this);
+    }
     
     // this path already watched (but defined another way)
     InotifyWatch* pW = FindWatch(wd);
@@ -283,10 +317,12 @@ void Inotify::Add(InotifyWatch* pWatch) throw (InotifyException)
       
       // try to recover old watch because it may be modified - then go away
       if (inotify_add_watch(m_fd, pW->GetPath().c_str(), pW->GetMask()) < 0) {
+        IN_WRITE_END_NOTHROW
         throw InotifyException(IN_EXC_MSG("watch collision detected and recovery failed"), errno, this);
       }
       else {
         // recovery failed - go away
+        IN_WRITE_END_NOTHROW
         throw InotifyException(IN_EXC_MSG("path already watched (but defined another way)"), EBUSY, this);
       }
     }
@@ -297,30 +333,42 @@ void Inotify::Add(InotifyWatch* pWatch) throw (InotifyException)
   
   m_paths.insert(IN_WP_MAP::value_type(pWatch->m_path, pWatch));
   pWatch->m_pInotify = this;
+  
+  IN_WRITE_END
 }
 
 void Inotify::Remove(InotifyWatch* pWatch) throw (InotifyException)
 {
+  IN_WRITE_BEGIN
+  
   // invalid descriptor - this case shouldn't occur - go away
-  if (m_fd == -1)
+  if (m_fd == -1) {
+    IN_WRITE_END_NOTHROW
     throw InotifyException(IN_EXC_MSG("invalid file descriptor"), EBUSY, this);
+  }
   
   // for enabled watch
   if (pWatch->m_wd != -1) {  
     
     // removing watch failed - go away
-    if (inotify_rm_watch(m_fd, pWatch->m_wd) == -1)
+    if (inotify_rm_watch(m_fd, pWatch->m_wd) == -1) {
+      IN_WRITE_END_NOTHROW
       throw InotifyException(IN_EXC_MSG("removing watch failed"), errno, this);
+    }
     m_watches.erase(pWatch->m_wd);
     pWatch->m_wd = -1;
   }
 
   m_paths.erase(pWatch->m_path);
   pWatch->m_pInotify = NULL;
+  
+  IN_WRITE_END
 }
 
 void Inotify::RemoveAll()
 {
+  IN_WRITE_BEGIN
+  
   IN_WP_MAP::iterator it = m_paths.begin();
   while (it != m_paths.end()) {
     InotifyWatch* pW = (*it).second;
@@ -334,6 +382,8 @@ void Inotify::RemoveAll()
   
   m_watches.clear();
   m_paths.clear();
+  
+  IN_WRITE_END
 }
 
 void Inotify::WaitForEvents(bool fNoIntr) throw (InotifyException)
@@ -350,6 +400,8 @@ void Inotify::WaitForEvents(bool fNoIntr) throw (InotifyException)
   if (len < 0)
     throw InotifyException(IN_EXC_MSG("reading events failed"), errno, this);
   
+  IN_WRITE_BEGIN
+  
   ssize_t i = 0;
   while (i < len) {
     struct inotify_event* pEvt = (struct inotify_event*) &m_buf[i];
@@ -360,19 +412,24 @@ void Inotify::WaitForEvents(bool fNoIntr) throw (InotifyException)
     }
     i += INOTIFY_EVENT_SIZE + (ssize_t) pEvt->len;
   }
-}
   
-int Inotify::GetEventCount()
-{
-  return m_events.size();
+  IN_WRITE_END
 }
   
 bool Inotify::GetEvent(InotifyEvent* pEvt) throw (InotifyException)
 {
-  bool b = PeekEvent(pEvt);
+  if (pEvt == NULL)
+    throw InotifyException(IN_EXC_MSG("null pointer to event"), EINVAL, this);
   
-  if (b)
+  IN_WRITE_BEGIN
+  
+  bool b = !m_events.empty();
+  if (b) {
+    *pEvt = m_events.front();
     m_events.pop_front();
+  }
+  
+  IN_WRITE_END
     
   return b;
 }
@@ -382,40 +439,56 @@ bool Inotify::PeekEvent(InotifyEvent* pEvt) throw (InotifyException)
   if (pEvt == NULL)
     throw InotifyException(IN_EXC_MSG("null pointer to event"), EINVAL, this);
   
-  if (!m_events.empty()) {
+  IN_READ_BEGIN
+  
+  bool b = !m_events.empty();
+  if (b) {
     *pEvt = m_events.front();
-    return true;
   }
   
-  return false;
+  IN_READ_END
+  
+  return b;
 }
 
 InotifyWatch* Inotify::FindWatch(int iDescriptor)
 {
+  IN_READ_BEGIN
+  
   IN_WATCH_MAP::iterator it = m_watches.find(iDescriptor);
-  if (it == m_watches.end())
-    return NULL;
-    
-  return (*it).second;
+  InotifyWatch* pW = it == m_watches.end() ? NULL : (*it).second;
+  
+  IN_READ_END
+  
+  return pW;
 }
 
 InotifyWatch* Inotify::FindWatch(const std::string& rPath)
 {
+  IN_READ_BEGIN
+  
   IN_WP_MAP::iterator it = m_paths.find(rPath);
-  if (it == m_paths.end())
-    return NULL;
+  InotifyWatch* pW = it == m_paths.end() ? NULL : (*it).second;
+  
+  IN_READ_END
     
-  return (*it).second;
+  return pW;
 }
   
 void Inotify::SetNonBlock(bool fNonBlock) throw (InotifyException)
 {
-  if (m_fd == -1)
+  IN_WRITE_BEGIN
+  
+  if (m_fd == -1) {
+    IN_WRITE_END_NOTHROW
     throw InotifyException(IN_EXC_MSG("invalid file descriptor"), EBUSY, this);
+  }
     
   int res = fcntl(m_fd, F_GETFL);
-  if (res == -1)
+  if (res == -1) {
+    IN_WRITE_END_NOTHROW
     throw InotifyException(IN_EXC_MSG("cannot get inotify flags"), errno, this);
+  }
   
   if (fNonBlock) {
     res |= O_NONBLOCK;
@@ -424,7 +497,11 @@ void Inotify::SetNonBlock(bool fNonBlock) throw (InotifyException)
     res &= ~O_NONBLOCK;
   }
       
-  if (fcntl(m_fd, F_SETFL, res) == -1)
+  if (fcntl(m_fd, F_SETFL, res) == -1) {
+    IN_WRITE_END_NOTHROW
     throw InotifyException(IN_EXC_MSG("cannot set inotify flags"), errno, this);
+  }
+    
+  IN_WRITE_END
 }  
 

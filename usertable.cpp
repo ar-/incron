@@ -198,13 +198,10 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   if (pd.pid == 0) {
     
     struct passwd* pwd = getpwnam(m_user.c_str());
-    if (pwd == NULL)
-      _exit(1);
-      
-    if (setuid(pwd->pw_uid) != 0)
-      _exit(1);
-    
-    if (execvp(argv[0], argv) != 0) {
+    if (    pwd == NULL                 // user not found
+        ||  setuid(pwd->pw_uid) != 0    // setting UID failed
+        ||  execvp(argv[0], argv) != 0) // exec failed
+    {
       _exit(1);
     }
   }
@@ -226,6 +223,8 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       
     syslog(LOG_ERR, "cannot fork process: %s", strerror(errno));
   }
+  
+  CleanupArgs(argc, argv);
 }
 
 InCronTabEntry* UserTable::FindEntry(InotifyWatch* pWatch)
@@ -263,6 +262,15 @@ bool UserTable::PrepareArgs(const std::string& rCmd, int& argc, char**& argv)
   }
   
   return true;
+}
+
+void UserTable::CleanupArgs(int argc, char** argv)
+{
+  for (int i=0; i<argc; i++) {
+    delete[] argv[i];
+  }
+  
+  delete[] argv;
 }
 
 void UserTable::FinishDone()

@@ -1,3 +1,9 @@
+0.2.2    2006-10-29
+* based on inotify-cxx 0.5.0
+* 'uncleaned children' bug has been fixed (#0000095)
+* memory leak (child process arguments) has been fixed (#0000096)
+
+
 0.2.1    2006-10-14
 * based on inotify-cxx 0.4.1 (it should also fix crashing as described in #0000085)
 * build failure (due to missing 'useradd -M') on some distributions has been fixed

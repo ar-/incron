@@ -171,6 +171,13 @@ private:
    */
   bool PrepareArgs(const std::string& rCmd, int& argc, char**& argv);
   
+  /// Frees memory allocated for arguments.
+  /**
+   * \param[in] argc argument count
+   * \param[in] argv argument array
+   */
+  void CleanupArgs(int argc, char** argv);
+  
 };
 
 #endif //_USERTABLE_H_

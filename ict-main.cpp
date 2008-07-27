@@ -29,7 +29,7 @@
 #define INCRON_DEFAULT_EDITOR "vim"
 
 
-const char* argp_program_version = "incrontab 0.3.0";
+const char* argp_program_version = "incrontab 0.2.2";
 const char* argp_program_bug_address = "<bugs@aiken.cz>";
 
 static char doc[] = "Table manipulator for incrond (inotify cron daemon)";

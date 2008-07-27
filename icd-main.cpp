@@ -173,12 +173,13 @@ int main(int argc, char** argv)
       int res = poll(&pfd, 1, -1);
       if (res > 0) {
         in.WaitForEvents(true);
-        UserTable::FinishDone();
       }
       else if (res < 0) {
         if (errno != EINTR)
           throw InotifyException("polling failed", errno, NULL);
       }
+      
+      UserTable::FinishDone();
       
       while (in.GetEvent(e)) {
         
