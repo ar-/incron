@@ -76,7 +76,8 @@ bool InCronTabEntry::Parse(const std::string& rStr, InCronTabEntry& rEntry)
   
   rEntry.m_path = s1;
   rEntry.m_cmd = s3;
-  rEntry.m_uMask = 0;  
+  rEntry.m_uMask = 0;
+  rEntry.m_fNoLoop = false;
   
   if (sscanf(s2, "%lu", &u) == 1) {
     rEntry.m_uMask = (uint32_t) u;
