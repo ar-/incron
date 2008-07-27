@@ -1,9 +1,9 @@
-.TH "incrond" "8" "0.5.3" "Lukas Jelinek" "incron documentation"
+.TH "incrond" "8" "0.5.4" "Lukas Jelinek" "incron documentation"
 .SH "NAME"
 incrond \- inotify cron (incron) daemon
 
 .SH "SYNOPSIS"
-\fBincrond\fR [ <options> ]
+\fBincrond\fR [ \-f \fIfile\fR ] [ \-n | \-k ]
 .SH "DESCRIPTION"
 The inotify cron daemon (\fIincrond\fR) is a daemon which monitors filesystem events and executes commands defined in system and user tables. It's use is generally similar to \fIcron\fR(8).
 
@@ -24,7 +24,9 @@ The daemon itself is currently not protected against looping. If a command execu
 
 \fB\-k\fR (or \fB\-\-kill\fR) option terminates a running instance of \fBincrond\fR.
 
-\fB\-f <FILE>\fR (or \fB\-\-config=<FILE>\fR) option specifies another location for the configuration file (/etc/incron.conf is used by default). 
+\fB\-f <FILE>\fR (or \fB\-\-config=<FILE>\fR) option specifies another location for the configuration file (/etc/incron.conf is used by default).
+
+\fBEnvironment variables:\fR For system tables, the default (the same as for incrond itself) environment variable set is used. The same applies to root's table. For non\-root user tables, the whole environment is cleared and then only these variables are set: LOGNAME, USER, USERNAME, SHELL, HOME and PATH. The variables (except PATH) take values from the user database (e.g. /etc/passwd). The PATH variable is set to /usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin.
 .SH "SEE ALSO"
 incrontab(1), incrontab(5), incron.conf(5)
 .SH "BUGS"

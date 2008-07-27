@@ -38,7 +38,7 @@
 # Default:     /etc/incron.deny
 #
 # Example:
-# allowed_users = /etc/incron/deny
+# denied_users = /etc/incron/deny
 
 
 # Parameter:   lockfile_dir

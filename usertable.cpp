@@ -31,6 +31,9 @@
 #define DONT_FOLLOW(mask) (false)
 #endif // IN_DONT_FOLLOW
 
+// this is not enough, but...
+#define DEFAULT_PATH "/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin"
+
 
 PROC_MAP UserTable::s_procMap;
 
@@ -384,15 +387,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     }
     else {
       // for user table
-      struct passwd* pwd = getpwnam(m_user.c_str());
-      if (    pwd == NULL                 // user not found
-          ||  setgid(pwd->pw_gid) != 0    // setting GID failed
-          ||  setuid(pwd->pw_uid) != 0    // setting UID failed
-          ||  execvp(argv[0], argv) != 0) // exec failed
-      {
-        syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
-        _exit(1);
-      }
+      RunAsUser(argv);
     }
   }
   else if (pid > 0) {
@@ -529,5 +524,36 @@ bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
   return false; // no access right found
 }
 
-
+void UserTable::RunAsUser(char* const* argv) const
+{
+  struct passwd* pwd = getpwnam(m_user.c_str());
+  if (    pwd == NULL                 // user not found
+      ||  setgid(pwd->pw_gid) != 0    // setting GID failed
+      ||  setuid(pwd->pw_uid) != 0)    // setting UID failed
+  {
+    goto failed;
+  }
+  
+  if (pwd->pw_uid != 0) { 
+    if (clearenv() != 0)
+      goto failed;
+      
+    if (    setenv("LOGNAME",   pwd->pw_name,   1) != 0
+        ||  setenv("USER",      pwd->pw_name,   1) != 0
+        ||  setenv("USERNAME",  pwd->pw_name,   1) != 0
+        ||  setenv("HOME",      pwd->pw_dir,    1) != 0
+        ||  setenv("SHELL",     pwd->pw_shell,  1) != 0
+        ||  setenv("PATH",      DEFAULT_PATH,   1) != 0)
+    {
+      goto failed;
+    }
+  }
+  
+  execvp(argv[0], argv);  // this may return only on failure
+  
+failed:
+    
+  syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
+  _exit(1);
+}
 

@@ -223,6 +223,12 @@ public:
     return IncronTab::CheckUser(user);
   }
   
+  /// Runs a program as the table's user.
+  /**
+   * \attention Don't call from the main process (before forking)!
+   */
+  void RunAsUser(char* const* argv) const;
+  
 private:
   Inotify m_in;           ///< inotify object
   EventDispatcher* m_pEd; ///< event dispatcher

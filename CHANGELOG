@@ -1,3 +1,9 @@
+0.5.4    2007-02-11
+* bug related to persisting environment fixed (#0000149)
+* incrond(8) man page updated to explain how the environment is treated
+* buggy example configuration file fixed
+
+
 0.5.3    2007-02-08
 * bug related to ignoring new tables fixed (#0000142)
 * explicit typecasting in execlp() call (#0000145)
