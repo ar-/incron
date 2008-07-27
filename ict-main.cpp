@@ -23,6 +23,8 @@
 #include <sys/wait.h>
 #include <sys/inotify.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <limits.h>
 
 #include "inotify-cxx.h"
 #include "appargs.h"

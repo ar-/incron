@@ -10,7 +10,10 @@
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
  * License, version 2 (see LICENSE-GPL).
- *  
+ * 
+ * Credits:
+ *   David Santinoli (supplementary groups)
+ * 
  */
 
 
@@ -20,6 +23,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <grp.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 
 #include "usertable.h"
@@ -527,9 +531,10 @@ bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
 void UserTable::RunAsUser(char* const* argv) const
 {
   struct passwd* pwd = getpwnam(m_user.c_str());
-  if (    pwd == NULL                 // user not found
-      ||  setgid(pwd->pw_gid) != 0    // setting GID failed
-      ||  setuid(pwd->pw_uid) != 0)    // setting UID failed
+  if (    pwd == NULL                 // check query result
+      ||  setgid(pwd->pw_gid) != 0    // check GID
+      ||  initgroups(m_user.c_str(),pwd->pw_gid) != 0 // check supplementary groups
+      ||  setuid(pwd->pw_uid) != 0)    // check UID
   {
     goto failed;
   }

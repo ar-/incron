@@ -1,4 +1,4 @@
-.TH "incrontab" "5" "0.5.6" "Lukas Jelinek" "incron documentation"
+.TH "incrontab" "5" "0.5.7" "Lukas Jelinek" "incron documentation"
 .SH "NAME"
 incrontab \- tables for driving inotify cron (incron)
 .SH "DESCRIPTION"
@@ -14,19 +14,73 @@ Blank lines are ignored. The general line format is the following:
 
 <path> <mask> <command>
 
-Where \fIpath\fR is an absolute filesystem path, \fImask\fR is an event mask (in symbolic or numeric form) and \fIcommand\fR is an executable file (or a script) with its arguments. The executable file may be noted as an absolute path or only as the name itself (PATH locations are examined).
+Where \fIpath\fR is an absolute filesystem path, \fImask\fR is an event mask (in symbolic or numeric form) and \fIcommand\fR is an executable file (or a script) with its arguments. See bellow for event mask symbols. The executable file may be noted as an absolute path or only as the name itself (PATH locations are examined).
 
 Please remember that the same path may occur only once per table (otherwise only the first occurrence takes effect and an error message is emitted to the system log).
+.SH "EVENT SYMBOLS"
+These basic event mask symbols are defined:
+
+\fBIN_ACCESS\fR 		File was accessed (read) (*)
+.br 
+\fBIN_ATTRIB\fR 		Metadata changed (permissions, timestamps, extended attributes, etc.) (*)
+.br 
+\fBIN_CLOSE_WRITE\fR 	File opened for writing was closed (*)
+.br 
+\fBIN_CLOSE_NOWRITE\fR 	File not opened for writing was closed (*)
+.br 
+\fBIN_CREATE\fR 		File/directory created in watched directory (*)
+.br 
+\fBIN_DELETE\fR 		File/directory deleted from watched directory (*)
+.br 
+\fBIN_DELETE_SELF\fR 		Watched file/directory was itself deleted
+.br 
+\fBIN_MODIFY\fR 		File was modified (*)
+.br 
+\fBIN_MOVE_SELF\fR 		Watched file/directory was itself moved
+.br 
+\fBIN_MOVED_FROM\fR 		File moved out of watched directory (*)
+.br 
+\fBIN_MOVED_TO\fR 		File moved into watched directory (*)
+.br 
+\fBIN_OPEN\fR 			File was opened (*)
+
+When monitoring a directory, the events marked with an asterisk (*) above can occur for files in the directory, in which case the name field in the returned event data identifies the name of the file within the directory.
+
+The \fBIN_ALL_EVENTS\fR symbol is defined as a bit mask of all of the above events. Two additional convenience symbols are \fBIN_MOVE\fR, which is a combination of \fBIN_MOVED_FROM\fR and \fBIN_MOVED_TO\fR, and \fBIN_CLOSE\fR which combines \fBIN_CLOSE_WRITE\fR and \fBIN_CLOSE_NOWRITE\fR.
+
+The following further symbols can be specified in the mask:
+ 
+\fBIN_DONT_FOLLOW\fR 	Don't dereference pathname if it is a symbolic link
+.br 
+\fBIN_ONESHOT\fR 		Monitor pathname for only one event
+.br 
+\fBIN_ONLYDIR\fR 		Only watch pathname if it is a directory
+
+Additionaly, there is a symbol which doesn't appear in the inotify symbol set. It it \fBIN_NO_LOOP\fR. This symbol disables monitoring events until the current one is completely handled (until its child process exits).
+
+.SH "WILDCARDS"
+The following wildards may be used inside command specification:
+
+\fB$$\fR	dollar sign
+.br
+\fB$@\fR	watched filesystem path (see above)
+.br
+\fB$#\fR	event-related file name
+.br
+\fB$%\fR	event flags (textually)
+.br
+\fB$&\fR	event flags (numerically)
+
 .SH "EXAMPLE"
 These are some example rules which can be used in an incrontab file:
 
-/tmp IN_ALL_EVENTS abcd $@/$# $%
+\fB/tmp IN_ALL_EVENTS abcd $@/$# $%\fR
 
-/usr/bin IN_ACCESS,IN_NO_LOOP abcd $#
+\fB/usr/bin IN_ACCESS,IN_NO_LOOP abcd $#\fR
 
-/home IN_CREATE /usr/local/bin/abcd $#
+\fB/home IN_CREATE /usr/local/bin/abcd $#\fR
 
-/var/log 12 abcd $@/$#
+\fB/var/log 12 abcd $@/$#\fR
 
 The first line monitors all events on the /tmp directory. When an event occurs it runs a application called 'abcd' with the full path of the file as the first arguments and the event flags as the second one.
 

@@ -1,3 +1,9 @@
+0.5.7    2007-09-04
+* man pages updated (mainly due to #0000157)
+* some includes added for GCC 4.3 compatibility (#0000158)
+* supplementary groups initialization (#0000167)
+
+
 0.5.6    2007-04-18
 * based on inotify-cxx 0.7.2 (fixes compilation problems on Debian Sarge, #0000155)
 
