@@ -1,0 +1,11 @@
+inotify cron system
+ 
+Copyright (C) 2006 Lukas Jelinek, <lukas@aiken.cz>
+ 
+This program is free software; you can redistribute it and/or
+modify it under the terms of the  GNU General Public License,
+version 2  (see LICENSE-GPL).
+
+The program uses some parts covered also by other licenses.
+Please look into the source files for detailed information.
+
