@@ -146,6 +146,17 @@ public:
    *            which has been caused by the processes.
    */
   static void FinishDone();
+  
+  /// Checks whether the user may access a file.
+  /**
+   * Any access right (RWX) is sufficient.
+   * 
+   * \param[in] rPath absolute file path
+   * \param[in] fNoFollow don't follow a symbolic link 
+   * \return true = access granted, false = otherwise
+   */
+  bool MayAccess(const std::string& rPath, bool fNoFollow) const;
+  
 private:
   Inotify* m_pIn;         ///< inotify object
   EventDispatcher* m_pEd; ///< event dispatcher

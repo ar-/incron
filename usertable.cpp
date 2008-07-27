@@ -18,8 +18,17 @@
 #include <syslog.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <unistd.h>
+#include <grp.h>
+#include <sys/stat.h>
 
 #include "usertable.h"
+
+#ifdef IN_DONT_FOLLOW
+#define NO_FOLLOW(mask) InotifyEvent::IsType(mask, IN_DONT_FOLLOW)
+#else // IN_DONT_FOLLOW
+#define NO_FOLLOW(mask) (false)
+#endif // IN_DONT_FOLLOW
 
 
 PROC_LIST UserTable::s_procList;
@@ -112,6 +121,11 @@ void UserTable::Load()
   for (int i=0; i<cnt; i++) {
     InCronTabEntry& rE = m_tab.GetEntry(i);
     InotifyWatch* pW = new InotifyWatch(rE.GetPath(), rE.GetMask());
+    
+    // warning only - permissions may change later
+    if (!MayAccess(rE.GetPath(), NO_FOLLOW(rE.GetMask())))
+      syslog(LOG_WARNING, "access denied on %s - events will be discarded silently", rE.GetPath().c_str());
+    
     try {
       m_pIn->Add(pW);
       m_pEd->Register(pW, this);
@@ -142,7 +156,12 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   InotifyWatch* pW = rEvt.GetWatch();
   InCronTabEntry* pE = FindEntry(pW);
   
+  // no entry found - this shouldn't occur
   if (pE == NULL)
+    return;
+  
+  // discard event if user has no access rights to watch path
+  if (!MayAccess(pW->GetPath(), NO_FOLLOW(rEvt.GetMask())))
     return;
   
   std::string cmd;
@@ -303,5 +322,52 @@ void UserTable::FinishDone()
     }
   }  
 }
+
+bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
+{
+  // first, retrieve file permissions
+  struct stat st;
+  int res = fNoFollow
+      ? lstat(rPath.c_str(), &st) // don't follow symlink
+      : stat(rPath.c_str(), &st);
+  if (res != 0)
+    return false; // retrieving permissions failed
+  
+  // file accessible to everyone
+  if (st.st_mode & S_IRWXO)
+    return true;
+  
+  // retrieve user data
+  struct passwd* pwd = getpwnam(m_user.c_str());
+  
+  // file accesible to group
+  if (st.st_mode & S_IRWXG) {
+    
+    // user's primary group
+    if (pwd != NULL && pwd->pw_gid == st.st_gid)
+        return true;
+    
+    // now check group database
+    struct group *gr = getgrgid(st.st_gid);
+    if (gr != NULL) {
+      int pos = 0;
+      const char* un;
+      while ((un = gr->gr_mem[pos]) != NULL) {
+        if (strcmp(un, m_user.c_str()) == 0)
+          return true;
+        pos++;
+      }
+    }
+  }
+  
+  // file accessible to owner
+  if (st.st_mode & S_IRWXU) {  
+    if (pwd != NULL && pwd->pw_uid == st.st_uid)
+      return true;
+  }
+  
+  return false; // no access right found
+}
+
 
 

@@ -1,3 +1,10 @@
+0.3.5    2007-01-09
+* based on inotify-cxx 0.6.3
+* a security bug related to access rights to watched files fixed (#0000119)
+* crashing on table reload after removing a watched path fixed (#0000123)
+* 'incrontab --list' dysfunction fixed (#0000122)
+
+
 0.3.4    2007-01-03
 * based on inotify-cxx 0.6.2
 * problems with wrong ordered setting of UID/GID fixed (#0000115, #0000117)

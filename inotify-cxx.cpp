@@ -270,7 +270,7 @@ void InotifyWatch::SetEnabled(bool fEnabled) throw (InotifyException)
   IN_WRITE_END
 }
 
-void InotifyWatch::OnOneshotEvent()
+void InotifyWatch::__Disable()
 {
   IN_WRITE_BEGIN
   
@@ -446,8 +446,9 @@ void Inotify::WaitForEvents(bool fNoIntr) throw (InotifyException)
     InotifyWatch* pW = FindWatch(pEvt->wd);
     if (pW != NULL) {
       InotifyEvent evt(pEvt, pW);
-      if (InotifyEvent::IsType(pW->GetMask(), IN_ONESHOT))
-        pW->OnOneshotEvent();
+      if (    InotifyEvent::IsType(pW->GetMask(), IN_ONESHOT)
+          ||  InotifyEvent::IsType(evt.GetMask(), IN_IGNORED))
+        pW->__Disable();
       m_events.push_back(evt);
     }
     i += INOTIFY_EVENT_SIZE + (ssize_t) pEvt->len;

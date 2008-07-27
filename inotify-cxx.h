@@ -503,13 +503,13 @@ private:
   
   IN_LOCK_DECL
   
-  /// Disables the watch (if it has the one-shot flag).
+  /// Disables the watch (due to removing by the kernel).
   /**
    * This method must be called after receiving an event.
    * It ensures the watch object is consistent with the kernel
    * data. 
    */
-  void OnOneshotEvent();
+  void __Disable();
 };
 
 

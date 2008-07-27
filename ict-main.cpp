@@ -152,14 +152,12 @@ bool remove_table(const char* user)
 /**
  * \param[in] user user name
  * \return true = success, false = failure
- * 
- * \attention Listing is currently done through 'cat'.
  */
 bool list_table(const char* user)
 {
   std::string tp(InCronTab::GetUserTablePath(user));
   
-  if (access(tp.c_str(), R_OK) != 0) {
+  if (eaccess(tp.c_str(), R_OK) != 0) {
     if (errno == ENOENT) {
       fprintf(stderr, "no table for %s\n", user);
       return true;
@@ -170,9 +168,18 @@ bool list_table(const char* user)
     }
   }
   
-  std::string cmd("cat ");
-  cmd.append(tp);
-  return system(cmd.c_str()) == 0;
+  FILE* f = fopen(tp.c_str(), "r");
+  if (f == NULL)
+    return false;
+    
+  char s[1024];
+  while (fgets(s, 1024, f) != NULL) {
+    fputs(s, stdout);
+  }
+  
+  fclose(f);
+  
+  return true;
 }
 
 /// Allows to edit an user table.
