@@ -21,13 +21,15 @@
 #include "inotify-cxx.h"
 
 #include "incrontab.h"
+#include "incroncfg.h"
 
-
+/*
 /// Allowed users
 #define INCRON_ALLOW_PATH "/etc/incron.allow"
 
 /// Denied users
 #define INCRON_DENY_PATH "/etc/incron.deny"
+*/
 
 /*
  * ALLOW/DENY SEMANTICS
@@ -44,14 +46,14 @@
 
 
 
-InCronTabEntry::InCronTabEntry()
+IncronTabEntry::IncronTabEntry()
 : m_uMask(0),
   m_fNoLoop(false)
 {
   
 }
 
-InCronTabEntry::InCronTabEntry(const std::string& rPath, uint32_t uMask, const std::string& rCmd)
+IncronTabEntry::IncronTabEntry(const std::string& rPath, uint32_t uMask, const std::string& rCmd)
 : m_path(rPath),
   m_uMask(uMask),
   m_cmd(rCmd)
@@ -59,7 +61,7 @@ InCronTabEntry::InCronTabEntry(const std::string& rPath, uint32_t uMask, const s
   
 }
 
-std::string InCronTabEntry::ToString() const
+std::string IncronTabEntry::ToString() const
 {
   std::ostringstream ss;
   
@@ -78,7 +80,7 @@ std::string InCronTabEntry::ToString() const
   return ss.str();
 }
 
-bool InCronTabEntry::Parse(const std::string& rStr, InCronTabEntry& rEntry)
+bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
 {
   unsigned long u;
   std::string s1, s2, s3;
@@ -123,7 +125,7 @@ bool InCronTabEntry::Parse(const std::string& rStr, InCronTabEntry& rEntry)
   return true;
 }
 
-std::string InCronTabEntry::GetSafePath(const std::string& rPath)
+std::string IncronTabEntry::GetSafePath(const std::string& rPath)
 {
   std::ostringstream stream;
   
@@ -143,7 +145,7 @@ std::string InCronTabEntry::GetSafePath(const std::string& rPath)
   return stream.str();
 }
 
-bool InCronTab::Load(const std::string& rPath)
+bool IncronTab::Load(const std::string& rPath)
 {
   m_tab.clear();
   
@@ -152,9 +154,9 @@ bool InCronTab::Load(const std::string& rPath)
     return false;
   
   char s[1000];
-  InCronTabEntry e;
+  IncronTabEntry e;
   while (fgets(s, 1000, f) != NULL) {
-    if (InCronTabEntry::Parse(s, e)) {
+    if (IncronTabEntry::Parse(s, e)) {
       m_tab.push_back(e);
     }
   }
@@ -164,13 +166,13 @@ bool InCronTab::Load(const std::string& rPath)
   return true;
 }
 
-bool InCronTab::Save(const std::string& rPath)
+bool IncronTab::Save(const std::string& rPath)
 {
   FILE* f = fopen(rPath.c_str(), "w");
   if (f == NULL)
     return false;
   
-  std::deque<InCronTabEntry>::iterator it = m_tab.begin();
+  std::deque<IncronTabEntry>::iterator it = m_tab.begin();
   while (it != m_tab.end()) {
     fputs((*it).ToString().c_str(), f);
     fputs("\n", f);
@@ -182,14 +184,21 @@ bool InCronTab::Save(const std::string& rPath)
   return true;
 }
 
-bool InCronTab::CheckUser(const std::string& rUser)
+bool IncronTab::CheckUser(const std::string& rUser)
 {
   char s[100], u[100];
   
-  FILE* f = fopen(INCRON_ALLOW_PATH, "r");
+  std::string path;
+  if (!IncronCfg::GetValue("allowed_users", path))
+    throw InotifyException("configuration is corrupted", EINVAL);
+  
+  FILE* f = fopen(path.c_str(), "r");
   if (f == NULL) {
     if (errno == ENOENT) {
-      f = fopen(INCRON_DENY_PATH, "r");
+      if (!IncronCfg::GetValue("denied_users", path))
+        throw InotifyException("configuration is corrupted", EINVAL);
+      
+      f = fopen(path.c_str(), "r");
       if (f == NULL) {
         return errno == ENOENT;
       }
@@ -221,18 +230,22 @@ bool InCronTab::CheckUser(const std::string& rUser)
   return false;
 }
 
-std::string InCronTab::GetUserTablePath(const std::string& rUser)
+std::string IncronTab::GetUserTablePath(const std::string& rUser)
 {
-  std::string s(INCRON_USER_TABLE_BASE);
-  s.append(rUser);
-  return s;
+  std::string s;
+  if (!IncronCfg::GetValue("user_table_dir", s))
+    throw InotifyException("configuration is corrupted", EINVAL);
+    
+  return IncronCfg::BuildPath(s, rUser);
 }
 
-std::string InCronTab::GetSystemTablePath(const std::string& rName)
+std::string IncronTab::GetSystemTablePath(const std::string& rName)
 {
-  std::string s(INCRON_SYS_TABLE_BASE);
-  s.append(rName);
-  return s;
+  std::string s;
+  if (!IncronCfg::GetValue("system_table_dir", s))
+    throw InotifyException("configuration is corrupted", EINVAL);
+    
+  return IncronCfg::BuildPath(s, rName);
 }
 
 

@@ -40,6 +40,11 @@ now build the files ('make').
 
 The binaries must be of course installed as root.
 
+If you want to use (after editting) the example configuration
+file simply rename it from /etc/incron.conf.example to
+/etc/incron.conf (you can also use -f <config> for one-time
+use of a custom configuration file).
+
 
 4. How to use
 The incron daemon (incrond) must be run under root (typically from
@@ -87,6 +92,9 @@ It have to monitor all events on files in /tmp. Here is it:
 Since 0.4.0 also system tables are supported. They are located in
 /etc/incron.d and their commands use root privileges. System tables
 are intended to be changed directly (without incrontab).
+
+Some parameters of both incrontab and incrond can be changed by
+the configuration. See the example file for more information.
 
 
 5. Bugs, suggestions

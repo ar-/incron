@@ -1,28 +1,30 @@
-.TH "incrond" "8" "0.4.0" "Lukas Jelinek" "incron documentation"
+.TH "incrond" "8" "0.5.0" "Lukas Jelinek" "incron documentation"
 .SH "NAME"
 incrond \- inotify cron (incron) daemon
 
 .SH "SYNOPSIS"
-\fBincrond\fR [ \fB\-n\fR | \fB\-k\fR ]
+\fBincrond\fR [ <options> ]
 .SH "DESCRIPTION"
 The inotify cron daemon (\fIincrond\fR) is a daemon which monitors filesystem events and executes commands defined in system and user tables. It's use is generally similar to \fIcron\fR(8).
 
 \fIincrond\fR can be started from /etc/rc, /etc/rc.local and so on. It daemonizes itself (returns immediately) and doesn't need to be started with & and through \fInohup\fR(1). It can be run on foreground too.
 
-\fIincrond\fR uses two categories of tables \fIincrontab\fR(5). System tables are located in /etc/incron.d and are maintained outside of incron (e.g. by various applications). These tables work on root rights level and thus any file may be watched and commands are executed with root privileges.
+\fIincrond\fR uses two categories of tables \fIincrontab\fR(5). System tables are usually located in /etc/incron.d and are maintained outside of incron (e.g. by various applications). These tables work on root rights level and thus any file may be watched and commands are executed with root privileges.
 
-User tables are located in /var/spool/incron and have names based on user accounts. These tables use users' access rights, thus only files which the user may access are watched. Commands are executed with users' privileges.
+User tables are located in /var/spool/incron by default and have names based on user accounts. These tables use users' access rights, thus only files which the user may access are watched. Commands are executed with users' privileges.
 
 If a table (incrontab) is changed \fIincrond\fR reacts immediately and reloads the table. Currently running child processes (commands) are not affected.
 
-There are two files determining whether an user is allowed to use incron. These files have very simple syntax \- one user name per line. If /etc/incron.allow exists the user must be noted there to be allowed to use incron. Otherwise if /etc/incron.deny exists the user must not be noted there to use incron. If none of these files exists there is no other restriction whether anybody may use incron.
+There are two files determining whether an user is allowed to use incron. These files have very simple syntax \- one user name per line. If /etc/incron.allow exists the user must be noted there to be allowed to use incron. Otherwise if /etc/incron.deny exists the user must not be noted there to use incron. If none of these files exists there is no other restriction whether anybody may use incron. Location of these files can be changed in the configuration.
 
 The daemon itself is currently not protected against looping. If a command executed due to an event causes the same event it leads to an infinite loop unless a flag mask containing IN_NO_LOOP is specified. Please beware of this and do not allow permission for use incron to unreliable users.
 
 
 \fB\-n\fR (or \fB\-\-foreground\fR) option causes running on foreground. This is useful especially for testing, debugging and optimization.
 
-\fB\-k\fR (or \fB\-\-kill\fR) option terminates all running instances of \fBincrond\fR. It takes effect only on instances of the same executable (using the same file).
+\fB\-k\fR (or \fB\-\-kill\fR) option terminates a running instance of \fBincrond\fR.
+
+\fB\-f <FILE>\fR (or \fB\-\-config=<FILE>\fR) option specifies another location for the configuration file (/etc/incron.conf is used by default). 
 .SH "SEE ALSO"
 incrontab(1), incrontab(5)
 .SH "BUGS"

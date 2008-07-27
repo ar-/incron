@@ -22,117 +22,73 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/inotify.h>
+#include <fcntl.h>
+
+#include "inotify-cxx.h"
+#include "appargs.h"
 
 #include "incron.h"
 #include "incrontab.h"
+#include "incroncfg.h"
 
-// Alternative editor
+
+/// Alternative editor
 #define INCRON_ALT_EDITOR "/etc/alternatives/editor"
 
-// #define INCRON_DEFAULT_EDITOR "nano" // for vim haters like me ;-)
+/// Default (hard-wired) editor
 #define INCRON_DEFAULT_EDITOR "vim"
 
+/// incrontab version string
+#define INCRONTAB_VERSION INCRONTAB_NAME " " INCRON_VERSION
 
-const char* argp_program_version = INCRON_TAB_NAME " " INCRON_VERSION;
-const char* argp_program_bug_address = INCRON_BUG_ADDRESS;
+/// incrontab description string
+#define INCRONTAB_DESCRIPTION "incrontab - inotify cron table manipulator\n" \
+                              "(c) Lukas Jelinek, 2006, 2007"
 
-static char doc[] = "incrontab - incron table manipulator\n(c) Lukas Jelinek, 2006, 2007";
-
-static char args_doc[] = "FILE";
-
-static struct argp_option options[] = {
-  {"list",    'l', 0,      0,  "List the current table" },
-  {"remove",  'r', 0,      0,  "Remove the table completely" },
-  {"edit",    'e', 0,      0,  "Edit the table" },
-  {"types",   't', 0,      0,  "List all supported event types" },
-  {"user",    'u', "USER", 0,  "Override the current user" },
-  { 0 }
-};
-
-/// incrontab operations
-typedef enum
-{
-  OPER_NONE,    /// nothing
-  OPER_LIST,    /// list table
-  OPER_REMOVE,  /// remove table
-  OPER_EDIT,    /// edit table
-  OPER_TYPES    /// list event types
-} InCronTab_Operation_t;
-
-/// incrontab arguments
-struct arguments
-{
-  char *user;     /// user name
-  int oper;       /// operation code
-  char *file;     /// file to import
-};
-
-/// Parses the program options (arguments).
-/**
- * \param[in] key argument key (name)
- * \param[in] arg argument value
- * \param[out] state options setting
- * \return 0 on success, ARGP_ERR_UNKNOWN on unknown argument(s)
- */
-static error_t parse_opt(int key, char *arg, struct argp_state *state)
-{
-  struct arguments* arguments = (struct arguments*) state->input;
-     
-  switch (key) {
-    case 'l':
-      arguments->oper = OPER_LIST;
-      break;
-    case 'r':
-      arguments->oper = OPER_REMOVE;
-      break;
-    case 'e':
-      arguments->oper = OPER_EDIT;
-      break;
-    case 't':
-      arguments->oper = OPER_TYPES;
-      break;
-    case 'u':
-      arguments->user = arg;
-      break;
-    case ARGP_KEY_ARG:
-      if (state->arg_num >= 1)
-        argp_usage(state);
-      arguments->file = arg;
-      break;
-    case ARGP_KEY_END:
-      break;
-    default:
-      return ARGP_ERR_UNKNOWN;
-  }
-  
-  return 0;
-}
-
-/// Program arguments
-static struct argp argp = { options, parse_opt, args_doc, doc };
+/// incrontab help string
+#define INCRONTAB_HELP INCRONTAB_DESCRIPTION "\n\n" \
+          "usage: incrontab [<options>] <operation>\n" \
+          "       incrontab [<options>] <FILE-TO-IMPORT>\n\n" \
+          "<operation> may be one of the following:\n" \
+          "  -?, --about                  gives short information about program\n" \
+          "  -h, --help                   prints this help text\n" \
+          "  -l, --list                   lists user table\n" \
+          "  -r, --remove                 removes user table\n" \
+          "  -e, --edit                   provides editting user table\n" \
+          "  -t, --types                  list supported event types\n" \
+          "  -d, --reload                 request incrond to reload user table\n" \
+          "  -V, --version                prints program version\n\n" \
+          "\n" \
+          "These options may be used:\n" \
+          "  -u <USER>, --user=<USER>     overrides current user (requires root privileges)\n" \
+          "  -f <FILE>, --config=<FILE>   overrides default configuration file  (requires root privileges)\n\n" \
+          "For reporting bugs please use http:://bts.aiken.cz\n"
+                
 
 
 
 /// Copies a file to an user table.
 /**
- * \param[in] path path to file
- * \param[in] user user name
+ * \param[in] rPath path to file
+ * \param[in] rUser user name
  * \return true = success, false = failure
  */
-bool copy_from_file(const char* path, const char* user)
+bool copy_from_file(const std::string& rPath, const std::string& rUser)
 {
-  InCronTab tab;
-  std::string s(path);
+  fprintf(stderr, "copying table from file '%s'\n", rPath.c_str());
+  
+  IncronTab tab;
+  std::string s(rPath);
   if (s == "-")
     s = "/dev/stdin";
   if (!tab.Load(s)) {
-    fprintf(stderr, "cannot load table from file: %s\n", path);
+    fprintf(stderr, "cannot load table from file '%s'\n", rPath.c_str());
     return false;
   }
   
-  std::string out(InCronTab::GetUserTablePath(user));
+  std::string out(IncronTab::GetUserTablePath(rUser));
   if (!tab.Save(out)) {
-    fprintf(stderr, "cannot create table for user: %s\n", user);
+    fprintf(stderr, "cannot create table for user '%s'\n", rUser.c_str());
     return false;
   }
   
@@ -141,15 +97,17 @@ bool copy_from_file(const char* path, const char* user)
 
 /// Removes an user table.
 /**
- * \param[in] user user name
+ * \param[in] rUser user name
  * \return true = success, false = failure
  */ 
-bool remove_table(const char* user)
+bool remove_table(const std::string& rUser)
 {
-  std::string tp(InCronTab::GetUserTablePath(user));
+  fprintf(stderr, "removing table for user '%s'\n", rUser.c_str());
+  
+  std::string tp(IncronTab::GetUserTablePath(rUser));
  
   if (unlink(tp.c_str()) != 0 && errno != ENOENT) {
-    fprintf(stderr, "cannot remove table for user: %s\n", user);
+    fprintf(stderr, "cannot remove table for user '%s': %s\n", rUser.c_str(), strerror(errno));
     return false;
   }
   
@@ -158,27 +116,24 @@ bool remove_table(const char* user)
 
 /// Lists an user table.
 /**
- * \param[in] user user name
+ * \param[in] rUser user name
  * \return true = success, false = failure
  */
-bool list_table(const char* user)
+bool list_table(const std::string& rUser)
 {
-  std::string tp(InCronTab::GetUserTablePath(user));
+  std::string tp(IncronTab::GetUserTablePath(rUser));
   
-  if (euidaccess(tp.c_str(), R_OK) != 0) {
+  FILE* f = fopen(tp.c_str(), "r");
+  if (f == NULL) {
     if (errno == ENOENT) {
-      fprintf(stderr, "no table for %s\n", user);
+      fprintf(stderr, "no table for %s\n", rUser.c_str());
       return true;
     }
     else {
-      fprintf(stderr, "cannot read table for %s: %s\n", user, strerror(errno));
+      fprintf(stderr, "cannot read table for '%s': %s\n", rUser.c_str(), strerror(errno));
       return false;
     }
   }
-  
-  FILE* f = fopen(tp.c_str(), "r");
-  if (f == NULL)
-    return false;
     
   char s[1024];
   while (fgets(s, 1024, f) != NULL) {
@@ -192,20 +147,20 @@ bool list_table(const char* user)
 
 /// Allows to edit an user table.
 /**
- * \param[in] user user name
+ * \param[in] rUser user name
  * \return true = success, false = failure
  * 
  * \attention This function is very complex and may contain
  *            various bugs including security ones. Please keep
  *            it in mind..
  */
-bool edit_table(const char* user)
+bool edit_table(const std::string& rUser)
 {
-  std::string tp(InCronTab::GetUserTablePath(user));
+  std::string tp(IncronTab::GetUserTablePath(rUser));
   
-  struct passwd* ppwd = getpwnam(user);
+  struct passwd* ppwd = getpwnam(rUser.c_str());
   if (ppwd == NULL) {
-    fprintf(stderr, "cannot find user %s: %s\n", user, strerror(errno));
+    fprintf(stderr, "cannot find user '%s': %s\n", rUser.c_str(), strerror(errno));
     return false;
   }
   
@@ -219,7 +174,7 @@ bool edit_table(const char* user)
   uid_t ig = getegid();
 
   if (setegid(gid) != 0 || seteuid(uid) != 0) {
-    fprintf(stderr, "cannot change effective UID/GID for user %s: %s\n", user, strerror(errno));
+    fprintf(stderr, "cannot change effective UID/GID for user '%s': %s\n", rUser.c_str(), strerror(errno));
     return false;
   }
   
@@ -234,6 +189,7 @@ bool edit_table(const char* user)
   FILE* in = NULL;
   time_t mt = (time_t) 0;
   const char* e = NULL;
+  std::string ed;
   
   if (setegid(ig) != 0 || seteuid(iu) != 0) {
     fprintf(stderr, "cannot change effective UID/GID: %s\n", strerror(errno));
@@ -253,13 +209,13 @@ bool edit_table(const char* user)
     if (errno == ENOENT) {
       in = fopen("/dev/null", "r");
       if (in == NULL) {
-        fprintf(stderr, "cannot get empty table for %s: %s\n", user, strerror(errno));
+        fprintf(stderr, "cannot get empty table for '%s': %s\n", rUser.c_str(), strerror(errno));
         fclose(out);
         goto end;
       }
     }
     else {
-      fprintf(stderr, "cannot read old table for %s: %s\n", user, strerror(errno));
+      fprintf(stderr, "cannot read old table for '%s': %s\n", rUser.c_str(), strerror(errno));
       fclose(out);
       goto end;
     }
@@ -283,16 +239,27 @@ bool edit_table(const char* user)
   // Editor selecting algorithm:
   // 1. Check EDITOR environment variable
   // 2. Check VISUAL environment variable
-  // 3. Check presence of /etc/alternatives/editor
-  // 4. Use hard-wired editor
+  // 3. Try to get from configuration
+  // 4. Check presence of /etc/alternatives/editor
+  // 5. Use hard-wired editor
+  
   e = getenv("EDITOR");
   if (e == NULL) {
     e = getenv("VISUAL");
     if (e == NULL) {
-      if (access(INCRON_ALT_EDITOR, X_OK) == 0)
-        e = INCRON_ALT_EDITOR;
-      else
-        e = INCRON_DEFAULT_EDITOR;
+      
+      if (!IncronCfg::GetValue("editor", ed))
+        throw InotifyException("configuration is corrupted", EINVAL);
+      
+      if (!ed.empty()) {
+        e = ed.c_str();
+      }
+      else {
+        if (access(INCRON_ALT_EDITOR, X_OK) == 0)
+          e = INCRON_ALT_EDITOR;
+        else
+          e = INCRON_DEFAULT_EDITOR;
+      }
     }
   }
   
@@ -301,7 +268,7 @@ bool edit_table(const char* user)
     pid_t pid = fork();
     if (pid == 0) {
       if (setgid(gid) != 0 || setuid(uid) != 0) {
-        fprintf(stderr, "cannot set user %s: %s\n", user, strerror(errno));
+        fprintf(stderr, "cannot set user '%s': %s\n", rUser.c_str(), strerror(errno));
         goto end;
       }    
       
@@ -337,7 +304,7 @@ bool edit_table(const char* user)
   }
   
   {
-    InCronTab ict;
+    IncronTab ict;
     if (ict.Load(s) && ict.Save(tp)) {
       if (chmod(tp.c_str(), S_IRUSR | S_IWUSR) != 0) {
         fprintf(stderr, "cannot change mode of temporary file: %s\n", strerror(errno));
@@ -383,80 +350,178 @@ void list_types()
   printf("\n");
 }
 
+/// Reloads an user table.
+/**
+ * \param[in] rUser user name
+ * \return true = success, false = otherwise
+ */
+bool reload_table(const std::string& rUser)
+{
+  fprintf(stderr, "requesting table reload for user '%s'...\n", rUser.c_str());
+  
+  std::string tp(IncronTab::GetUserTablePath(rUser));
+  
+  int fd = open(tp.c_str(), O_WRONLY | O_APPEND);
+  if (fd == -1) {
+    if (errno == ENOENT) {
+      fprintf(stderr, "no table for '%s'\n", rUser.c_str());
+      return true;
+    }
+    else {
+      fprintf(stderr, "cannot access table for '%s': %s\n", rUser.c_str(), strerror(errno));
+      return false;
+    }
+  }
+  
+  close(fd);
+  
+  fprintf(stderr, "request done\n");
+  
+  return true;
+}
 
 int main(int argc, char** argv)
 {
-  struct arguments arguments;
-  
-  arguments.user = NULL;
-  arguments.oper = OPER_NONE;
-  arguments.file = NULL;
-  
-  argp_parse (&argp, argc, argv, 0, 0, &arguments);
-  
-  if (arguments.file != NULL && arguments.oper != OPER_NONE) {
-    fprintf(stderr, "invalid arguments - specify source file or operation\n");
+  AppArgs::Init();
+
+  if (!(  AppArgs::AddOption("about",   '?', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("help",    'h', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("list",    'l', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("remove",  'r', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("edit",    'e', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("types",   't', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("reload",  'd', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("user",    'u', AAT_MANDATORY_VALUE, false)
+      &&  AppArgs::AddOption("config",  'f', AAT_MANDATORY_VALUE, false))
+      &&  AppArgs::AddOption("version", 'V', AAT_NO_VALUE, false))
+  {
+    fprintf(stderr, "error while initializing application");
     return 1;
   }
-  if (arguments.file == NULL && arguments.oper == OPER_NONE) {
-    fprintf(stderr, "invalid arguments - specify source file or operation\n");
+  
+  AppArgs::Parse(argc, argv);
+  
+  if (AppArgs::ExistsOption("help")) {
+    fprintf(stderr, "%s\n", INCRONTAB_HELP);
+    return 0;
+  }
+  
+  if (AppArgs::ExistsOption("about")) {
+    fprintf(stderr, "%s\n", INCRONTAB_DESCRIPTION);
+    return 0;
+  }
+  
+  if (AppArgs::ExistsOption("version")) {
+    fprintf(stderr, "%s\n", INCRONTAB_VERSION);
+    return 0;
+  }
+  
+  bool oper = AppArgs::ExistsOption("list")
+          ||  AppArgs::ExistsOption("remove")
+          ||  AppArgs::ExistsOption("edit")
+          ||  AppArgs::ExistsOption("types")
+          ||  AppArgs::ExistsOption("reload");
+
+  size_t vals = AppArgs::GetValueCount();          
+          
+  if (!oper && vals == 0) {
+    fprintf(stderr, "invalid arguments - specify operation or source file\n");
+    return 1;
+  }
+  
+  if (oper && vals > 0) {
+    fprintf(stderr, "invalid arguments - operation and source file cannot be combined\n");
     return 1;
   }
   
   uid_t uid = getuid();
   
-  if (uid != 0 && arguments.user != NULL) {
-    fprintf(stderr, "cannot access table for user %s: permission denied\n", arguments.user);
+  std::string user;
+  bool chuser = AppArgs::GetOption("user", user);
+  
+  if (uid != 0 && chuser) {
+    fprintf(stderr, "cannot override user to '%s': insufficient privileges\n", user.c_str());
     return 1;
   }
   
   struct passwd pwd;
   
-  if (arguments.user == NULL) {
+  if (!chuser) {
     struct passwd* ppwd = getpwuid(uid);
     if (ppwd == NULL) {
       fprintf(stderr, "cannot determine current user\n");
       return 1;
     }
     memcpy(&pwd, ppwd, sizeof(pwd));
-    arguments.user = pwd.pw_name;
+    user = pwd.pw_name;
   }
-  else if (getpwnam(arguments.user) == NULL) {
-    fprintf(stderr, "user %s not found\n", arguments.user);
+  else if (getpwnam(user.c_str()) == NULL) {
+    fprintf(stderr, "user '%s' not found\n", user.c_str());
     return 1;
   }
   
-  if (!InCronTab::CheckUser(arguments.user)) {
-    fprintf(stderr, "user %s is not allowed to use incron\n", arguments.user);
-    return 1;
-  }
+  try {
   
-  switch (arguments.oper) {
-    case OPER_NONE:
-      fprintf(stderr, "copying table from file: %s\n", arguments.file);
-      if (!copy_from_file(arguments.file, arguments.user))
-        return 1;
-      break;
-    case OPER_LIST:
-      if (!list_table(arguments.user))
-        return 1;
-      break;
-    case OPER_REMOVE:
-      fprintf(stderr, "removing table for user %s\n", arguments.user);
-      if (!remove_table(arguments.user))
-        return 1;
-      break;
-    case OPER_EDIT:
-      if (!edit_table(arguments.user))
-        return 1;
-      break;
-    case OPER_TYPES:
-      list_types();
-      break;
-    default:
-      fprintf(stderr, "invalid usage\n");
+    IncronCfg::Init();
+    
+    std::string cfg(INCRON_CONFIG);
+    if (AppArgs::GetOption("config", cfg)) {
+      if (uid != 0) {
+        fprintf(stderr, "insufficient privileges to use custom configuration (will use default)\n");
+      }
+      else if (euidaccess(cfg.c_str(), R_OK) != 0) {
+        perror("cannot read configuration file (will use default)");
+      }
+    }
+    
+    IncronCfg::Load(cfg);
+    
+    if (!IncronTab::CheckUser(user)) {
+      fprintf(stderr, "user '%s' is not allowed to use incron\n", user.c_str());
       return 1;
+    }
+    
+    if (!oper) {
+      std::string file;
+      if (!AppArgs::GetValue(0, file)
+          || !copy_from_file(file, user))
+      {
+        return 1;
+      }
+    }
+    else {
+      if (AppArgs::ExistsOption("list")) {
+        if (!list_table(user))
+          return 1;
+      }
+      else if (AppArgs::ExistsOption("remove")) {
+        if (!remove_table(user))
+          return 1;
+      }
+      else if (AppArgs::ExistsOption("edit")) {
+        if (!edit_table(user))
+          return 1;
+      }
+      else if (AppArgs::ExistsOption("types")) {
+        list_types();
+      }
+      else if (AppArgs::ExistsOption("reload")) {
+        if (!reload_table(user))
+          return 1;
+      }
+      else {
+        fprintf(stderr, "invalid usage\n");
+        return 1;
+      }
+    }
+    
+    return 0;    
+    
+  } catch (InotifyException e) {
+    fprintf(stderr, "*** unhandled exception occurred ***\n");
+    fprintf(stderr, "%s\n", e.GetMessage().c_str());
+    fprintf(stderr, "error: (%i) %s\n", e.GetErrorNumber(), strerror(e.GetErrorNumber()));
+    
+    return 1;
   }
-  
-  return 0;
 }

@@ -25,10 +25,13 @@
 #include <sys/stat.h>
 
 #include "inotify-cxx.h"
+#include "appinst.h"
+#include "appargs.h"
 
 #include "incron.h"
 #include "incrontab.h"
 #include "usertable.h"
+#include "incroncfg.h"
 
 
 /// Logging options (console as fallback, log PID)
@@ -37,17 +40,26 @@
 /// Logging facility (use CRON)
 #define INCRON_LOG_FACIL LOG_CRON
 
-/// Help text
-#define INCROND_HELP_TEXT "Usage: incrond [option]\n" \
-                          "incrond - inotify cron daemon\n" \
-                          "(c) Lukas Jelinek, 2006, 2007\n\n" \
-                          "-h, --help             Give this help list\n" \
-                          "-n, --foreground       Run on foreground (don't daemonize)\n" \
-                          "-k, --kill             Terminate running instance of incrond\n" \
-                          "-V, --version          Print program version\n\n" \
-                          "Report bugs to <bugs@aiken.cz>"
+/// incrond version string
+#define INCROND_VERSION INCROND_NAME " " INCRON_VERSION
 
-#define INCROND_VERSION_TEXT INCRON_DAEMON_NAME " " INCRON_VERSION
+/// incrontab description string
+#define INCROND_DESCRIPTION "incrond - inotify cron daemon\n" \
+                            "(c) Lukas Jelinek, 2006, 2007"
+
+/// incrontab help string
+#define INCROND_HELP INCROND_DESCRIPTION "\n\n" \
+          "usage: incrond [<options>]\n\n" \
+          "<operation> may be one of the following:\n" \
+          "These options may be used:\n" \
+          "  -?, --about                  gives short information about program\n" \
+          "  -h, --help                   prints this help text\n" \
+          "  -n, --foreground             runs on foreground (no daemonizing)\n" \
+          "  -k, --kill                   terminates running instance of incrond\n" \
+          "  -f <FILE>, --config=<FILE>   overrides default configuration file  (requires root privileges)\n" \
+          "  -V, --version                prints program version\n\n" \
+          "For reporting bugs please use http:://bts.aiken.cz\n"
+
 
 
 /// User name to user table mapping table
@@ -94,6 +106,8 @@ void on_signal(int signo)
 }
 
 
+
+
 /// Attempts to load all user incron tables.
 /**
  * Loaded tables are registered for processing events.
@@ -106,25 +120,30 @@ void load_tables(EventDispatcher* pEd) throw (InotifyException)
 {
   // WARNING - this function has not been optimized!!!
   
-  DIR* d = opendir(INCRON_SYS_TABLE_BASE);
+  std::string s;
+  if (!IncronCfg::GetValue("system_table_dir", s))
+    throw InotifyException("configuration system is corrupted", EINVAL);
+  
+  DIR* d = opendir(s.c_str());
   if (d != NULL) {
     syslog(LOG_NOTICE, "loading system tables");
       
     struct dirent* pDe = NULL;
     while ((pDe = readdir(d)) != NULL) {
       std::string un(pDe->d_name);
+      std::string path(IncronCfg::BuildPath(s, pDe->d_name)); 
       
       bool ok = pDe->d_type == DT_REG;
       if (pDe->d_type == DT_UNKNOWN) {
         struct stat st;
-        if (stat(pDe->d_name, &st) == 0)
+        if (stat(path.c_str(), &st) == 0)
           ok = S_ISREG(st.st_mode);
       }
       
       if (ok) {
         syslog(LOG_INFO, "loading table %s", pDe->d_name);
         UserTable* pUt = new UserTable(pEd, un, true);
-        g_ut.insert(SUT_MAP::value_type(std::string(INCRON_SYS_TABLE_BASE) + un, pUt));
+        g_ut.insert(SUT_MAP::value_type(path, pUt));
         pUt->Load();
       }
     }
@@ -135,8 +154,10 @@ void load_tables(EventDispatcher* pEd) throw (InotifyException)
     syslog(LOG_WARNING, "cannot open system table directory (ignoring)");
   }
   
-  
-  d = opendir(INCRON_USER_TABLE_BASE);
+  if (!IncronCfg::GetValue("user_table_dir", s))
+    throw InotifyException("configuration system is corrupted", EINVAL);
+    
+  d = opendir(s.c_str());
   if (d == NULL)
     throw InotifyException("cannot open user table directory", errno);
   
@@ -145,11 +166,12 @@ void load_tables(EventDispatcher* pEd) throw (InotifyException)
   struct dirent* pDe = NULL;
   while ((pDe = readdir(d)) != NULL) {
     std::string un(pDe->d_name);
+    std::string path(IncronCfg::BuildPath(s, pDe->d_name));
     
     bool ok = pDe->d_type == DT_REG;
     if (pDe->d_type == DT_UNKNOWN) {
       struct stat st;
-      if (stat(pDe->d_name, &st) == 0)
+      if (stat(path.c_str(), &st) == 0)
         ok = S_ISREG(st.st_mode);
     }
     
@@ -157,7 +179,7 @@ void load_tables(EventDispatcher* pEd) throw (InotifyException)
       if (UserTable::CheckUser(pDe->d_name)) {
         syslog(LOG_INFO, "loading table for user %s", pDe->d_name);
         UserTable* pUt = new UserTable(pEd, un, false);
-        g_ut.insert(SUT_MAP::value_type(std::string(INCRON_USER_TABLE_BASE) + un, pUt));
+        g_ut.insert(SUT_MAP::value_type(path, pUt));
         pUt->Load();
       }
       else {
@@ -219,71 +241,9 @@ bool check_parameter(const char* s, const char* shortCmd, const char* longCmd)
       || strcmp(s, longCmd)   == 0;
 }
 
-/// Attempts to kill all running instances of incrond.
-/**
- * It kills only instances which use the same executable image
- * as the currently running one.
- * 
- * \return true = at least one instance killed, false = otherwise
- * \attention More than one instance may be currently run simultaneously.
- */ 
-bool kill_incrond()
-{
-  unsigned pid_self = (unsigned) getpid(); // self PID
-  
-  char s[PATH_MAX];
-  snprintf(s, PATH_MAX, "/proc/%u/exe", pid_self);
-  
-  char path_self[PATH_MAX];
-  ssize_t len = readlink(s, path_self, PATH_MAX-1);
-  if (len <= 0)
-    return false;
-  path_self[len] = '\0';
-  
-  DIR* d = opendir("/proc");
-  if (d == NULL)
-    return false;
-    
-  bool ok = false;
-    
-  char path[PATH_MAX];
-  struct dirent* de = NULL;
-  while ((de = readdir(d)) != NULL) {
-    bool to = false;
-    if (de->d_type == DT_DIR)
-      to = true;
-    else if (de->d_type == DT_UNKNOWN) {
-      // fallback way
-      snprintf(s, PATH_MAX, "/proc/%s", de->d_name);
-      struct stat st;
-      if (stat(s, &st) == 0 && S_ISDIR(st.st_mode))
-        to = true;
-    }
-    
-    if (to) {
-      unsigned pid;
-      if (sscanf(de->d_name, "%u", &pid) == 1   // PID successfully retrieved
-          && pid != pid_self)                   // don't do suicide!
-      {
-        snprintf(s, PATH_MAX, "/proc/%u/exe", pid);
-        len = readlink(s, path, PATH_MAX-1);
-        if (len > 0) {
-          path[len] = '\0';
-          if (    strcmp(path, path_self) == 0
-              &&  kill((pid_t) pid, SIGTERM) == 0)
-            ok = true;
-        }
-      }
-    }
-  }
-  
-  closedir(d);
-  
-  return ok;
-}
-
 /// Initializes a poll array.
 /**
+ * \param[out] pfd poll structure array 
  * \param[in] pipefd pipe file descriptor
  * \param[in] infd inotify infrastructure file descriptor
  */
@@ -308,48 +268,113 @@ void init_poll_array(struct pollfd pfd[], int pipefd, int infd)
  */
 int main(int argc, char** argv)
 {
-  if (argc > 2) {
-    fprintf(stderr, "error: too many parameters\n");
-    fprintf(stderr, "give --help or -h for more information\n");
+  AppArgs::Init();
+
+  if (!(  AppArgs::AddOption("about",       '?', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("help",        'h', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("foreground",  'n', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("kill",        'k', AAT_NO_VALUE, false)
+      &&  AppArgs::AddOption("config",      'f', AAT_MANDATORY_VALUE, false))
+      &&  AppArgs::AddOption("version",     'V', AAT_NO_VALUE, false))
+  {
+    fprintf(stderr, "error while initializing application");
     return 1;
   }
   
-  if (argc == 2) {
-    if (check_parameter(argv[1], "-h", "--help")) {
-      printf("%s\n", INCROND_HELP_TEXT);
+  AppArgs::Parse(argc, argv);
+  
+  if (AppArgs::ExistsOption("help")) {
+    fprintf(stderr, "%s\n", INCROND_HELP);
+    return 0;
+  }
+  
+  if (AppArgs::ExistsOption("about")) {
+    fprintf(stderr, "%s\n", INCROND_DESCRIPTION);
+    return 0;
+  }
+  
+  if (AppArgs::ExistsOption("version")) {
+    fprintf(stderr, "%s\n", INCROND_VERSION);
+    return 0;
+  }
+  
+  AppInstance app("incrond");
+  
+  IncronCfg::Init();
+  
+  if (AppArgs::ExistsOption("kill")) {
+    fprintf(stderr, "attempting to terminate a running instance of incrond...\n");
+    if (app.SendSignal(SIGTERM)) {
+      fprintf(stderr, "instance(s) notified, going down\n");
       return 0;
     }
-    else if (check_parameter(argv[1], "-n", "--foreground")) {
-      g_daemon = false;
-    }
-    else if (check_parameter(argv[1], "-k", "--kill")) {
-      fprintf(stderr, "attempting to terminate a running instance of incrond...\n");
-      if (kill_incrond()) {
-        fprintf(stderr, "instance(s) notified, going down\n");
-        return 0;
-      }
-      else { 
-        fprintf(stderr, "error - incrond probably not running\n");
-        return 1;
-      }
-    }
-    else if (check_parameter(argv[1], "-V", "--version")) {
-      printf("%s\n", INCROND_VERSION_TEXT);
-      return 0;
-    }
-    else {
-      fprintf(stderr, "error - unrecognized parameter: %s\n", argv[1]);
+    else { 
+      fprintf(stderr, "error - incrond probably not running\n");
       return 1;
     }
   }
   
-  openlog(INCRON_DAEMON_NAME, INCRON_LOG_OPTS, INCRON_LOG_FACIL);
+  if (AppArgs::ExistsOption("foreground"))
+    g_daemon = false;
+  
+  
+  openlog(INCROND_NAME, INCRON_LOG_OPTS, INCRON_LOG_FACIL);
   
   syslog(LOG_NOTICE, "starting service (version %s, built on %s %s)", INCRON_VERSION, __DATE__, __TIME__);
+  
+  std::string cfg;
+  if (!AppArgs::GetOption("config", cfg))
+    cfg = INCRON_CONFIG;
+  IncronCfg::Load(cfg);
+  
+  AppArgs::Destroy();
+  
+  int ret = 0;
+  
+  std::string sysBase;
+  std::string userBase;
+  
+  if (!IncronCfg::GetValue("system_table_dir", sysBase))
+    throw InotifyException("configuration is corrupted", EINVAL);
+  
+  if (access(sysBase.c_str(), R_OK) != 0) {
+    syslog(LOG_CRIT, "cannot read directory for system tables (%s): (%i) %s", sysBase.c_str(), errno, strerror(errno));
+    if (!g_daemon)
+        fprintf(stderr, "cannot read directory for system tables (%s): (%i) %s", sysBase.c_str(), errno, strerror(errno));
+    ret = 1;
+    goto error;
+  }
+  
+  if (!IncronCfg::GetValue("user_table_dir", userBase))
+    throw InotifyException("configuration is corrupted", EINVAL);
+  
+  if (access(userBase.c_str(), R_OK) != 0) {
+    syslog(LOG_CRIT, "cannot read directory for user tables (%s): (%i) %s", userBase.c_str(), errno, strerror(errno));
+    if (!g_daemon)
+        fprintf(stderr, "cannot read directory for user tables (%s): (%i) %s", userBase.c_str(), errno, strerror(errno));
+    ret = 1;
+    goto error;
+  }
   
   try {
     if (g_daemon)
       daemon(0, 0);
+  
+    try {
+    if (!app.Lock()) {
+      syslog(LOG_CRIT, "another instance of incrond already running");
+      if (!g_daemon)
+        fprintf(stderr, "another instance of incrond already running\n");
+      ret = 1;
+      goto error;
+      }
+    } catch (AppInstException e) {
+      syslog(LOG_CRIT, "instance lookup failed: (%i) %s", e.GetErrorNumber(), strerror(e.GetErrorNumber()));
+      if (!g_daemon)
+        fprintf(stderr, "instance lookup failed: (%i) %s\n", e.GetErrorNumber(), strerror(e.GetErrorNumber()));
+      ret = 1;
+      goto error;
+    }
     
     prepare_pipe();
     
@@ -358,9 +383,9 @@ int main(int argc, char** argv)
     in.SetCloseOnExec(true);
     
     uint32_t wm = IN_CLOSE_WRITE | IN_DELETE | IN_MOVE | IN_DELETE_SELF | IN_UNMOUNT;
-    InotifyWatch stw(INCRON_SYS_TABLE_BASE, wm);
+    InotifyWatch stw(sysBase, wm);
     in.Add(stw);
-    InotifyWatch utw(INCRON_USER_TABLE_BASE, wm);
+    InotifyWatch utw(userBase, wm);
     in.Add(utw);
     
     EventDispatcher ed(g_cldPipe[0], &in, &stw, &utw);
@@ -370,9 +395,8 @@ int main(int argc, char** argv)
     } catch (InotifyException e) {
       int err = e.GetErrorNumber();
       syslog(LOG_CRIT, "%s: (%i) %s", e.GetMessage().c_str(), err, strerror(err));
-      syslog(LOG_NOTICE, "stopping service");
-      closelog();
-      return 1;
+      ret = 1;
+      goto error;
     }
     
     signal(SIGTERM, on_signal);
@@ -393,75 +417,7 @@ int main(int argc, char** argv)
         if (errno != EINTR)
           throw InotifyException("polling failed", errno, NULL);
       }
-      /*
       
-      while (in.GetEvent(e)) {
-        
-        if (e.GetWatch() == &stw) {
-          if (e.IsType(IN_DELETE_SELF) || e.IsType(IN_UNMOUNT)) {
-            syslog(LOG_CRIT, "base directory destroyed, exitting");
-            g_fFinish = true;
-          }
-          else if (!e.GetName().empty()) {
-            SUT_MAP::iterator it = g_ut.find(stw.GetPath() + e.GetName());
-            if (it != g_ut.end()) {
-              UserTable* pUt = (*it).second;
-              if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
-                syslog(LOG_INFO, "system table %s changed, reloading", e.GetName().c_str());
-                pUt->Dispose();
-                pUt->Load();
-              }
-              else if (e.IsType(IN_MOVED_FROM) || e.IsType(IN_DELETE)) {
-                syslog(LOG_INFO, "system table %s destroyed, removing", e.GetName().c_str());
-                delete pUt;
-                g_ut.erase(it);
-              }
-            }
-            else if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
-              syslog(LOG_INFO, "system table %s created, loading", e.GetName().c_str());
-              UserTable* pUt = new UserTable(&in, &ed, e.GetName(), true);
-              g_ut.insert(SUT_MAP::value_type(std::string(INCRON_SYS_TABLE_BASE) + e.GetName(), pUt));
-              pUt->Load();
-            }
-          }
-        }
-        else if (e.GetWatch() == &utw) {
-          if (e.IsType(IN_DELETE_SELF) || e.IsType(IN_UNMOUNT)) {
-            syslog(LOG_CRIT, "base directory destroyed, exitting");
-            g_fFinish = true;
-          }
-          else if (!e.GetName().empty()) {
-            SUT_MAP::iterator it = g_ut.find(e.GetWatch()->GetPath() + e.GetName());
-            if (it != g_ut.end()) {
-              UserTable* pUt = (*it).second;
-              if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
-                syslog(LOG_INFO, "table for user %s changed, reloading", e.GetName().c_str());
-                pUt->Dispose();
-                pUt->Load();
-              }
-              else if (e.IsType(IN_MOVED_FROM) || e.IsType(IN_DELETE)) {
-                syslog(LOG_INFO, "table for user %s destroyed, removing",  e.GetName().c_str());
-                delete pUt;
-                g_ut.erase(it);
-              }
-            }
-            else if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
-              if (check_user(e.GetName().c_str())) {
-                syslog(LOG_INFO, "table for user %s created, loading", e.GetName().c_str());
-                UserTable* pUt = new UserTable(&in, &ed, e.GetName(), false);
-                g_ut.insert(SUT_MAP::value_type(std::string(INCRON_USER_TABLE_BASE) + e.GetName(), pUt));
-                pUt->Load();
-              }
-            }
-          }
-        }
-        else {
-          ed.DispatchEvent(e);
-        }
-        
-      }
-      
-      */
     }
     
     if (g_cldPipe[0] != -1)
@@ -473,11 +429,14 @@ int main(int argc, char** argv)
     syslog(LOG_CRIT, "*** unhandled exception occurred ***");
     syslog(LOG_CRIT, "  %s", e.GetMessage().c_str());
     syslog(LOG_CRIT, "  error: (%i) %s", err, strerror(err));
+    ret = 1;
   }
+
+error:
 
   syslog(LOG_NOTICE, "stopping service");
   
   closelog();
   
-  return 0;
+  return ret;
 }

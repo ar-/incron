@@ -2,6 +2,7 @@
 PREFIX = /usr/local
 USERDATADIR = /var/spool/incron
 SYSDATADIR = /etc/incron.d
+CFGDIR = /etc
 MANPATH = /usr/share/man
 RELEASE = incron-`cat VERSION`
 RELEASEDIR = /tmp/$(RELEASE)
@@ -16,14 +17,13 @@ DEBUG = -g0
 WARNINGS = -Wall
 CXXAUX = -pipe
 
-CPPFLAGS = 
 CXXFLAGS = $(OPTIMIZE) $(DEBUG) $(WARNINGS) $(CXXAUX)
 LDFLAGS = $(WARNINGS)
 
 PROGRAMS = incrond incrontab
 
-INCROND_OBJ = icd-main.o incrontab.o inotify-cxx.o usertable.o strtok.o
-INCRONTAB_OBJ = ict-main.o incrontab.o inotify-cxx.o strtok.o
+INCROND_OBJ = icd-main.o incrontab.o inotify-cxx.o usertable.o strtok.o appinst.o incroncfg.o appargs.o
+INCRONTAB_OBJ = ict-main.o incrontab.o inotify-cxx.o strtok.o incroncfg.o appargs.o
 
 
 all:	$(PROGRAMS)
@@ -49,6 +49,7 @@ install:	all install-man
 	$(INSTALL) -m 0755 incrond $(PREFIX)/sbin/
 	$(INSTALL) -m 0755 -o $(USER) -d $(USERDATADIR)
 	$(INSTALL) -m 0755 -o $(USER) -d $(SYSDATADIR)
+	$(INSTALL) -m 0644 -o $(USER) incron.conf.example $(CFGDIR)
 
 install-man:	incrontab.1 incrontab.5 incrond.8
 	$(INSTALL) -m 0755 -d $(MANPATH)/man1
@@ -62,6 +63,7 @@ uninstall:	uninstall-man
 	[ -d $(PREFIX) ]
 	rm -f $(PREFIX)/bin/incrontab
 	rm -f $(PREFIX)/sbin/incrond
+	rm -f $(CFGDIR)/incron.conf.example
 
 uninstall-man:
 	rm -f $(MANPATH)/man1/incrontab.1
@@ -76,6 +78,7 @@ release:
 	cp -r doc $(RELEASEDIR)
 	cp *.h $(RELEASEDIR)
 	cp *.cpp $(RELEASEDIR)
+	cp incron.conf.example $(RELEASEDIR)
 	cp Makefile CHANGELOG COPYING LICENSE-GPL LICENSE-LGPL LICENSE-X11 README TODO VERSION $(RELEASEDIR)
 	cp incrond.8 incrontab.1 incrontab.5 $(RELEASEDIR)
 	tar -c -f $(RELEASE).tar -C $(RELEASEDIR)/.. $(RELEASE)
@@ -103,10 +106,12 @@ release-clean:
 
 .POSIX:
 
-icd-main.o:	icd-main.cpp inotify-cxx.h incrontab.h usertable.h incron.h
+icd-main.o:	icd-main.cpp inotify-cxx.h incrontab.h usertable.h incron.h appinst.h incroncfg.h appargs.h
 incrontab.o:	incrontab.cpp incrontab.h inotify-cxx.h strtok.h
 inotify-cxx.o:	inotify-cxx.cpp inotify-cxx.h
 usertable.o:	usertable.cpp usertable.h strtok.h
-ict-main.o:	ict-main.cpp incrontab.h incron.h
+ict-main.o:	ict-main.cpp incrontab.h incron.h incroncfg.h appargs.h
 strtok.o:	strtok.cpp strtok.h
-
+appinst.o:	appinst.cpp appinst.h
+incroncfg.o:	incroncfg.cpp incroncfg.h
+appargs.o:	appargs.cpp appargs.h

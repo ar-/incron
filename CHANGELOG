@@ -1,3 +1,14 @@
+0.5.0
+* based on inotify-cxx 0.7.1
+* bug related to events names fixed (#0000134)
+* instance locking (only one instance allowed - also fixes #0000136)
+* configuration introduced (including custom cfg. files)
+* waiting for child processes rewritten to avoid race conditions
+* user can request reloading the table (#0000130)
+* new implementation for command line arguments
+* some code refactoring
+
+
 0.4.0    2007-01-13
 * based on inotify-cxx 0.7.0
 * incrontab has a feature to find out supported event types (--types or -t)

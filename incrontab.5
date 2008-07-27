@@ -1,10 +1,10 @@
-.TH "incrontab" "5" "0.4.0" "Lukas Jelinek" "incron documentation"
+.TH "incrontab" "5" "0.5.0" "Lukas Jelinek" "incron documentation"
 .SH "NAME"
 incrontab \- tables for driving inotify cron (incron)
 .SH "DESCRIPTION"
 An incrontab file contains instructions to the \fIincrond\fR(8) daemon of the general form: "run this command on these file events". There are two categories of tables: system tables (with root privileges) and user tables (with user privileges).
 
-System tables are located in /etc/incron.d and may have any names. Each system table exists separately inside incron and their watches never collide.
+System tables are (by default) located in /etc/incron.d and may have any names. Each system table exists separately inside incron and their watches never collide.
 
 Each user has their own table, and commands in any given incrontab will be executed as the user who owns the incrontab. System users (such as apache, postfix, nobody etc.) may have their own incrontab.
 

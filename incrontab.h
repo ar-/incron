@@ -22,15 +22,16 @@
 
 #include "strtok.h"
 
+/*
 /// Incron user table base directory
 #define INCRON_USER_TABLE_BASE "/var/spool/incron/"
 
 /// Incron system table base directory
 #define INCRON_SYS_TABLE_BASE "/etc/incron.d/"
-
+*/
 
 /// Incron table entry class.
-class InCronTabEntry
+class IncronTabEntry
 {
 public:
   /// Constructor.
@@ -39,7 +40,7 @@ public:
    * 
    * \sa Parse()
    */
-  InCronTabEntry();
+  IncronTabEntry();
 
   /// Constructor.
   /**
@@ -49,10 +50,10 @@ public:
    * \param[in] uMask event mask
    * \param[in] rCmd command string
    */
-  InCronTabEntry(const std::string& rPath, uint32_t uMask, const std::string& rCmd);
+  IncronTabEntry(const std::string& rPath, uint32_t uMask, const std::string& rCmd);
   
   /// Destructor.
-  ~InCronTabEntry() {}
+  ~IncronTabEntry() {}
   
   /// Converts the entry to string representation.
   /**
@@ -68,7 +69,7 @@ public:
    * \param[out] rEntry parametrized entry
    * \return true = success, false = failure
    */
-  static bool Parse(const std::string& rStr, InCronTabEntry& rEntry);
+  static bool Parse(const std::string& rStr, IncronTabEntry& rEntry);
   
   /// Returns the watch filesystem path.
   /**
@@ -130,20 +131,20 @@ protected:
 
 
 /// Incron table class.
-class InCronTab
+class IncronTab
 {
 public:
   /// Constructor.
-  InCronTab() {}
+  IncronTab() {}
   
   /// Destructor.
-  ~InCronTab() {}
+  ~IncronTab() {}
   
   /// Add an entry to the table.
   /**
    * \param[in] rEntry table entry
    */
-  inline void Add(const InCronTabEntry& rEntry)
+  inline void Add(const IncronTabEntry& rEntry)
   {
     m_tab.push_back(rEntry);
   }
@@ -180,7 +181,7 @@ public:
    *            pass an invalid value the program may crash
    *            and/or behave unpredictible way!
    */
-  inline InCronTabEntry& GetEntry(int index)
+  inline IncronTabEntry& GetEntry(int index)
   {
     return m_tab[index];
   }
@@ -225,7 +226,7 @@ public:
   static std::string GetSystemTablePath(const std::string& rName);
 
 protected:
-  std::deque<InCronTabEntry> m_tab; ///< incron table
+  std::deque<IncronTabEntry> m_tab; ///< incron table
 };
 
 

@@ -35,7 +35,6 @@ typedef void (*proc_done_cb)(InotifyWatch*);
 /// Child process data
 typedef struct
 {
-  pid_t pid;            ///< PID
   proc_done_cb onDone;  ///< function called after process finishes
   InotifyWatch* pWatch; ///< related watch
 } ProcData_t;
@@ -44,10 +43,10 @@ typedef struct
 typedef std::map<int, UserTable*> FDUT_MAP;
 
 /// Watch-to-tableentry mapping
-typedef std::map<InotifyWatch*, InCronTabEntry*> IWCE_MAP;
+typedef std::map<InotifyWatch*, IncronTabEntry*> IWCE_MAP;
 
 /// Child process list
-typedef std::deque<ProcData_t> PROC_LIST;
+typedef std::map<pid_t, ProcData_t> PROC_MAP;
 
 /// Event dispatcher class.
 /**
@@ -213,7 +212,7 @@ public:
     if (pw == NULL)
       return false;
       
-    return InCronTab::CheckUser(user);
+    return IncronTab::CheckUser(user);
   }
   
 private:
@@ -221,17 +220,17 @@ private:
   EventDispatcher* m_pEd; ///< event dispatcher
   std::string m_user;     ///< user name
   bool m_fSysTable;       ///< system table yes/no
-  InCronTab m_tab;        ///< incron table
+  IncronTab m_tab;        ///< incron table
   IWCE_MAP m_map;         ///< watch-to-entry mapping
 
-  static PROC_LIST s_procList;  ///< child process list
+  static PROC_MAP s_procMap;  ///< child process mapping
   
   /// Finds an entry for a watch.
   /**
    * \param[in] pWatch inotify watch
    * \return pointer to the appropriate entry; NULL if no such entry exists
    */
-  InCronTabEntry* FindEntry(InotifyWatch* pWatch);
+  IncronTabEntry* FindEntry(InotifyWatch* pWatch);
   
   /// Prepares arguments for creating a child process.
   /**

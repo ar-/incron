@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 
 #include "usertable.h"
+#include "incroncfg.h"
 
 #ifdef IN_DONT_FOLLOW
 #define DONT_FOLLOW(mask) InotifyEvent::IsType(mask, IN_DONT_FOLLOW)
@@ -31,7 +32,7 @@
 #endif // IN_DONT_FOLLOW
 
 
-PROC_LIST UserTable::s_procList;
+PROC_MAP UserTable::s_procMap;
 
 extern volatile bool g_fFinish;
 extern SUT_MAP g_ut;
@@ -164,7 +165,7 @@ void EventDispatcher::ProcessMgmtEvents()
         g_fFinish = true;
       }
       else if (!e.GetName().empty()) {
-        SUT_MAP::iterator it = g_ut.find(m_pSys->GetPath() + e.GetName());
+        SUT_MAP::iterator it = g_ut.find(IncronCfg::BuildPath(m_pSys->GetPath(), e.GetName()));
         if (it != g_ut.end()) {
           UserTable* pUt = (*it).second;
           if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
@@ -181,7 +182,7 @@ void EventDispatcher::ProcessMgmtEvents()
         else if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
           syslog(LOG_INFO, "system table %s created, loading", e.GetName().c_str());
           UserTable* pUt = new UserTable(this, e.GetName(), true);
-          g_ut.insert(SUT_MAP::value_type(std::string(INCRON_SYS_TABLE_BASE) + e.GetName(), pUt));
+          g_ut.insert(SUT_MAP::value_type(IncronTab::GetSystemTablePath(e.GetName()), pUt));
           pUt->Load();
         }
       }
@@ -192,7 +193,7 @@ void EventDispatcher::ProcessMgmtEvents()
         g_fFinish = true;
       }
       else if (!e.GetName().empty()) {
-        SUT_MAP::iterator it = g_ut.find(m_pUser->GetPath() + e.GetName());
+        SUT_MAP::iterator it = g_ut.find(IncronCfg::BuildPath(m_pUser->GetPath(), e.GetName()));
         if (it != g_ut.end()) {
           UserTable* pUt = (*it).second;
           if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
@@ -210,7 +211,7 @@ void EventDispatcher::ProcessMgmtEvents()
           if (UserTable::CheckUser(e.GetName().c_str())) {
             syslog(LOG_INFO, "table for user %s created, loading", e.GetName().c_str());
             UserTable* pUt = new UserTable(this, e.GetName(), false);
-            g_ut.insert(SUT_MAP::value_type(std::string(INCRON_USER_TABLE_BASE) + e.GetName(), pUt));
+            g_ut.insert(SUT_MAP::value_type(IncronTab::GetUserTablePath(e.GetName()), pUt));
             pUt->Load();
           }
         }
@@ -240,12 +241,12 @@ UserTable::~UserTable()
 void UserTable::Load()
 {
   m_tab.Load(m_fSysTable
-      ? InCronTab::GetSystemTablePath(m_user)
-      : InCronTab::GetUserTablePath(m_user));
+      ? IncronTab::GetSystemTablePath(m_user)
+      : IncronTab::GetUserTablePath(m_user));
   
   int cnt = m_tab.GetCount();
   for (int i=0; i<cnt; i++) {
-    InCronTabEntry& rE = m_tab.GetEntry(i);
+    IncronTabEntry& rE = m_tab.GetEntry(i);
     InotifyWatch* pW = new InotifyWatch(rE.GetPath(), rE.GetMask());
     
     // warning only - permissions may change later
@@ -275,6 +276,19 @@ void UserTable::Dispose()
   while (it != m_map.end()) {
     InotifyWatch* pW = (*it).first;
     m_in.Remove(pW);
+    
+    PROC_MAP::iterator it2 = s_procMap.begin();
+    while (it2 != s_procMap.end()) {
+      if ((*it2).second.pWatch == pW) {
+        PROC_MAP::iterator it3 = it2;
+        it2++;
+        s_procMap.erase(it3);
+      }
+      else {
+        it2++;
+      }
+    }
+    
     delete pW;
     it++;
   }
@@ -285,7 +299,7 @@ void UserTable::Dispose()
 void UserTable::OnEvent(InotifyEvent& rEvt)
 {
   InotifyWatch* pW = rEvt.GetWatch();
-  InCronTabEntry* pE = FindEntry(pW);
+  IncronTabEntry* pE = FindEntry(pW);
   
   // no entry found - this shouldn't occur
   if (pE == NULL)
@@ -357,9 +371,8 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   if (pE->IsNoLoop())
     pW->SetEnabled(false);
   
-  ProcData_t pd;
-  pd.pid = fork();
-  if (pd.pid == 0) {
+  pid_t pid = fork();
+  if (pid == 0) {
     
     // for system table
     if (m_fSysTable) {
@@ -382,7 +395,8 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       }
     }
   }
-  else if (pd.pid > 0) {
+  else if (pid > 0) {
+    ProcData_t pd;
     if (pE->IsNoLoop()) {
       pd.onDone = on_proc_done;
       pd.pWatch = pW;
@@ -392,7 +406,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       pd.pWatch = NULL;
     }
     
-    s_procList.push_back(pd);
+    s_procMap.insert(PROC_MAP::value_type(pid, pd));
   }
   else {
     if (pE->IsNoLoop())
@@ -404,7 +418,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   CleanupArgs(argc, argv);
 }
 
-InCronTabEntry* UserTable::FindEntry(InotifyWatch* pWatch)
+IncronTabEntry* UserTable::FindEntry(InotifyWatch* pWatch)
 {
   IWCE_MAP::iterator it = m_map.find(pWatch);
   if (it == m_map.end())
@@ -452,18 +466,15 @@ void UserTable::CleanupArgs(int argc, char** argv)
 
 void UserTable::FinishDone()
 {
-  PROC_LIST::iterator it = s_procList.begin();
-  while (it != s_procList.end()) {
-    ProcData_t& pd = *it;
-    int status = 0;
-    int res = waitpid(pd.pid, &status, WNOHANG);
-    if (res == pd.pid && (WIFEXITED(status) || WIFSIGNALED(status))) {
+  pid_t res = 0;
+  int status = 0;
+  while ((res = waitpid(-1, &status, WNOHANG)) > 0) {
+    PROC_MAP::iterator it = s_procMap.find(res);
+    if (it != s_procMap.end()) {
+      ProcData_t pd = (*it).second;
       if (pd.onDone != NULL)
         (*pd.onDone)(pd.pWatch);
-      it = s_procList.erase(it);
-    }
-    else {
-      it++;
+      s_procMap.erase(it);
     }
   }  
 }

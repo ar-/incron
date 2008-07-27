@@ -21,16 +21,19 @@
 #define INCRON_NAME "incron"
 
 /// Daemon name
-#define INCRON_DAEMON_NAME "incrond"
+#define INCROND_NAME "incrond"
 
 /// Table manipulator name
-#define INCRON_TAB_NAME "incrontab"
+#define INCRONTAB_NAME "incrontab"
 
 /// Application version (release)
-#define INCRON_VERSION "0.4.0"
+#define INCRON_VERSION "0.5.0"
 
 /// Address for sending bugs
 #define INCRON_BUG_ADDRESS "<bugs@aiken.cz>"
+
+/// Default configuration file
+#define INCRON_CONFIG "/etc/incron.conf"
 
 
 #endif //_INCRON_H_

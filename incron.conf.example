@@ -1,0 +1,72 @@
+#
+# *** incron example configuration file ***
+# 
+# (c) Lukas Jelinek, 2007
+# 
+
+
+# Parameter:   system_table_dir
+# Meaning:     system table directory
+# Description: This directory is examined by incrond for system table files.
+# Default:     /etc/incron.d
+#
+# Example:
+# system_table_dir = /var/spool/incron.systables
+
+
+# Parameter:   user_table_dir
+# Meaning:     user table directory
+# Description: This directory is examined by incrond for user table files.
+# Default:     /var/spool/incron
+#
+# Example:
+# user_table_dir = /var/spool/incron.usertables
+
+
+# Parameter:   allowed_users
+# Meaning:     allowed users list file
+# Description: This file contains users allowed to use incron.
+# Default:     /etc/incron.allow
+#
+# Example:
+# allowed_users = /etc/incron/allow
+
+
+# Parameter:   denied_users
+# Meaning:     denied users list file
+# Description: This file contains users denied to use incron.
+# Default:     /etc/incron.deny
+#
+# Example:
+# allowed_users = /etc/incron/deny
+
+
+# Parameter:   lockfile_dir
+# Meaning:     application lock file directory
+# Description: This directory is used for creating a lock avoiding to run
+#              multiple instances of incrond.
+# Default:     /var/run
+#
+# Example:
+# lockfile_dir = /tmp
+
+
+# Parameter:   lockfile_name
+# Meaning:     application lock file name base
+# Description: This name (appended by '.pid') is used for creating a lock
+#              avoiding to run multiple instances of incrond.
+# Default:     incrond
+#
+# Example:
+# lockfile_name = incron.lock
+
+
+# Parameter:   editor
+# Meaning:     editor executable
+# Description: This name or path is used to run as an editor for editting
+#              user tables.
+# Default:     vim
+#
+# Example:
+# editor = nano
+
