@@ -17,8 +17,18 @@
 #include <pwd.h>
 #include <syslog.h>
 #include <errno.h>
+#include <sys/wait.h>
 
 #include "usertable.h"
+
+
+PROC_LIST UserTable::s_procList;
+
+
+void on_proc_done(InotifyWatch* pW)
+{
+  pW->SetEnabled(true);
+}
 
 
 EventDispatcher::EventDispatcher(Inotify* pIn)
@@ -104,9 +114,14 @@ void UserTable::Load()
   for (int i=0; i<cnt; i++) {
     InCronTabEntry& rE = m_tab.GetEntry(i);
     InotifyWatch* pW = new InotifyWatch(rE.GetPath(), rE.GetMask());
-    m_pIn->Add(pW);
-    m_pEd->Register(pW, this);
-    m_map.insert(IWCE_MAP::value_type(pW, &rE));
+    try {
+      m_pIn->Add(pW);
+      m_pEd->Register(pW, this);
+      m_map.insert(IWCE_MAP::value_type(pW, &rE));
+    } catch (InotifyException e) {
+      syslog(LOG_ERR, "cannot create watch for user %s", m_user.c_str());
+      delete pW;
+    }
   }
 }
 
@@ -175,8 +190,12 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   
   syslog(LOG_INFO, "(%s) CMD (%s)", m_user.c_str(), cmd.c_str());
   
-  pid_t pid = fork();
-  if (pid == 0) {
+  if (pE->IsNoLoop())
+    pW->SetEnabled(false);
+  
+  ProcData_t pd;
+  pd.pid = fork();
+  if (pd.pid == 0) {
     
     struct passwd* pwd = getpwnam(m_user.c_str());
     if (pwd == NULL)
@@ -189,10 +208,22 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       _exit(1);
     }
   }
-  else if (pid > 0) {
+  else if (pd.pid > 0) {
+    if (pE->IsNoLoop()) {
+      pd.onDone = on_proc_done;
+      pd.pWatch = pW;
+    }
+    else {
+      pd.onDone = NULL;
+      pd.pWatch = NULL;
+    }
     
+    s_procList.push_back(pd);
   }
   else {
+    if (pE->IsNoLoop())
+      pW->SetEnabled(true);
+      
     syslog(LOG_ERR, "cannot fork process: %s", strerror(errno));
   }
 }
@@ -233,4 +264,23 @@ bool UserTable::PrepareArgs(const std::string& rCmd, int& argc, char**& argv)
   
   return true;
 }
+
+void UserTable::FinishDone()
+{
+  PROC_LIST::iterator it = s_procList.begin();
+  while (it != s_procList.end()) {
+    ProcData_t& pd = *it;
+    int status = 0;
+    int res = waitpid(pd.pid, &status, WNOHANG);
+    if (res == pd.pid && (WIFEXITED(status) || WIFSIGNALED(status))) {
+      if (pd.onDone != NULL)
+        (*pd.onDone)(pd.pWatch);
+      it = s_procList.erase(it);
+    }
+    else {
+      it++;
+    }
+  }  
+}
+
 

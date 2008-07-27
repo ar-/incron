@@ -40,10 +40,70 @@
 /// Event buffer length
 #define INOTIFY_BUFLEN (1024 * (INOTIFY_EVENT_SIZE + 16))
 
+/// Helper macro for creating exception messages.
+/**
+ * It prepends the message by the function name.
+ */
+#define IN_EXC_MSG(msg) (std::string(__PRETTY_FUNCTION__) + ": " + msg)
+
+
 
 // forward declaration
 class InotifyWatch;
 class Inotify;
+
+
+/// Class for inotify exceptions
+class InotifyException
+{
+public:
+  /// Constructor
+  /**
+   * \param[in] rMsg message
+   * \param[in] iErr error number (see errno.h)
+   * \param[in] pSrc source
+   */
+  InotifyException(const std::string& rMsg = "", int iErr = 0, void* pSrc = NULL)
+  : m_msg(rMsg),
+    m_err(iErr)
+  {
+    m_pSrc = pSrc;
+  }
+  
+  /// Returns the exception message.
+  /**
+   * \return message
+   */
+  inline const std::string& GetMessage() const
+  {
+    return m_msg;
+  }
+  
+  /// Returns the exception error number.
+  /**
+   * If not applicable this value is 0 (zero).
+   * 
+   * \return error number (standardized; see errno.h)
+   */
+  inline int GetErrorNumber() const
+  {
+    return m_err;
+  } 
+  
+  /// Returns the exception source.
+  /**
+   * \return source
+   */
+  inline void* GetSource() const
+  {
+    return m_pSrc;
+  }
+
+protected:
+  std::string m_msg;      ///< message
+  int m_err;              ///< error number
+  mutable void* m_pSrc;   ///< source
+};
 
 
 /// inotify event class
@@ -59,9 +119,9 @@ public:
    * Creates a plain event.
    */
   InotifyEvent()
+  : m_uMask(0),
+    m_uCookie(0)
   {
-    memset(&m_evt, 0, sizeof(m_evt));
-    m_evt.wd = (int32_t) -1;
     m_pWatch = NULL;
   }
   
@@ -74,16 +134,17 @@ public:
    * \param[in] pWatch inotify watch
    */
   InotifyEvent(const struct inotify_event* pEvt, InotifyWatch* pWatch)
+  : m_uMask(0),
+    m_uCookie(0)
   {
     if (pEvt != NULL) {
-      memcpy(&m_evt, pEvt, sizeof(m_evt));
+      m_uMask = (uint32_t) pEvt->mask;
+      m_uCookie = (uint32_t) pEvt->cookie;
       if (pEvt->name != NULL)
         m_name = pEvt->name;
       m_pWatch = pWatch;
     }
     else {
-      memset(&m_evt, 0, sizeof(m_evt));
-      m_evt.wd = (int32_t) -1;
       m_pWatch = NULL;
     }
   }
@@ -97,10 +158,7 @@ public:
    * 
    * \sa InotifyWatch::GetDescriptor()
    */
-  inline int32_t GetDescriptor() const
-  {
-    return (int32_t) m_evt.wd;
-  }
+  int32_t GetDescriptor() const;
   
   /// Returns the event mask.
   /**
@@ -110,7 +168,7 @@ public:
    */
   inline uint32_t GetMask() const
   {
-    return (uint32_t) m_evt.mask;
+    return m_uMask;
   }
   
   /// Checks a value for the event type.
@@ -131,7 +189,7 @@ public:
    */
   inline bool IsType(uint32_t uType) const
   {
-    return IsType((uint32_t) m_evt.mask, uType);
+    return IsType(m_uMask, uType);
   }
   
   /// Returns the event cookie.
@@ -140,7 +198,7 @@ public:
    */
   inline uint32_t GetCookie() const
   {
-    return (uint32_t) m_evt.cookie;
+    return m_uCookie;
   }
   
   /// Returns the event name length.
@@ -149,7 +207,7 @@ public:
    */
   inline uint32_t GetLength() const
   {
-    return (uint32_t) m_evt.len;
+    return (uint32_t) m_name.length();
   }
   
   /// Returns the event name.
@@ -179,27 +237,6 @@ public:
     return m_pWatch;
   }
   
-  /// Returns the event raw data.
-  /**
-   * For NULL pointer it does nothing.
-   * 
-   * \param[in,out] pEvt event data
-   */
-  inline void GetData(struct inotify_event* pEvt)
-  {
-    if (pEvt != NULL)
-      memcpy(pEvt, &m_evt, sizeof(m_evt));
-  }
-  
-  /// Returns the event raw data.
-  /**
-   * \param[in,out] rEvt event data
-   */
-  inline void GetData(struct inotify_event& rEvt)
-  {
-    memcpy(&rEvt, &m_evt, sizeof(m_evt));
-  }
-  
   /// Finds the appropriate mask for a name.
   /**
    * \param[in] rName mask name
@@ -221,8 +258,9 @@ public:
   void DumpTypes(std::string& rStr) const;
   
 private:
-  struct inotify_event m_evt; ///< event structure
-  std::string m_name;         ///< event name
+  uint32_t m_uMask;           ///< mask
+  uint32_t m_uCookie;         ///< cookie
+  std::string m_name;         ///< name
   InotifyWatch* m_pWatch;     ///< source watch
 };
 
@@ -239,12 +277,15 @@ public:
    * 
    * \param[in] rPath watched file path
    * \param[in] uMask mask for events
+   * \param[in] fEnabled events enabled yes/no
    */
-  InotifyWatch(const std::string& rPath, int32_t uMask)
+  InotifyWatch(const std::string& rPath, int32_t uMask, bool fEnabled = true)
+  : m_path(rPath),
+    m_uMask(uMask),
+    m_wd((int32_t) -1),
+    m_fEnabled(fEnabled)
   {
-    m_path = rPath;
-    m_uMask = uMask;
-    m_wd = (int32_t) -1;
+    
   }
   
   /// Destructor.
@@ -286,6 +327,16 @@ public:
     return m_pInotify;
   }
   
+  inline void SetEnabled(bool fEnabled)
+  {
+    m_fEnabled = fEnabled;
+  }  
+  
+  inline bool IsEnabled() const
+  {
+    return m_fEnabled;
+  }
+  
 private:
   friend class Inotify;
 
@@ -293,6 +344,7 @@ private:
   uint32_t m_uMask;     ///< event mask
   int32_t m_wd;         ///< watch descriptor
   Inotify* m_pInotify;  ///< inotify object
+  bool m_fEnabled;      ///< events enabled yes/no
 };
 
 
@@ -308,42 +360,37 @@ public:
   /**
    * Creates and initializes an instance of inotify communication
    * object (opens the inotify device).
+   * 
+   * \throw InotifyException thrown if inotify isn't available
    */
-  Inotify();
+  Inotify() throw (InotifyException);
   
   /// Destructor.
   /**
-   * Calls Close() due for clean-up.
+   * Calls Close() due to clean-up.
    */
   ~Inotify();
   
   /// Removes all watches and closes the inotify device.
   void Close();
-  
-  /// Checks whether the inotify is ready.
-  /**
-   * \return true = initialized properly, false = something failed
-   */
-  inline bool IsReady() const
-  {
-    return m_fd != -1;
-  }
-  
+    
   /// Adds a new watch.
   /**
    * \param[in] pWatch inotify watch
-   * \return true = success, false = failure
+   * 
+   * \throw InotifyException thrown if adding failed
    */
-  bool Add(InotifyWatch* pWatch);
+  void Add(InotifyWatch* pWatch) throw (InotifyException);
   
   /// Adds a new watch.
   /**
    * \param[in] rWatch inotify watch
-   * \return true = success, false = failure
+   * 
+   * \throw InotifyException thrown if adding failed
    */
-  inline bool Add(InotifyWatch& rWatch)
+  inline void Add(InotifyWatch& rWatch) throw (InotifyException)
   {
-    return Add(&rWatch);
+    Add(&rWatch);
   }
   
   /// Removes a watch.
@@ -351,16 +398,20 @@ public:
    * If the given watch is not present it does nothing.
    * 
    * \param[in] pWatch inotify watch
+   * 
+   * \throw InotifyException thrown if removing failed
    */
-  void Remove(InotifyWatch* pWatch);
+  void Remove(InotifyWatch* pWatch) throw (InotifyException);
   
   /// Removes a watch.
   /**
    * If the given watch is not present it does nothing.
    * 
    * \param[in] rWatch inotify watch
+   * 
+   * \throw InotifyException thrown if removing failed
    */
-  inline void Remove(InotifyWatch& rWatch)
+  inline void Remove(InotifyWatch& rWatch) throw (InotifyException)
   {
     Remove(&rWatch);
   }
@@ -379,12 +430,17 @@ public:
   
   /// Waits for inotify events.
   /**
-   * It waits until one or more events occur.
+   * It waits until one or more events occur. When called
+   * in nonblocking mode it only retrieves occurred events
+   * to the internal queue and exits.
    * 
    * \param[in] fNoIntr if true it re-calls the system call after a handled signal
-   * \return true = event(s) occurred, false = failure
+   * 
+   * \throw InotifyException thrown if reading events failed
+   * 
+   * \sa SetNonBlock()
    */
-  bool WaitForEvents(bool fNoIntr = false);
+  void WaitForEvents(bool fNoIntr = false) throw (InotifyException);
   
   /// Returns the count of received and queued events.
   /**
@@ -401,18 +457,20 @@ public:
    * If the pointer is NULL it does nothing.
    * 
    * \param[in,out] pEvt event object
-   * \return true = success, false = failure
+   * 
+   * \throw InotifyException thrown if the provided pointer is NULL
    */
-  bool GetEvent(InotifyEvent* pEvt);
+  bool GetEvent(InotifyEvent* pEvt) throw (InotifyException);
   
   /// Extracts a queued inotify event.
   /**
    * The extracted event is removed from the queue.
    * 
    * \param[in,out] rEvt event object
-   * \return true = success, false = failure
+   * 
+   * \throw InotifyException thrown only in very anomalous cases
    */
-  bool GetEvent(InotifyEvent& rEvt)
+  bool GetEvent(InotifyEvent& rEvt) throw (InotifyException)
   {
     return GetEvent(&rEvt);
   }
@@ -423,18 +481,20 @@ public:
    * If the pointer is NULL it does nothing.
    * 
    * \param[in,out] pEvt event object
-   * \return true = success, false = failure
+   * 
+   * \throw InotifyException thrown if the provided pointer is NULL
    */
-  bool PeekEvent(InotifyEvent* pEvt);
+  bool PeekEvent(InotifyEvent* pEvt) throw (InotifyException);
   
   /// Extracts a queued inotify event (without removing).
   /**
    * The extracted event stays in the queue.
    * 
    * \param[in,out] rEvt event object
-   * \return true = success, false = failure
+   * 
+   * \throw InotifyException thrown only in very anomalous cases
    */
-  bool PeekEvent(InotifyEvent& rEvt)
+  bool PeekEvent(InotifyEvent& rEvt) throw (InotifyException)
   {
     return PeekEvent(&rEvt);
   }
@@ -446,7 +506,35 @@ public:
    * \param[in] iDescriptor watch descriptor
    * \return found descriptor; NULL if no such watch exists
    */
-  InotifyWatch* FindWatch(int iDescriptor);  
+  InotifyWatch* FindWatch(int iDescriptor);
+  
+  /// Returns the file descriptor.
+  /**
+   * The descriptor can be used in standard low-level file
+   * functions (poll(), select(), fcntl() etc.).
+   * 
+   * \return valid file descriptor or -1 for inactive object
+   * 
+   * \sa SetNonBlock()
+   */
+  inline int GetDescriptor() const
+  {
+    return m_fd;
+  }
+  
+  /// Enables/disables non-blocking mode.
+  /**
+   * Use this mode if you want to monitor the descriptor
+   * (acquired thru GetDescriptor()) in functions such as
+   * poll(), select() etc.
+   * 
+   * \param[in] fNonBlock enable/disable non-blocking mode
+   * 
+   * \throw InotifyException thrown if setting mode failed
+   * 
+   * \sa GetDescriptor()
+   */
+  void SetNonBlock(bool fNonBlock) throw (InotifyException);
 
 private: 
   int m_fd;                             ///< file descriptor

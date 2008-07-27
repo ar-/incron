@@ -23,15 +23,18 @@
 #include "incrontab.h"
 
 
-
+/// Allowed users
 #define INCRON_ALLOW_PATH "/etc/incron.allow"
+
+/// Denied users
 #define INCRON_DENY_PATH "/etc/incron.deny"
 
 
 
 
 InCronTabEntry::InCronTabEntry()
-: m_uMask(0)
+: m_uMask(0),
+  m_fNoLoop(false)
 {
   
 }
@@ -51,8 +54,13 @@ std::string InCronTabEntry::ToString() const
   std::string m;
   
   InotifyEvent::DumpTypes(m_uMask, m);
-  if (m.empty())
-    m = "0";
+  if (m.empty()) {
+    m = m_fNoLoop ? "IN_NO_LOOP" : "0";
+  }
+  else {
+    if (m_fNoLoop)
+      m.append(",IN_NO_LOOP");
+  }
   
   ss << m_path << " " << m << " " << m_cmd;
   return ss.str();
@@ -76,7 +84,11 @@ bool InCronTabEntry::Parse(const std::string& rStr, InCronTabEntry& rEntry)
   else {
     StringTokenizer tok(s2);
     while (tok.HasMoreTokens()) {
-      rEntry.m_uMask |= InotifyEvent::GetMaskByName(tok.GetNextToken());
+      std::string s(tok.GetNextToken());
+      if (s == "IN_NO_LOOP")
+        rEntry.m_fNoLoop = true;
+      else
+        rEntry.m_uMask |= InotifyEvent::GetMaskByName(s);
     }
   }
   

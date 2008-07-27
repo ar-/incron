@@ -1,2 +1,9 @@
+0.2.0    2006-10-04
+* based on inotify-cxx 0.3.1
+* better signal handling (no "dirty" wait() in a handler)
+* loop avoidance can be used
+* more documentation in the code
+
+
 0.1.0    2006-09-15
-first alpha version
+* first alpha version
