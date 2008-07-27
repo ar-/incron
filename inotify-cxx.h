@@ -26,6 +26,7 @@
 #ifndef _INOTIFYCXX_H_
 #define _INOTIFYCXX_H_
 
+#include <stdint.h>
 #include <string>
 #include <deque>
 #include <map>

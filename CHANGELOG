@@ -1,3 +1,7 @@
+0.5.6    2007-04-18
+* based on inotify-cxx 0.7.2 (fixes compilation problems on Debian Sarge, #0000155)
+
+
 0.5.5    2007-02-14
 * another bug related to environment variables fixed (#0000151)
 * -V (--version) malfunction fixed (#0000150)
