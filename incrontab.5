@@ -1,0 +1,39 @@
+.TH "incrontab" "5" "0.3.1" "Lukas Jelinek" "incron documentation"
+.SH "NAME"
+incrontab \- tables for driving inotify cron (incron)
+.SH "DESCRIPTION"
+An incrontab file contains instructions to the \fIincrond\fR(8) daemon of the general form: "run this command on these file events". Each user has their own incrontab, and commands in any given incrontab will be executed as the user who owns the incrontab. System users (such as apache, postfix, nobody etc.) may have their own incrontab.
+
+incrontab files are read when the \fIincrond\fR(8) daemon starts and after any change (incrontab file are being hooked when incrond is running).
+
+Blank lines are ignored. The general line format is the following:
+
+<path> <mask> <command>
+
+Where \fIpath\fR is an absolute filesystem path, \fImask\fR is an event mask (in symbolic or numeric form) and \fIcommand\fR is an executable file (or a script) with its arguments. The executable file may be noted as an absolute path or only as the name itself (PATH locations are examined).
+
+Please remember that the same path may occur only once (otherwise the behavior is undefined).
+.SH "EXAMPLE"
+These are some example rules which can be used in an incrontab file:
+
+/tmp IN_ALL_EVENTS abcd $@/$# $%
+
+/usr/bin IN_ACCESS,IN_NO_LOOP abcd $#
+
+/home IN_CREATE /usr/local/bin/abcd $#
+
+/var/log 12 abcd $@/$#
+
+The first line monitors all events on the /tmp directory. When an event occurs it runs a application called 'abcd' with the full path of the file as the first arguments and the event flags as the second one.
+
+The second line monitors accesses (readings) on the /usr/bin directory. The application 'abcd' is run as a handler and the appropriate event watch is disabled until the program finishes. The file name (without the directory path) is passed in as an argument.
+
+The third example is used for monitoring the /home directory for newly create files or directories (it practically means an event is sent when a new user is added). This event is processed by a program specified by an absolute path.
+
+And the final line shows how to use numeric event mask instead of textual one. The value 12 is exactly the same as IN_ATTRIB,IN_CLOSE_WRITE.
+.SH "SEE ALSO"
+incrond(8), incrontab(1)
+.SH "AUTHOR"
+Lukas Jelinek <lukas@aiken.cz>
+.SH "COPYING"
+This program is free software. It can be used, redistributed and/or modified under the terms of the GNU General Public License, version 2.

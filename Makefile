@@ -1,8 +1,9 @@
 
 PREFIX = /usr/local
 DATADIR = /var/spool/incron
+MANPATH = /usr/share/man
 
-USER = incron
+USER = root
 
 CXX = g++
 INSTALL = install
@@ -10,9 +11,10 @@ INSTALL = install
 OPTIMIZE = -O2
 DEBUG = -g0
 WARNINGS = -Wall
+CXXAUX = -pipe
 
 CPPFLAGS = 
-CXXFLAGS = $(OPTIMIZE) $(DEBUG) $(WARNINGS)
+CXXFLAGS = $(OPTIMIZE) $(DEBUG) $(WARNINGS) $(CXXAUX)
 LDFLAGS = $(WARNINGS)
 
 PROGRAMS = incrond incrontab
@@ -38,21 +40,32 @@ clean:
 
 distclean: clean
 
-install:	all
+install:	all install-man
 	[ -d $(PREFIX) ]
-	useradd -M -s /sbin/nologin $(USER) || useradd -s /sbin/nologin $(USER)
 	$(INSTALL) -m 04755 -o $(USER) incrontab $(PREFIX)/bin/
 	$(INSTALL) -m 0755 incrond $(PREFIX)/sbin/
 	$(INSTALL) -m 0755 -o $(USER) -d $(DATADIR)
 
-uninstall:
+install-man:	incrontab.1 incrontab.5 incrond.8
+	$(INSTALL) -m 0755 -d $(MANPATH)/man1
+	$(INSTALL) -m 0755 -d $(MANPATH)/man5
+	$(INSTALL) -m 0755 -d $(MANPATH)/man8
+	$(INSTALL) -m 0644 incrontab.1 $(MANPATH)/man1
+	$(INSTALL) -m 0644 incrontab.5 $(MANPATH)/man5
+	$(INSTALL) -m 0644 incrond.8 $(MANPATH)/man8
+
+uninstall:	uninstall-man
 	[ -d $(PREFIX) ]
 	rm -f $(PREFIX)/bin/incrontab
 	rm -f $(PREFIX)/sbin/incrond
-	userdel $(USER)
+
+uninstall-man:
+	rm -f $(MANPATH)/man1/incrontab.1
+	rm -f $(MANPATH)/man5/incrontab.5
+	rm -f $(MANPATH)/man8/incrontab.8
 
 
-.PHONY:	all clean distclean install uninstall
+.PHONY:	all clean distclean install install-man uninstall uninstall-man
 
 .POSIX:
 

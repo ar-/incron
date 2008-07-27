@@ -29,6 +29,18 @@
 /// Denied users
 #define INCRON_DENY_PATH "/etc/incron.deny"
 
+/*
+ * ALLOW/DENY SEMANTICS
+ * 
+ * If /etc/incron.allow exists ONLY users contained here
+ * are allowed to use incron.
+ * 
+ * Otherwise, if /etc/incron.deny exists only user NOT
+ * contained here are allowed to use incron.
+ * 
+ * Otherwise all users may use incron.
+ * 
+ */
 
 
 

@@ -1,3 +1,8 @@
+0.3.1    2006-11-24
+* user manual added
+* incron tables now owned by root (also fixes #0000103)
+
+
 0.3.0    2006-11-12
 * based on inotify-cxx 0.5.2 (fixes a problem with ignoring IN_OPEN)
 * two new special symbols ($% for flags as names, $& for numeric flags)

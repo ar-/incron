@@ -1,0 +1,33 @@
+.TH "incrontab" "1" "0.3.1" "Lukas Jelinek" "incron documentation"
+.SH "NAME"
+incrontab \- table manipulator for inotify cron (incron)
+.SH "SYNOPSIS"
+\fBincrontab\fR [\fB\-u\fR \fIuser\fR] \fIfile\fR
+
+\fBincrontab\fR [\fB\-u\fR \fIuser\fR] [\fB\-l\fR | \fB\-r\fR | \fB\-e\fR]
+.SH "DESCRIPTION"
+incrontab is a table manipulator for the inotify cron (incron) system. It creates, removes, modifies and lists user tables (\fIincrontab\fR(5)).
+
+Each user (including system users even they haven't home directories) has an incron table which can't be manipulated directly (only root can effectively change these tables and is NOT recommended to do so).
+
+All informational messages of this program are printed to the standard error output (stderr).
+
+If \fI/etc/incron.allow\fR exists only users listed here may use incron. Otherwise if \fI/etc/incron.deny\fR exists only users NOT listed here may use incron. If none of these files exists everyone is allowed to use incron. (\fBImportant note:\fR This behavior is insecure and will be probably changed to be compatible with the style used by ISC Cron.)
+
+The first form of this command imports a file, validates it and stores to the table. "\-" can be used for loading from the standard input.
+
+
+
+\fB\-u\fR (or \fB\-\-user\fR) option overrides the current (real) user to the given one. This option is intended for manipulation with system users' tables (such as apache, postfix, daemon etc.). It can be used only if the current user has root's effective rights.
+
+\fB\-l\fR (or \fB\-\-list\fR) option causes the current table is printed to the standard output.
+
+\fB\-r\fR (or \fB\-\-remove\fR) option causes the current table (if any) is permanently remove without any warning or confirmation. Use with caution!
+
+\fB\-e\fR (or \fB\-\-edit\fR) option causes executing the editor specified by the EDITOR environment variable (if not defined the hard\-coded editor is executed instead). You can edit your incron table now. If the table is changed it stores the modified version. It's not recommended to use graphical editors (such as gVim, KEdit etc.) due to possible problems with connecting to the X server.
+.SH "SEE ALSO"
+incrond(8), incrontab(5)
+.SH "AUTHOR"
+Lukas Jelinek <lukas@aiken.cz>
+.SH "COPYING"
+This program is free software. It can be used, redistributed and/or modified under the terms of the GNU General Public License, version 2.

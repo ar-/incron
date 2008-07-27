@@ -38,9 +38,7 @@ Please review the Makefile BEFORE you type 'make'. Especially
 check the PREFIX and other common variables. If done you can
 now build the files ('make').
 
-The binaries must be of course installed as root. Note that the
-installer creates a special user called 'incron' which manages
-the incron tables.
+The binaries must be of course installed as root.
 
 
 4. How to use
@@ -100,6 +98,6 @@ This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License,
 version 2  (see LICENSE-GPL).
 
-Some parts may be also licensed covere by other licenses.
+Some parts may be also covered by other licenses.
 Please look into the source files for detailed information.
 
