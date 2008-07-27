@@ -22,8 +22,11 @@
 
 #include "strtok.h"
 
-/// Incron table base directory
-#define INCRON_TABLE_BASE "/var/spool/incron/"
+/// Incron user table base directory
+#define INCRON_USER_TABLE_BASE "/var/spool/incron/"
+
+/// Incron system table base directory
+#define INCRON_SYS_TABLE_BASE "/etc/incron.d/"
 
 
 /// Incron table entry class.
@@ -211,6 +214,15 @@ public:
    * \attention No tests (existence, permission etc.) are done.
    */
   static std::string GetUserTablePath(const std::string& rUser);
+  
+  /// Composes a path to a system incron table file.
+  /**
+   * \param[in] rName table name (pseudouser)
+   * \return path to the table file
+   * 
+   * \attention No tests (existence, permission etc.) are done.
+   */
+  static std::string GetSystemTablePath(const std::string& rName);
 
 protected:
   std::deque<InCronTabEntry> m_tab; ///< incron table

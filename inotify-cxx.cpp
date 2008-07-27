@@ -546,6 +546,36 @@ void Inotify::SetNonBlock(bool fNonBlock) throw (InotifyException)
   IN_WRITE_END
 }
 
+void Inotify::SetCloseOnExec(bool fClOnEx) throw (InotifyException)
+{
+  IN_WRITE_BEGIN
+  
+  if (m_fd == -1) {
+    IN_WRITE_END_NOTHROW
+    throw InotifyException(IN_EXC_MSG("invalid file descriptor"), EBUSY, this);
+  }
+    
+  int res = fcntl(m_fd, F_GETFD);
+  if (res == -1) {
+    IN_WRITE_END_NOTHROW
+    throw InotifyException(IN_EXC_MSG("cannot get inotify flags"), errno, this);
+  }
+  
+  if (fClOnEx) {
+    res |= FD_CLOEXEC;
+  }
+  else {
+    res &= ~FD_CLOEXEC;
+  }
+      
+  if (fcntl(m_fd, F_SETFD, res) == -1) {
+    IN_WRITE_END_NOTHROW
+    throw InotifyException(IN_EXC_MSG("cannot set inotify flags"), errno, this);
+  }
+    
+  IN_WRITE_END
+}
+
 uint32_t Inotify::GetCapability(InotifyCapability_t cap) throw (InotifyException)
 {
   FILE* f = fopen(GetCapabilityPath(cap).c_str(), "r");

@@ -743,13 +743,31 @@ public:
    * (acquired thru GetDescriptor()) in functions such as
    * poll(), select() etc.
    * 
+   * Non-blocking mode is disabled by default.
+   * 
    * \param[in] fNonBlock enable/disable non-blocking mode
    * 
    * \throw InotifyException thrown if setting mode failed
    * 
-   * \sa GetDescriptor()
+   * \sa GetDescriptor(), SetCloseOnExec()
    */
   void SetNonBlock(bool fNonBlock) throw (InotifyException);
+  
+  /// Enables/disables closing on exec.
+  /**
+   * Enable this if you want to close the descriptor when
+   * executing another program. Otherwise, the descriptor
+   * will be inherited.
+   * 
+   * Closing on exec is disabled by default.
+   * 
+   * \param[in] fClOnEx enable/disable closing on exec
+   * 
+   * \throw InotifyException thrown if setting failed
+   * 
+   * \sa GetDescriptor(), SetNonBlock()
+   */
+  void SetCloseOnExec(bool fClOnEx) throw (InotifyException);
   
   /// Acquires a particular inotify capability/limit.
   /**

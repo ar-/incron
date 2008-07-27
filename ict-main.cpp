@@ -21,10 +21,13 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/inotify.h>
 
 #include "incron.h"
 #include "incrontab.h"
 
+// Alternative editor
+#define INCRON_ALT_EDITOR "/etc/alternatives/editor"
 
 // #define INCRON_DEFAULT_EDITOR "nano" // for vim haters like me ;-)
 #define INCRON_DEFAULT_EDITOR "vim"
@@ -41,6 +44,7 @@ static struct argp_option options[] = {
   {"list",    'l', 0,      0,  "List the current table" },
   {"remove",  'r', 0,      0,  "Remove the table completely" },
   {"edit",    'e', 0,      0,  "Edit the table" },
+  {"types",   't', 0,      0,  "List all supported event types" },
   {"user",    'u', "USER", 0,  "Override the current user" },
   { 0 }
 };
@@ -51,7 +55,8 @@ typedef enum
   OPER_NONE,    /// nothing
   OPER_LIST,    /// list table
   OPER_REMOVE,  /// remove table
-  OPER_EDIT     /// edit table
+  OPER_EDIT,    /// edit table
+  OPER_TYPES    /// list event types
 } InCronTab_Operation_t;
 
 /// incrontab arguments
@@ -82,6 +87,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'e':
       arguments->oper = OPER_EDIT;
+      break;
+    case 't':
+      arguments->oper = OPER_TYPES;
       break;
     case 'u':
       arguments->user = arg;
@@ -157,7 +165,7 @@ bool list_table(const char* user)
 {
   std::string tp(InCronTab::GetUserTablePath(user));
   
-  if (eaccess(tp.c_str(), R_OK) != 0) {
+  if (euidaccess(tp.c_str(), R_OK) != 0) {
     if (errno == ENOENT) {
       fprintf(stderr, "no table for %s\n", user);
       return true;
@@ -270,12 +278,25 @@ bool edit_table(const char* user)
     goto end;
   }
   
-  mt = st.st_mtime;
+  mt = st.st_mtime; // save modification time for detecting its change
   
+  // Editor selecting algorithm:
+  // 1. Check EDITOR environment variable
+  // 2. Check VISUAL environment variable
+  // 3. Check presence of /etc/alternatives/editor
+  // 4. Use hard-wired editor
   e = getenv("EDITOR");
-  if (e == NULL)
-    e = INCRON_DEFAULT_EDITOR;
+  if (e == NULL) {
+    e = getenv("VISUAL");
+    if (e == NULL) {
+      if (access(INCRON_ALT_EDITOR, X_OK) == 0)
+        e = INCRON_ALT_EDITOR;
+      else
+        e = INCRON_DEFAULT_EDITOR;
+    }
+  }
   
+  // this block is explicite due to gotos' usage simplification
   {
     pid_t pid = fork();
     if (pid == 0) {
@@ -336,6 +357,30 @@ end:
   
   unlink(s);
   return ok;
+}
+
+
+/// Prints the list of all available inotify event types.
+void list_types()
+{
+  printf( "IN_ACCESS,IN_MODIFY,IN_ATTRIB,IN_CLOSE_WRITE,"\
+          "IN_CLOSE_NOWRITE,IN_OPEN,IN_MOVED_FROM,IN_MOVED_TO,"\
+          "IN_CREATE,IN_DELETE,IN_DELETE_SELF,IN_CLOSE,IN_MOVE,"\
+          "IN_ONESHOT,IN_ALL_EVENTS");
+    
+#ifdef IN_DONT_FOLLOW
+  printf(",IN_DONT_FOLLOW");
+#endif // IN_DONT_FOLLOW
+
+#ifdef IN_ONLYDIR
+  printf(",IN_ONLYDIR");
+#endif // IN_ONLYDIR
+
+#ifdef IN_MOVE_SELF
+  printf(",IN_MOVE_SELF");
+#endif // IN_MOVE_SELF
+  
+  printf("\n");
 }
 
 
@@ -404,6 +449,9 @@ int main(int argc, char** argv)
     case OPER_EDIT:
       if (!edit_table(arguments.user))
         return 1;
+      break;
+    case OPER_TYPES:
+      list_types();
       break;
     default:
       fprintf(stderr, "invalid usage\n");

@@ -18,12 +18,16 @@
 
 #include <map>
 #include <deque>
+#include <sys/poll.h>
 
 #include "inotify-cxx.h"
 #include "incrontab.h"
 
 
 class UserTable;
+
+/// User name to user table mapping definition
+typedef std::map<std::string, UserTable*> SUT_MAP;
 
 /// Callback for calling after a process finishes.
 typedef void (*proc_done_cb)(InotifyWatch*);
@@ -36,8 +40,8 @@ typedef struct
   InotifyWatch* pWatch; ///< related watch
 } ProcData_t;
 
-/// Watch-to-usertable mapping
-typedef std::map<InotifyWatch*, UserTable*> IWUT_MAP;
+/// fd-to-usertable mapping
+typedef std::map<int, UserTable*> FDUT_MAP;
 
 /// Watch-to-tableentry mapping
 typedef std::map<InotifyWatch*, InCronTabEntry*> IWCE_MAP;
@@ -47,55 +51,75 @@ typedef std::deque<ProcData_t> PROC_LIST;
 
 /// Event dispatcher class.
 /**
- * This class distributes inotify events to appropriate user tables.
+ * This class processes events and distributes them as needed.
  */
 class EventDispatcher
 {
 public:
   /// Constructor.
   /**
-   * \param[in] pIn inotify object
+   * \param[in] iPipeFd pipe descriptor
+   * \param[in] pIn inotify object for table management
+   * \param[in] pSys watch for system tables
+   * \param[in] pUser watch for user tables
    */
-  EventDispatcher(Inotify* pIn);
+  EventDispatcher(int iPipeFd, Inotify* pIn, InotifyWatch* pSys, InotifyWatch* pUser);
   
   /// Destructor.
-  ~EventDispatcher() {}
+  ~EventDispatcher();
 
-  /// Dispatches an event.
+  /// Processes events.
   /**
-   * \param[in] rEvt inotify event
+   * \return pipe event occurred yes/no
    */
-  void DispatchEvent(InotifyEvent& rEvt);
+  bool ProcessEvents();
   
-  /// Registers a watch for an user table.
-  /**
-   * \param[in] pWatch inotify watch
-   * \param[in] pTab user table
-   */
-  void Register(InotifyWatch* pWatch, UserTable* pTab);
-  
-  /// Unregisters a watch.
-  /**
-   * \param[in] pWatch inotify watch
-   */
-  void Unregister(InotifyWatch* pWatch);
-  
-  /// Unregisters all watches for an user table.
+  /// Registers an user table.
   /**
    * \param[in] pTab user table
    */
-  void UnregisterAll(UserTable* pTab);
+  void Register(UserTable* pTab);
+  
+  /// Unregisters an user table.
+  /**
+   * \param[in] pTab user table
+   */
+  void Unregister(UserTable* pTab);
+  
+  /// Returns the poll data size.
+  /**
+   * \return poll data size
+   */
+  inline size_t GetSize() const
+  {
+    return m_size;
+  }
+  
+  /// Returns the poll data.
+  /**
+   * \return poll data
+   */
+  inline struct pollfd* GetPollData()
+  {
+    return m_pPoll;
+  }
+  
   
 private:
-  Inotify* m_pIn;   ///< inotify object
-  IWUT_MAP m_maps;  ///< watch-to-usertable mapping
+  int m_iPipeFd;    ///< pipe file descriptor
+  int m_iMgmtFd;    ///< table management file descriptor
+  Inotify* m_pIn;   ///< table management inotify object 
+  InotifyWatch* m_pSys;   ///< watch for system tables
+  InotifyWatch* m_pUser;  ///< watch for user tables 
+  FDUT_MAP m_maps;  ///< watch-to-usertable mapping
+  size_t m_size;    ///< poll data size
+  struct pollfd* m_pPoll; ///< poll data array
   
-  /// Finds an user table for a watch.
-  /**
-   * \param[in] pW inotify watch
-   * \return pointer to the appropriate watch; NULL if no such watch exists
-   */
-  UserTable* FindTable(InotifyWatch* pW);
+  /// Rebuilds the poll array data.
+  void Rebuild();
+  
+  /// Processes events on the table management inotify object. 
+  void ProcessMgmtEvents();
 };
 
 
@@ -110,11 +134,11 @@ class UserTable
 public:
   /// Constructor.
   /**
-   * \param[in] pIn inotify object
    * \param[in] pEd event dispatcher
    * \param[in] rUser user name
+   * \param[in] fSysTable system table yes/no
    */
-	UserTable(Inotify* pIn, EventDispatcher* pEd, const std::string& rUser);
+	UserTable(EventDispatcher* pEd, const std::string& rUser, bool fSysTable);
   
   /// Destructor.
 	virtual ~UserTable();
@@ -157,10 +181,46 @@ public:
    */
   bool MayAccess(const std::string& rPath, bool fNoFollow) const;
   
+  /// Checks whether it is a system table.
+  /**
+   * \return true = system table, false = user table
+   */
+  bool IsSystem() const;
+  
+  /// Returns the related inotify object.
+  /**
+   * \return related inotify object
+   */
+  Inotify* GetInotify()
+  {
+    return &m_in;
+  }
+  
+  /// Checks whether an user exists and has permission to use incron.
+  /**
+   * It searches for the given user name in the user database.
+   * If it failes it returns 'false'. Otherwise it checks
+   * permission files for this user (see InCronTab::CheckUser()).
+   * 
+   * \param[in] user user name
+   * \return true = user has permission to use incron, false = otherwise
+   * 
+   * \sa InCronTab::CheckUser()
+   */
+  inline static bool CheckUser(const char* user)
+  {
+    struct passwd* pw = getpwnam(user);
+    if (pw == NULL)
+      return false;
+      
+    return InCronTab::CheckUser(user);
+  }
+  
 private:
-  Inotify* m_pIn;         ///< inotify object
+  Inotify m_in;           ///< inotify object
   EventDispatcher* m_pEd; ///< event dispatcher
   std::string m_user;     ///< user name
+  bool m_fSysTable;       ///< system table yes/no
   InCronTab m_tab;        ///< incron table
   IWCE_MAP m_map;         ///< watch-to-entry mapping
 

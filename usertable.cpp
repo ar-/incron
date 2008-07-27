@@ -25,13 +25,16 @@
 #include "usertable.h"
 
 #ifdef IN_DONT_FOLLOW
-#define NO_FOLLOW(mask) InotifyEvent::IsType(mask, IN_DONT_FOLLOW)
+#define DONT_FOLLOW(mask) InotifyEvent::IsType(mask, IN_DONT_FOLLOW)
 #else // IN_DONT_FOLLOW
-#define NO_FOLLOW(mask) (false)
+#define DONT_FOLLOW(mask) (false)
 #endif // IN_DONT_FOLLOW
 
 
 PROC_LIST UserTable::s_procList;
+
+extern volatile bool g_fFinish;
+extern SUT_MAP g_ut;
 
 
 void on_proc_done(InotifyWatch* pW)
@@ -40,72 +43,193 @@ void on_proc_done(InotifyWatch* pW)
 }
 
 
-EventDispatcher::EventDispatcher(Inotify* pIn)
+EventDispatcher::EventDispatcher(int iPipeFd, Inotify* pIn, InotifyWatch* pSys, InotifyWatch* pUser)
 {
- m_pIn = pIn; 
+  m_iPipeFd = iPipeFd;
+  m_iMgmtFd = pIn->GetDescriptor();
+  m_pIn = pIn;
+  m_pSys = pSys;
+  m_pUser = pUser;
+  m_size = 0;
+  m_pPoll = NULL;
 }
 
-void EventDispatcher::DispatchEvent(InotifyEvent& rEvt)
+EventDispatcher::~EventDispatcher()
 {
-  if (m_pIn == NULL)
-    return;
-    
-  InotifyWatch* pW = rEvt.GetWatch();
-  if (pW == NULL)
-    return;
-    
-  UserTable* pT = FindTable(pW);
-  if (pT == NULL)
-    return;
-    
-  pT->OnEvent(rEvt);
+  if (m_pPoll != NULL)
+    delete[] m_pPoll;
 }
-  
-void EventDispatcher::Register(InotifyWatch* pWatch, UserTable* pTab)
+
+bool EventDispatcher::ProcessEvents()
 {
-  if (pWatch != NULL && pTab != NULL)
-    m_maps.insert(IWUT_MAP::value_type(pWatch, pTab));
-}
+  // consume pipe events if any (and report back)
+  bool pipe = (m_pPoll[0].revents & POLLIN);
+  if (pipe) {
+    char c;
+    while (read(m_pPoll[0].fd, &c, 1) > 0) {}
+    m_pPoll[0].revents = 0;
+  }
   
-void EventDispatcher::Unregister(InotifyWatch* pWatch)
-{
-  IWUT_MAP::iterator it = m_maps.find(pWatch);
-  if (it == m_maps.end())
-    m_maps.erase(it);
-}
-  
-void EventDispatcher::UnregisterAll(UserTable* pTab)
-{
-  IWUT_MAP::iterator it = m_maps.begin();
-  while (it != m_maps.end()) {
-    if ((*it).second == pTab) {
-      IWUT_MAP::iterator it2 = it;
-      it++;
-      m_maps.erase(it2);
+  // process table management events if any
+  if (m_pPoll[1].revents & POLLIN) {
+    ProcessMgmtEvents(); 
+    m_pPoll[1].revents = 0;
+  }
+    
+  InotifyEvent evt;
+    
+  for (size_t i=2; i<m_size; i++) {
+    
+    // process events if occurred
+    if (m_pPoll[i].revents & POLLIN) {
+      FDUT_MAP::iterator it = m_maps.find(m_pPoll[i].fd);
+      if (it != m_maps.end()) {
+        Inotify* pIn = ((*it).second)->GetInotify();
+        pIn->WaitForEvents(true);
+        
+        // process events for this object
+        while (pIn->GetEvent(evt)) {
+          ((*it).second)->OnEvent(evt);
+        }
+      }
+      m_pPoll[i].revents = 0;
     }
-    else {
-      it++;
+  }
+    
+  return pipe;
+}
+  
+void EventDispatcher::Register(UserTable* pTab)
+{
+  if (pTab != NULL) {
+    Inotify* pIn = pTab->GetInotify();
+    if (pIn != NULL) {
+      int fd = pIn->GetDescriptor();
+      if (fd != -1) {
+        m_maps.insert(FDUT_MAP::value_type(fd, pTab));
+        Rebuild();
+      }
+    }
+  }
+}
+  
+void EventDispatcher::Unregister(UserTable* pTab)
+{
+  FDUT_MAP::iterator it = m_maps.find(pTab->GetInotify()->GetDescriptor());
+  if (it != m_maps.end()) {
+    m_maps.erase(it);
+    Rebuild();
+  }
+}
+
+void EventDispatcher::Rebuild()
+{
+  // delete old data if exists
+  if (m_pPoll != NULL)
+    delete[] m_pPoll;
+    
+  // allocate memory
+  m_size = m_maps.size() + 2;
+  m_pPoll = new struct pollfd[m_size];
+  
+  // add pipe descriptor
+  m_pPoll[0].fd = m_iPipeFd;
+  m_pPoll[0].events = POLLIN;
+  m_pPoll[0].revents = 0;
+  
+  // add table management descriptor
+  m_pPoll[1].fd = m_iMgmtFd;
+  m_pPoll[1].events = POLLIN;
+  m_pPoll[1].revents = 0;
+  
+  // add all inotify descriptors
+  FDUT_MAP::iterator it = m_maps.begin();
+  for (size_t i=2; i<m_size; i++, it++) {
+    m_pPoll[i].fd = (*it).first;
+    m_pPoll[i].events = POLLIN;
+    m_pPoll[i].revents = 0;
+  }
+}
+
+void EventDispatcher::ProcessMgmtEvents()
+{
+  m_pIn->WaitForEvents(true);
+  
+  InotifyEvent e;
+  
+  while (m_pIn->GetEvent(e)) {
+    if (e.GetWatch() == m_pSys) {
+      if (e.IsType(IN_DELETE_SELF) || e.IsType(IN_UNMOUNT)) {
+        syslog(LOG_CRIT, "base directory destroyed, exitting");
+        g_fFinish = true;
+      }
+      else if (!e.GetName().empty()) {
+        SUT_MAP::iterator it = g_ut.find(m_pSys->GetPath() + e.GetName());
+        if (it != g_ut.end()) {
+          UserTable* pUt = (*it).second;
+          if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
+            syslog(LOG_INFO, "system table %s changed, reloading", e.GetName().c_str());
+            pUt->Dispose();
+            pUt->Load();
+          }
+          else if (e.IsType(IN_MOVED_FROM) || e.IsType(IN_DELETE)) {
+            syslog(LOG_INFO, "system table %s destroyed, removing", e.GetName().c_str());
+            delete pUt;
+            g_ut.erase(it);
+          }
+        }
+        else if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
+          syslog(LOG_INFO, "system table %s created, loading", e.GetName().c_str());
+          UserTable* pUt = new UserTable(this, e.GetName(), true);
+          g_ut.insert(SUT_MAP::value_type(std::string(INCRON_SYS_TABLE_BASE) + e.GetName(), pUt));
+          pUt->Load();
+        }
+      }
+    }
+    else if (e.GetWatch() == m_pUser) {
+      if (e.IsType(IN_DELETE_SELF) || e.IsType(IN_UNMOUNT)) {
+        syslog(LOG_CRIT, "base directory destroyed, exitting");
+        g_fFinish = true;
+      }
+      else if (!e.GetName().empty()) {
+        SUT_MAP::iterator it = g_ut.find(m_pUser->GetPath() + e.GetName());
+        if (it != g_ut.end()) {
+          UserTable* pUt = (*it).second;
+          if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
+            syslog(LOG_INFO, "table for user %s changed, reloading", e.GetName().c_str());
+            pUt->Dispose();
+            pUt->Load();
+          }
+          else if (e.IsType(IN_MOVED_FROM) || e.IsType(IN_DELETE)) {
+            syslog(LOG_INFO, "table for user %s destroyed, removing",  e.GetName().c_str());
+            delete pUt;
+            g_ut.erase(it);
+          }
+        }
+        else if (e.IsType(IN_CLOSE_WRITE) || e.IsType(IN_MOVED_TO)) {
+          if (UserTable::CheckUser(e.GetName().c_str())) {
+            syslog(LOG_INFO, "table for user %s created, loading", e.GetName().c_str());
+            UserTable* pUt = new UserTable(this, e.GetName(), false);
+            g_ut.insert(SUT_MAP::value_type(std::string(INCRON_USER_TABLE_BASE) + e.GetName(), pUt));
+            pUt->Load();
+          }
+        }
+      }
     }
   }
 }
 
-UserTable* EventDispatcher::FindTable(InotifyWatch* pW)
+
+
+
+UserTable::UserTable(EventDispatcher* pEd, const std::string& rUser, bool fSysTable)
+: m_user(rUser),
+  m_fSysTable(fSysTable)
 {
-  IWUT_MAP::iterator it = m_maps.find(pW);
-  if (it == m_maps.end())
-    return NULL;
-    
-  return (*it).second;
-}
-
-
-
-
-UserTable::UserTable(Inotify* pIn, EventDispatcher* pEd, const std::string& rUser)
-: m_user(rUser)
-{
-  m_pIn = pIn;
   m_pEd = pEd;
+  
+  m_in.SetNonBlock(true);
+  m_in.SetCloseOnExec(true);
 }
 
 UserTable::~UserTable()
@@ -115,7 +239,9 @@ UserTable::~UserTable()
   
 void UserTable::Load()
 {
-  m_tab.Load(InCronTab::GetUserTablePath(m_user));
+  m_tab.Load(m_fSysTable
+      ? InCronTab::GetSystemTablePath(m_user)
+      : InCronTab::GetUserTablePath(m_user));
   
   int cnt = m_tab.GetCount();
   for (int i=0; i<cnt; i++) {
@@ -123,27 +249,32 @@ void UserTable::Load()
     InotifyWatch* pW = new InotifyWatch(rE.GetPath(), rE.GetMask());
     
     // warning only - permissions may change later
-    if (!MayAccess(rE.GetPath(), NO_FOLLOW(rE.GetMask())))
+    if (!(m_fSysTable || MayAccess(rE.GetPath(), DONT_FOLLOW(rE.GetMask()))))
       syslog(LOG_WARNING, "access denied on %s - events will be discarded silently", rE.GetPath().c_str());
     
     try {
-      m_pIn->Add(pW);
-      m_pEd->Register(pW, this);
+      m_in.Add(pW);
       m_map.insert(IWCE_MAP::value_type(pW, &rE));
     } catch (InotifyException e) {
-      syslog(LOG_ERR, "cannot create watch for user %s", m_user.c_str());
+      if (m_fSysTable)
+        syslog(LOG_ERR, "cannot create watch for system table %s: (%i) %s", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()));
+      else
+        syslog(LOG_ERR, "cannot create watch for user %s: (%i) %s", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()));
       delete pW;
     }
   }
+  
+  m_pEd->Register(this);
 }
 
 void UserTable::Dispose()
 {
+  m_pEd->Unregister(this);
+  
   IWCE_MAP::iterator it = m_map.begin();
   while (it != m_map.end()) {
     InotifyWatch* pW = (*it).first;
-    m_pEd->Unregister(pW);
-    m_pIn->Remove(pW);
+    m_in.Remove(pW);
     delete pW;
     it++;
   }
@@ -161,7 +292,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     return;
   
   // discard event if user has no access rights to watch path
-  if (!MayAccess(pW->GetPath(), NO_FOLLOW(rEvt.GetMask())))
+  if (!(m_fSysTable || MayAccess(pW->GetPath(), DONT_FOLLOW(rEvt.GetMask()))))
     return;
   
   std::string cmd;
@@ -218,7 +349,10 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     return;
   }
   
-  syslog(LOG_INFO, "(%s) CMD (%s)", m_user.c_str(), cmd.c_str());
+  if (m_fSysTable)
+    syslog(LOG_INFO, "(system::%s) CMD (%s)", m_user.c_str(), cmd.c_str());
+  else
+    syslog(LOG_INFO, "(%s) CMD (%s)", m_user.c_str(), cmd.c_str());
   
   if (pE->IsNoLoop())
     pW->SetEnabled(false);
@@ -227,14 +361,25 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   pd.pid = fork();
   if (pd.pid == 0) {
     
-    struct passwd* pwd = getpwnam(m_user.c_str());
-    if (    pwd == NULL                 // user not found
-        ||  setgid(pwd->pw_gid) != 0    // setting GID failed
-        ||  setuid(pwd->pw_uid) != 0    // setting UID failed
-        ||  execvp(argv[0], argv) != 0) // exec failed
-    {
-      syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
-      _exit(1);
+    // for system table
+    if (m_fSysTable) {
+      if (execvp(argv[0], argv) != 0) // exec failed
+      {
+        syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
+        _exit(1);
+      }
+    }
+    else {
+      // for user table
+      struct passwd* pwd = getpwnam(m_user.c_str());
+      if (    pwd == NULL                 // user not found
+          ||  setgid(pwd->pw_gid) != 0    // setting GID failed
+          ||  setuid(pwd->pw_uid) != 0    // setting UID failed
+          ||  execvp(argv[0], argv) != 0) // exec failed
+      {
+        syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
+        _exit(1);
+      }
     }
   }
   else if (pd.pid > 0) {
@@ -339,6 +484,10 @@ bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
   
   // retrieve user data
   struct passwd* pwd = getpwnam(m_user.c_str());
+  
+  // root may always access
+  if (pwd->pw_uid == 0)
+    return true;
   
   // file accesible to group
   if (st.st_mode & S_IRWXG) {

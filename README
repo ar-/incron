@@ -84,6 +84,10 @@ It have to monitor all events on files in /tmp. Here is it:
 
 /tmp IN_ALL_EVENTS efg $@/$# $&
 
+Since 0.4.0 also system tables are supported. They are located in
+/etc/incron.d and their commands use root privileges. System tables
+are intended to be changed directly (without incrontab).
+
 
 5. Bugs, suggestions
 THIS PROGRAM IS AN ALPHA VERSION. IT PROBABLY CONTAINS BUGS AND

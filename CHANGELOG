@@ -1,3 +1,15 @@
+0.4.0    2007-01-13
+* based on inotify-cxx 0.7.0
+* incrontab has a feature to find out supported event types (--types or -t)
+* incrond now supports command line arguments
+* incrond can be run on foreground (--foreground, -n)
+* incrond can be simply stopped (--kill, -k)
+* support for system tables (/etc/incron.d) added
+* eaccess() replaced by euiaccess() (#0000125)
+* each table now use its own inotify descriptor (#0000129)
+* descriptors are closed on executing child processes
+
+
 0.3.5    2007-01-09
 * based on inotify-cxx 0.6.3
 * a security bug related to access rights to watched files fixed (#0000119)

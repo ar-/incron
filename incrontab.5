@@ -1,8 +1,12 @@
-.TH "incrontab" "5" "0.3.5" "Lukas Jelinek" "incron documentation"
+.TH "incrontab" "5" "0.4.0" "Lukas Jelinek" "incron documentation"
 .SH "NAME"
 incrontab \- tables for driving inotify cron (incron)
 .SH "DESCRIPTION"
-An incrontab file contains instructions to the \fIincrond\fR(8) daemon of the general form: "run this command on these file events". Each user has their own incrontab, and commands in any given incrontab will be executed as the user who owns the incrontab. System users (such as apache, postfix, nobody etc.) may have their own incrontab.
+An incrontab file contains instructions to the \fIincrond\fR(8) daemon of the general form: "run this command on these file events". There are two categories of tables: system tables (with root privileges) and user tables (with user privileges).
+
+System tables are located in /etc/incron.d and may have any names. Each system table exists separately inside incron and their watches never collide.
+
+Each user has their own table, and commands in any given incrontab will be executed as the user who owns the incrontab. System users (such as apache, postfix, nobody etc.) may have their own incrontab.
 
 incrontab files are read when the \fIincrond\fR(8) daemon starts and after any change (incrontab file are being hooked when incrond is running).
 
@@ -12,7 +16,7 @@ Blank lines are ignored. The general line format is the following:
 
 Where \fIpath\fR is an absolute filesystem path, \fImask\fR is an event mask (in symbolic or numeric form) and \fIcommand\fR is an executable file (or a script) with its arguments. The executable file may be noted as an absolute path or only as the name itself (PATH locations are examined).
 
-Please remember that the same path may occur only once (otherwise the behavior is undefined).
+Please remember that the same path may occur only once per table (otherwise only the first occurrence takes effect and an error message is emitted to the system log).
 .SH "EXAMPLE"
 These are some example rules which can be used in an incrontab file:
 
@@ -31,6 +35,7 @@ The second line monitors accesses (readings) on the /usr/bin directory. The appl
 The third example is used for monitoring the /home directory for newly create files or directories (it practically means an event is sent when a new user is added). This event is processed by a program specified by an absolute path.
 
 And the final line shows how to use numeric event mask instead of textual one. The value 12 is exactly the same as IN_ATTRIB,IN_CLOSE_WRITE.
+
 .SH "SEE ALSO"
 incrond(8), incrontab(1)
 .SH "AUTHOR"

@@ -5,7 +5,7 @@
  * 
  * string tokenizer
  * 
- * Copyright (C) 2006 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of one of the following licenses:
@@ -97,8 +97,9 @@ void StringTokenizer::_GetNextToken(std::string& rToken, bool fStripPrefix)
 
 void StringTokenizer::_GetNextTokenNoPrefix(std::string& rToken)
 {
+  const char* s = m_str.c_str();
   for (SIZE i=m_pos; i<m_len; i++) {
-    if (m_str[i] == m_cDelim) {
+    if (s[i] == m_cDelim) {
       rToken = m_str.substr(m_pos, i - m_pos);
       m_pos = i + 1;
       return;
@@ -112,8 +113,9 @@ void StringTokenizer::_GetNextTokenNoPrefix(std::string& rToken)
 void StringTokenizer::_GetNextTokenWithPrefix(std::string& rToken)
 {
   int pref = 0;
+  const char* s = m_str.c_str();
   for (SIZE i=m_pos; i<m_len; i++) {
-    if (m_str[i] == m_cDelim) {
+    if (s[i] == m_cDelim) {
       if (pref == 0) {
         rToken = m_str.substr(m_pos, i - m_pos);
         m_pos = i + 1;
@@ -123,7 +125,7 @@ void StringTokenizer::_GetNextTokenWithPrefix(std::string& rToken)
         pref = 0;
       }
     }
-    else if (m_str[i] == m_cPrefix) {
+    else if (s[i] == m_cPrefix) {
       if (pref == 1)
         pref = 0;
       else

@@ -223,8 +223,15 @@ bool InCronTab::CheckUser(const std::string& rUser)
 
 std::string InCronTab::GetUserTablePath(const std::string& rUser)
 {
-  std::string s(INCRON_TABLE_BASE);
+  std::string s(INCRON_USER_TABLE_BASE);
   s.append(rUser);
+  return s;
+}
+
+std::string InCronTab::GetSystemTablePath(const std::string& rName)
+{
+  std::string s(INCRON_SYS_TABLE_BASE);
+  s.append(rName);
   return s;
 }
 

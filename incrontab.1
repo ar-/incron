@@ -1,10 +1,10 @@
-.TH "incrontab" "1" "0.3.5" "Lukas Jelinek" "incron documentation"
+.TH "incrontab" "1" "0.4.0" "Lukas Jelinek" "incron documentation"
 .SH "NAME"
 incrontab \- table manipulator for inotify cron (incron)
 .SH "SYNOPSIS"
 \fBincrontab\fR [\fB\-u\fR \fIuser\fR] \fIfile\fR
 
-\fBincrontab\fR [\fB\-u\fR \fIuser\fR] [\fB\-l\fR | \fB\-r\fR | \fB\-e\fR]
+\fBincrontab\fR [\fB\-u\fR \fIuser\fR] [\fB\-l\fR | \fB\-r\fR | \fB\-e\fR | \fB\-t\fR]
 .SH "DESCRIPTION"
 incrontab is a table manipulator for the inotify cron (incron) system. It creates, removes, modifies and lists user tables (\fIincrontab\fR(5)).
 
@@ -25,6 +25,8 @@ The first form of this command imports a file, validates it and stores to the ta
 \fB\-r\fR (or \fB\-\-remove\fR) option causes the current table (if any) is permanently remove without any warning or confirmation. Use with caution!
 
 \fB\-e\fR (or \fB\-\-edit\fR) option causes executing the editor specified by the EDITOR environment variable (if not defined the hard\-coded editor is executed instead). You can edit your incron table now. If the table is changed it stores the modified version. It's not recommended to use graphical editors (such as gVim, KEdit etc.) due to possible problems with connecting to the X server.
+
+\fB\-t\fR (or \fB\-\-types\fR) option causes the list of supported event types (delimited by commas) is printed to the standard output. This feature is intended for front\-end applications to find out which event types was compiled in.
 .SH "SEE ALSO"
 incrond(8), incrontab(5)
 .SH "AUTHOR"
