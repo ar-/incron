@@ -5,7 +5,7 @@
  * 
  * inotify C++ interface
  * 
- * Copyright (C) 2006 Lukas Jelinek <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007 Lukas Jelinek <lukas@aiken.cz>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of one of the following licenses:
@@ -25,6 +25,9 @@
 #include <fcntl.h>
 
 #include "inotify-cxx.h"
+
+/// procfs inotify base path
+#define PROCFS_INOTIFY_BASE "/proc/sys/fs/inotify/"
 
 /// dump separator (between particular entries)
 #define DUMP_SEP \
@@ -93,6 +96,11 @@ uint32_t InotifyEvent::GetMaskByName(const std::string& rName)
   else if (rName == "IN_ONLYDIR")
     return IN_ONLYDIR;
 #endif // IN_ONLYDIR
+
+#ifdef IN_MOVE_SELF
+  else if (rName == "IN_MOVE_SELF")
+    return IN_MOVE_SELF;
+#endif // IN_MOVE_SELF
     
   return (uint32_t) 0;
 }
@@ -137,6 +145,14 @@ void InotifyEvent::DumpTypes(uint32_t uValue, std::string& rStr)
       DUMP_SEP;
       rStr.append("IN_CLOSE");
     }
+
+#ifdef IN_MOVE_SELF
+    if (IsType(uValue, IN_MOVE_SELF)) {
+      DUMP_SEP;
+      rStr.append("IN_MOVE_SELF");    
+    }
+#endif // IN_MOVE_SELF
+    
     else {
       if (IsType(uValue, IN_CLOSE_WRITE)) {
         DUMP_SEP;
@@ -250,6 +266,25 @@ void InotifyWatch::SetEnabled(bool fEnabled) throw (InotifyException)
   }
   
   m_fEnabled = fEnabled;
+  
+  IN_WRITE_END
+}
+
+void InotifyWatch::OnOneshotEvent()
+{
+  IN_WRITE_BEGIN
+  
+  if (!m_fEnabled) {
+    IN_WRITE_END_NOTHROW
+    throw InotifyException(IN_EXC_MSG("event cannot occur on disabled watch"), EINVAL, this);
+  }
+  
+  if (m_pInotify != NULL) {
+    m_pInotify->m_watches.erase(m_wd);
+    m_wd = -1;
+  }
+  
+  m_fEnabled = false;
   
   IN_WRITE_END
 }
@@ -411,6 +446,8 @@ void Inotify::WaitForEvents(bool fNoIntr) throw (InotifyException)
     InotifyWatch* pW = FindWatch(pEvt->wd);
     if (pW != NULL) {
       InotifyEvent evt(pEvt, pW);
+      if (InotifyEvent::IsType(pW->GetMask(), IN_ONESHOT))
+        pW->OnOneshotEvent();
       m_events.push_back(evt);
     }
     i += INOTIFY_EVENT_SIZE + (ssize_t) pEvt->len;
@@ -506,5 +543,57 @@ void Inotify::SetNonBlock(bool fNonBlock) throw (InotifyException)
   }
     
   IN_WRITE_END
-}  
+}
+
+uint32_t Inotify::GetCapability(InotifyCapability_t cap) throw (InotifyException)
+{
+  FILE* f = fopen(GetCapabilityPath(cap).c_str(), "r");
+  if (f == NULL)
+    throw InotifyException(IN_EXC_MSG("cannot get capability"), errno, NULL);
+    
+  unsigned int val = 0;
+  if (fscanf(f, "%u", &val) != 1) {
+    fclose(f);
+    throw InotifyException(IN_EXC_MSG("cannot get capability"), EIO, NULL);
+  }
+  
+  fclose(f);
+  
+  return (uint32_t) val;
+}
+
+void Inotify::SetCapability(InotifyCapability_t cap, uint32_t val) throw (InotifyException)
+{
+  FILE* f = fopen(GetCapabilityPath(cap).c_str(), "w");
+  if (f == NULL)
+    throw InotifyException(IN_EXC_MSG("cannot set capability"), errno, NULL);
+    
+  if (fprintf(f, "%u", (unsigned int) val) <= 0) {
+    fclose(f);
+    throw InotifyException(IN_EXC_MSG("cannot set capability"), EIO, NULL);
+  }
+  
+  fclose(f);
+}
+
+std::string Inotify::GetCapabilityPath(InotifyCapability_t cap) throw (InotifyException)
+{
+  std::string path(PROCFS_INOTIFY_BASE);
+  
+  switch (cap) {
+    case IN_MAX_EVENTS:
+      path.append("max_queued_events");
+      break;
+    case IN_MAX_INSTANCES:
+      path.append("max_user_instances");
+      break;
+    case IN_MAX_WATCHES:
+      path.append("max_user_watches");
+      break;
+    default:
+      throw InotifyException(IN_EXC_MSG("unknown capability type"), EINVAL, NULL);
+  }
+  
+  return path;
+}
 

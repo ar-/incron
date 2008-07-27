@@ -5,7 +5,7 @@
  * 
  * inotify cron system
  * 
- * Copyright (C) 2006 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -210,10 +210,11 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     
     struct passwd* pwd = getpwnam(m_user.c_str());
     if (    pwd == NULL                 // user not found
-        ||  setuid(pwd->pw_uid) != 0    // setting UID failed
         ||  setgid(pwd->pw_gid) != 0    // setting GID failed
+        ||  setuid(pwd->pw_uid) != 0    // setting UID failed
         ||  execvp(argv[0], argv) != 0) // exec failed
     {
+      syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
       _exit(1);
     }
   }

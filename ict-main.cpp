@@ -5,7 +5,7 @@
  * 
  * inotify cron system
  * 
- * Copyright (C) 2006 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -33,7 +33,7 @@
 const char* argp_program_version = INCRON_TAB_NAME " " INCRON_VERSION;
 const char* argp_program_bug_address = INCRON_BUG_ADDRESS;
 
-static char doc[] = "incrontab - incron table manipulator";
+static char doc[] = "incrontab - incron table manipulator\n(c) Lukas Jelinek, 2006, 2007";
 
 static char args_doc[] = "FILE";
 
@@ -203,7 +203,7 @@ bool edit_table(const char* user)
   uid_t iu = geteuid();
   uid_t ig = getegid();
 
-  if (seteuid(uid) != 0 || setegid(gid) != 0) {
+  if (setegid(gid) != 0 || seteuid(uid) != 0) {
     fprintf(stderr, "cannot change effective UID/GID for user %s: %s\n", user, strerror(errno));
     return false;
   }
@@ -220,13 +220,7 @@ bool edit_table(const char* user)
   time_t mt = (time_t) 0;
   const char* e = NULL;
   
-  if (fchmod(fd, 0644) != 0) {
-    fprintf(stderr, "cannot change mode of temporary file: %s\n", strerror(errno));
-    close(fd);
-    goto end;
-  }
-  
-  if (seteuid(iu) != 0 || setegid(ig) != 0) {
+  if (setegid(ig) != 0 || seteuid(iu) != 0) {
     fprintf(stderr, "cannot change effective UID/GID: %s\n", strerror(errno));
     close(fd);
     goto end;
@@ -278,7 +272,7 @@ bool edit_table(const char* user)
   {
     pid_t pid = fork();
     if (pid == 0) {
-      if (setuid(uid) != 0 || setgid(gid) != 0) {
+      if (setgid(gid) != 0 || setuid(uid) != 0) {
         fprintf(stderr, "cannot set user %s: %s\n", user, strerror(errno));
         goto end;
       }    
@@ -316,10 +310,16 @@ bool edit_table(const char* user)
   
   {
     InCronTab ict;
-    if (!ict.Load(s) || !ict.Save(tp)) {
+    if (ict.Load(s) && ict.Save(tp)) {
+      if (chmod(tp.c_str(), S_IRUSR | S_IWUSR) != 0) {
+        fprintf(stderr, "cannot change mode of temporary file: %s\n", strerror(errno));
+      }
+    }
+    else {
       fprintf(stderr, "cannot move temporary table: %s\n", strerror(errno));
       goto end;
     }
+    
   }
   
   ok = true;

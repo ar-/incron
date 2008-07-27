@@ -5,7 +5,7 @@
  * 
  * inotify C++ interface
  * 
- * Copyright (C) 2006 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of one of the following licenses:
@@ -50,6 +50,14 @@
  * It prepends the message by the function name.
  */
 #define IN_EXC_MSG(msg) (std::string(__PRETTY_FUNCTION__) + ": " + msg)
+
+/// inotify capability/limit identifiers 
+typedef enum
+{
+  IN_MAX_EVENTS     = 0,  ///< max. events in the kernel queue
+  IN_MAX_INSTANCES  = 1,  ///< max. inotify file descriptors per process
+  IN_MAX_WATCHES    = 2   ///< max. watches per file descriptor
+} InotifyCapability_t;
 
 /// inotify-cxx thread safety
 /**
@@ -469,6 +477,21 @@ public:
     return m_fEnabled;
   }
   
+  /// Checks whether the watch is recursive.
+  /**
+   * A recursive watch monitors a directory itself and all
+   * its subdirectories. This watch is a logical object
+   * which may have many underlying kernel watches.
+   * 
+   * \return currently always false (recursive watches not yet supported)
+   * \attention Recursive watches are currently NOT supported.
+   *            They are planned for future versions.
+   */
+  inline bool IsRecursive() const
+  {
+    return false;    
+  }
+  
 private:
   friend class Inotify;
 
@@ -479,6 +502,14 @@ private:
   bool m_fEnabled;      ///< events enabled yes/no
   
   IN_LOCK_DECL
+  
+  /// Disables the watch (if it has the one-shot flag).
+  /**
+   * This method must be called after receiving an event.
+   * It ensures the watch object is consistent with the kernel
+   * data. 
+   */
+  void OnOneshotEvent();
 };
 
 
@@ -719,6 +750,103 @@ public:
    * \sa GetDescriptor()
    */
   void SetNonBlock(bool fNonBlock) throw (InotifyException);
+  
+  /// Acquires a particular inotify capability/limit.
+  /**
+   * \param[in] cap capability/limit identifier
+   * \return capability/limit value
+   * \throw InotifyException thrown if the given value cannot be acquired
+   */
+  static uint32_t GetCapability(InotifyCapability_t cap) throw (InotifyException);
+  
+  /// Modifies a particular inotify capability/limit.
+  /**
+   * \param[in] cap capability/limit identifier
+   * \param[in] val new capability/limit value
+   * \throw InotifyException thrown if the given value cannot be set
+   * \attention Using this function requires root privileges.
+   *            Beware of setting extensive values - it may seriously
+   *            affect system performance and/or stability.
+   */
+  static void SetCapability(InotifyCapability_t cap, uint32_t val) throw (InotifyException);
+  
+  /// Returns the maximum number of events in the kernel queue.
+  /**
+   * \return maximum number of events in the kernel queue
+   * \throw InotifyException thrown if the given value cannot be acquired
+   */
+  inline static uint32_t GetMaxEvents() throw (InotifyException)
+  {
+    return GetCapability(IN_MAX_EVENTS);
+  }
+  
+  /// Sets the maximum number of events in the kernel queue.
+  /**
+   * \param[in] val new value
+   * \throw InotifyException thrown if the given value cannot be set
+   * \attention Using this function requires root privileges.
+   *            Beware of setting extensive values - the greater value
+   *            is set here the more physical memory may be used for the inotify
+   *            infrastructure.
+   */
+  inline static void SetMaxEvents(uint32_t val) throw (InotifyException)
+  {
+    SetCapability(IN_MAX_EVENTS, val);
+  }
+  
+  /// Returns the maximum number of inotify instances per process.
+  /**
+   * It means the maximum number of open inotify file descriptors
+   * per running process.
+   * 
+   * \return maximum number of inotify instances
+   * \throw InotifyException thrown if the given value cannot be acquired
+   */
+  inline static uint32_t GetMaxInstances() throw (InotifyException)
+  {
+    return GetCapability(IN_MAX_INSTANCES);
+  }
+  
+  /// Sets the maximum number of inotify instances per process.
+  /**
+   * \param[in] val new value
+   * \throw InotifyException thrown if the given value cannot be set
+   * \attention Using this function requires root privileges.
+   *            Beware of setting extensive values - the greater value
+   *            is set here the more physical memory may be used for the inotify
+   *            infrastructure.
+   */
+  inline static void SetMaxInstances(uint32_t val) throw (InotifyException)
+  {
+    SetCapability(IN_MAX_INSTANCES, val);
+  }
+  
+  /// Returns the maximum number of inotify watches per instance.
+  /**
+   * It means the maximum number of inotify watches per inotify
+   * file descriptor.
+   * 
+   * \return maximum number of inotify watches
+   * \throw InotifyException thrown if the given value cannot be acquired
+   */
+  inline static uint32_t GetMaxWatches() throw (InotifyException)
+  {
+    return GetCapability(IN_MAX_WATCHES);
+  }
+  
+  /// Sets the maximum number of inotify watches per instance.
+  /**
+   * \param[in] val new value
+   * \throw InotifyException thrown if the given value cannot be set
+   * \attention Using this function requires root privileges.
+   *            Beware of setting extensive values - the greater value
+   *            is set here the more physical memory may be used for the inotify
+   *            infrastructure.
+   */
+  inline static void SetMaxWatches(uint32_t val) throw (InotifyException)
+  {
+    SetCapability(IN_MAX_WATCHES, val);
+  }
 
 private: 
   int m_fd;                             ///< file descriptor
@@ -730,6 +858,8 @@ private:
   IN_LOCK_DECL
   
   friend class InotifyWatch;
+  
+  static std::string GetCapabilityPath(InotifyCapability_t cap) throw (InotifyException);
 };
 
 
