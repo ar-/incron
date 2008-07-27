@@ -31,6 +31,7 @@
 #include <map>
 
 // Please ensure that the following headers take the right place
+#include <sys/syscall.h>
 #include <sys/inotify.h>
 
 // Use this if syscalls not defined

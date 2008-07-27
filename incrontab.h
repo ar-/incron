@@ -103,6 +103,21 @@ public:
     return m_fNoLoop;
   }
   
+  /// Add backslashes before spaces in the source path.
+  /**
+   * It also adds backslashes before all original backslashes
+   * of course.
+   * 
+   * The source string is not modified and a copy is returned
+   * instead.
+   * 
+   * This method is intended to be used for paths in user tables.
+   * 
+   * \param[in] rPath path to be modified
+   * \return modified path
+   */
+  static std::string GetSafePath(const std::string& rPath);
+  
 protected:
   std::string m_path; ///< watch path
   uint32_t m_uMask;   ///< event mask

@@ -20,31 +20,121 @@
  */
 
 
+#include <sstream>
+
 #include "strtok.h"
 
-typedef std::string::size_type SIZE;
-
-StringTokenizer::StringTokenizer(const std::string& rStr, char cDelim)
+StringTokenizer::StringTokenizer(const std::string& rStr, char cDelim, char cPrefix)
 {
   m_str = rStr;
   m_cDelim = cDelim;
+  m_cPrefix = cPrefix;
   m_pos = 0;
   m_len = rStr.length();
 }
     
-std::string StringTokenizer::GetNextToken()
+std::string StringTokenizer::GetNextToken(bool fSkipEmpty)
 {
   std::string s;
   
+  do {
+    _GetNextToken(s, true);
+  } while (fSkipEmpty && s.empty() && m_pos < m_len);
+  
+  return s;
+}
+
+std::string StringTokenizer::GetNextTokenRaw(bool fSkipEmpty)
+{
+  std::string s;
+  
+  do {
+    _GetNextToken(s, false);
+  } while (fSkipEmpty && s.empty() && m_pos < m_len);
+  
+  return s;
+}
+
+std::string StringTokenizer::GetRemainder()
+{
+  return  m_cPrefix == '\0'
+      ?   m_str.substr(m_pos)
+      :   StripPrefix(m_str.c_str() + m_pos, m_len - m_pos);
+}
+
+std::string StringTokenizer::StripPrefix(const char* s, SIZE cnt)
+{
+  std::ostringstream stream;
+  SIZE pos = 0;
+  while (pos < cnt) {
+    if (s[pos] == m_cPrefix) {
+      if ((pos < cnt - 1) && s[pos+1] == m_cPrefix) {
+        stream << m_cPrefix;
+        pos++;
+      }
+    }
+    else {
+      stream << s[pos];
+    }
+    
+    pos++;
+  }
+  
+  return stream.str();
+}
+
+void StringTokenizer::_GetNextToken(std::string& rToken, bool fStripPrefix)
+{
+  if (m_cPrefix == '\0') {
+    _GetNextTokenNoPrefix(rToken);
+  }
+  else {
+    _GetNextTokenWithPrefix(rToken);
+    if (fStripPrefix)
+      rToken = StripPrefix(rToken.c_str(), rToken.length());
+  }
+}
+
+void StringTokenizer::_GetNextTokenNoPrefix(std::string& rToken)
+{
   for (SIZE i=m_pos; i<m_len; i++) {
     if (m_str[i] == m_cDelim) {
-      s = m_str.substr(m_pos, i - m_pos);
+      rToken = m_str.substr(m_pos, i - m_pos);
       m_pos = i + 1;
-      return s;
+      return;
     }    
   }
   
-  s = m_str.substr(m_pos);
+  rToken = m_str.substr(m_pos);
   m_pos = m_len;
-  return s;
 }
+  
+void StringTokenizer::_GetNextTokenWithPrefix(std::string& rToken)
+{
+  int pref = 0;
+  for (SIZE i=m_pos; i<m_len; i++) {
+    if (m_str[i] == m_cDelim) {
+      if (pref == 0) {
+        rToken = m_str.substr(m_pos, i - m_pos);
+        m_pos = i + 1;
+        return;
+      }
+      else {
+        pref = 0;
+      }
+    }
+    else if (m_str[i] == m_cPrefix) {
+      if (pref == 1)
+        pref = 0;
+      else
+        pref = 1;
+    }
+    else {
+      pref = 0;
+    }
+  }
+  
+  rToken = m_str.substr(m_pos);
+  m_pos = m_len;
+}
+

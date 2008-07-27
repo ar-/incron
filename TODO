@@ -1,3 +1,4 @@
 Currently pending tasks:
 
-*** nothing to do ***
+#0000101 - Temporary files not removed
+#0000103 - User overriding doesn't work

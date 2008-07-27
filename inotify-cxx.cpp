@@ -35,6 +35,7 @@
   })
 
 
+
 int32_t InotifyEvent::GetDescriptor() const
 {
   return  m_pWatch != NULL            // if watch exists
@@ -54,6 +55,8 @@ uint32_t InotifyEvent::GetMaskByName(const std::string& rName)
     return IN_CLOSE_WRITE;
   else if (rName == "IN_CLOSE_NOWRITE")
     return IN_CLOSE_NOWRITE;
+  else if (rName == "IN_OPEN")
+    return IN_OPEN;
   else if (rName == "IN_MOVED_FROM")
     return IN_MOVED_FROM;
   else if (rName == "IN_MOVED_TO")

@@ -62,24 +62,39 @@ std::string InCronTabEntry::ToString() const
       m.append(",IN_NO_LOOP");
   }
   
-  ss << m_path << " " << m << " " << m_cmd;
+  ss << GetSafePath(m_path) << " " << m << " " << m_cmd;
   return ss.str();
 }
 
 bool InCronTabEntry::Parse(const std::string& rStr, InCronTabEntry& rEntry)
 {
-  char s1[1000], s2[1000], s3[1000];
   unsigned long u;
+  std::string s1, s2, s3;
   
-  if (sscanf(rStr.c_str(), "%s %s %[^\n]", s1, s2, s3) != 3)
+  StringTokenizer tok(rStr, ' ', '\\');
+  if (!tok.HasMoreTokens())
     return false;
+    
+  s1 = tok.GetNextToken(true);
+  if (!tok.HasMoreTokens())
+    return false;
+    
+  s2 = tok.GetNextToken(true);
+  if (!tok.HasMoreTokens())
+    return false;
+  
+  tok.SetNoPrefix();
+  s3 = tok.GetRemainder();
+  SIZE len = s3.length();
+  if (len > 0 && s3[len-1] == '\n')
+    s3.resize(len-1);
   
   rEntry.m_path = s1;
   rEntry.m_cmd = s3;
   rEntry.m_uMask = 0;
   rEntry.m_fNoLoop = false;
   
-  if (sscanf(s2, "%lu", &u) == 1) {
+  if (sscanf(s2.c_str(), "%lu", &u) == 1) {
     rEntry.m_uMask = (uint32_t) u;
   }
   else {
@@ -94,6 +109,26 @@ bool InCronTabEntry::Parse(const std::string& rStr, InCronTabEntry& rEntry)
   }
   
   return true;
+}
+
+std::string InCronTabEntry::GetSafePath(const std::string& rPath)
+{
+  std::ostringstream stream;
+  
+  SIZE len = rPath.length();
+  for (SIZE i = 0; i < len; i++) {
+    if (rPath[i] == ' ') {
+      stream << "\\ ";
+    }
+    else if (rPath[i] == '\\') {
+      stream << "\\\\";
+    }
+    else {
+      stream << rPath[i];
+    }
+  }
+  
+  return stream.str();
 }
 
 bool InCronTab::Load(const std::string& rPath)
@@ -180,4 +215,6 @@ std::string InCronTab::GetUserTablePath(const std::string& rUser)
   s.append(rUser);
   return s;
 }
+
+
 

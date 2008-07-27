@@ -62,9 +62,7 @@ void EventDispatcher::Unregister(InotifyWatch* pWatch)
 {
   IWUT_MAP::iterator it = m_maps.find(pWatch);
   if (it == m_maps.end())
-    return;
-    
-  m_maps.erase(it);
+    m_maps.erase(it);
 }
   
 void EventDispatcher::UnregisterAll(UserTable* pTab)
@@ -159,19 +157,32 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
         cmd.append(cs.substr(oldpos, pos-oldpos+1));
         oldpos = pos + 2;
       }
-      else if (cs[px] == '@') {
-        cmd.append(cs.substr(oldpos, pos-oldpos));
-        cmd.append(pW->GetPath());
-        oldpos = pos + 2;
-      }
-      else if (cs[px] == '#') {
-        cmd.append(cs.substr(oldpos, pos-oldpos));
-        cmd.append(rEvt.GetName());
-        oldpos = pos + 2;
-      }
       else {
         cmd.append(cs.substr(oldpos, pos-oldpos));
-        oldpos = pos + 1;
+        if (cs[px] == '@') {          // base path
+          cmd.append(pW->GetPath());
+          oldpos = pos + 2;
+        }
+        else if (cs[px] == '#') {     // file name
+          cmd.append(rEvt.GetName());
+          oldpos = pos + 2;
+        }
+        else if (cs[px] == '%') {     // mask symbols
+          std::string s;
+          rEvt.DumpTypes(s);
+          cmd.append(s);
+          oldpos = pos + 2;
+        }
+        else if (cs[px] == '&') {     // numeric mask
+          char* s;
+          asprintf(&s, "%u", (unsigned) rEvt.GetMask());
+          cmd.append(s);
+          free(s);
+          oldpos = pos + 2;
+        }
+        else {
+          oldpos = pos + 1;
+        }
       }
     }
     else {
@@ -241,7 +252,7 @@ bool UserTable::PrepareArgs(const std::string& rCmd, int& argc, char**& argv)
   if (rCmd.empty())
     return false;
     
-  StringTokenizer tok(rCmd, ' ');
+  StringTokenizer tok(rCmd, ' ', '\\');
   std::deque<std::string> args;
   while (tok.HasMoreTokens()) {
     args.push_back(tok.GetNextToken());

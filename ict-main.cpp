@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+#include "incron.h"
 #include "incrontab.h"
 
 
@@ -29,18 +30,18 @@
 #define INCRON_DEFAULT_EDITOR "vim"
 
 
-const char* argp_program_version = "incrontab 0.2.2";
-const char* argp_program_bug_address = "<bugs@aiken.cz>";
+const char* argp_program_version = INCRON_TAB_NAME " " INCRON_VERSION;
+const char* argp_program_bug_address = INCRON_BUG_ADDRESS;
 
-static char doc[] = "Table manipulator for incrond (inotify cron daemon)";
+static char doc[] = "incrontab - incron table manipulator";
 
 static char args_doc[] = "FILE";
 
 static struct argp_option options[] = {
-  {"list",    'l', 0,      0,  "List current table" },
-  {"remove",  'r', 0,      0,  "Remove table completely" },
-  {"edit",    'e', 0,      0,  "Edit table" },
-  {"user",    'u', "USER", 0,  "Override current user" },
+  {"list",    'l', 0,      0,  "List the current table" },
+  {"remove",  'r', 0,      0,  "Remove the table completely" },
+  {"edit",    'e', 0,      0,  "Edit the table" },
+  {"user",    'u', "USER", 0,  "Override the current user" },
   { 0 }
 };
 
@@ -113,7 +114,8 @@ void unlink_suid(const char* file, uid_t uid)
 {
   uid_t iu = geteuid();
   seteuid(uid);
-  unlink(file);
+  if (unlink(file) != 0)
+    perror("cannot remove temporary file");
   seteuid(iu);
 }
 
@@ -211,9 +213,9 @@ bool edit_table(const char* user)
   strcpy(s, "/tmp/incron.table-XXXXXX");
   
   uid_t iu = geteuid();
-  
+
   if (seteuid(uid) != 0) {
-    fprintf(stderr, "cannot change effective UID: %s\n", strerror(errno));
+    fprintf(stderr, "cannot change effective UID to %i: %s\n", (int) uid, strerror(errno));
     return false;
   }
   

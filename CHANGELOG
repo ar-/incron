@@ -1,5 +1,12 @@
+0.3.0    2006-11-12
+* based on inotify-cxx 0.5.2 (fixes a problem with ignoring IN_OPEN)
+* two new special symbols ($% for flags as names, $& for numeric flags)
+* whitespaces in paths now allowed (by prepending a backslash) (#0000098)
+* some changes in logging etc.
+
+
 0.2.3    2006-10-30
-* problems with unwanted IN_NO_LOOP have been fixes (#0000097)
+* problems with unwanted IN_NO_LOOP have been fixed (#0000097)
 
 
 0.2.2    2006-10-29

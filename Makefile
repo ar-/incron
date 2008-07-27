@@ -56,10 +56,10 @@ uninstall:
 
 .POSIX:
 
-icd-main.o:	icd-main.cpp inotify-cxx.h incrontab.h usertable.h
+icd-main.o:	icd-main.cpp inotify-cxx.h incrontab.h usertable.h incron.h
 incrontab.o:	incrontab.cpp incrontab.h inotify-cxx.h strtok.h
 inotify-cxx.o:	inotify-cxx.cpp inotify-cxx.h
 usertable.o:	usertable.cpp usertable.h strtok.h
-ict-main.o:	ict-main.cpp incrontab.h
+ict-main.o:	ict-main.cpp incrontab.h incron.h
 strtok.o:	strtok.cpp strtok.h
 

@@ -23,15 +23,13 @@
 #include <sys/poll.h>
 
 #include "inotify-cxx.h"
-#include "incrontab.h"
 
+#include "incron.h"
+#include "incrontab.h"
 #include "usertable.h"
 
 /// Daemon yes/no
 #define DAEMON true
-
-/// Application name
-#define INCRON_APP_NAME "incrond"
 
 /// Logging options (console as fallback, log PID)
 #define INCRON_LOG_OPTS (LOG_CONS | LOG_PID)
@@ -128,9 +126,9 @@ void load_tables(Inotify* pIn, EventDispatcher* pEd) throw (InotifyException)
  */
 int main(int argc, char** argv)
 {
-  openlog(INCRON_APP_NAME, INCRON_LOG_OPTS, INCRON_LOG_FACIL);
+  openlog(INCRON_DAEMON_NAME, INCRON_LOG_OPTS, INCRON_LOG_FACIL);
   
-  syslog(LOG_NOTICE, "starting service");
+  syslog(LOG_NOTICE, "starting service (version %s, built on %s %s)", INCRON_VERSION, __DATE__, __TIME__);
   
   try {
     Inotify in;

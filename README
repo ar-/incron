@@ -22,7 +22,7 @@ rather than time periods.
 
 2. Requirements
 * Linux kernel 2.6.13 or later (with inotify compiled in)
-* inotify headers (inotify.h, inotify-syscalls.h) installed in
+* inotify headers (inotify.h, sometimes inotify-syscalls.h) installed in
   <INCLUDE_DIR>/sys. The most common place is /usr/include/sys.
 * GCC 4.x compiler (probably works also with GCC 3.4, possibly with
   older versions too)
@@ -68,15 +68,23 @@ The command may contain these wildcards:
   $$ - a dollar sign
   $@ - the watched filesystem path (see above)
   $# - the event-related file name
+  $% - the event flags (textually)
+  $& - the event flags (numerically)
 
 The mask may additionaly contain a special symbol IN_NO_LOOP which
 disables events occurred during the event handling (to avoid loops).
 
-Example: You need to run program 'abc' with the full file path as
+Example 1: You need to run program 'abc' with the full file path as
 an argument every time a file is changed in /var/mail. One of
 the solutions follows:
 
 /var/mail IN_CLOSE_WRITE abc $@/$#
+
+Example 2: You need to run program 'efg' with the full file path as
+the first argument and the numeric event flags as the second one.
+It have to monitor all events on files in /tmp. Here is it:
+
+/tmp IN_ALL_EVENTS efg $@/$# $&
 
 
 5. Bugs, suggestions
