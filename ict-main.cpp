@@ -5,7 +5,7 @@
  * 
  * inotify cron system
  * 
- * Copyright (C) 2006, 2007 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <cstring>
 
 #include "inotify-cxx.h"
 #include "appargs.h"
@@ -45,7 +46,7 @@
 
 /// incrontab description string
 #define INCRONTAB_DESCRIPTION "incrontab - inotify cron table manipulator\n" \
-                              "(c) Lukas Jelinek, 2006, 2007"
+                              "(c) Lukas Jelinek, 2006, 2007, 208"
 
 /// incrontab help string
 #define INCRONTAB_HELP INCRONTAB_DESCRIPTION "\n\n" \
@@ -64,7 +65,7 @@
           "These options may be used:\n" \
           "  -u <USER>, --user=<USER>     overrides current user (requires root privileges)\n" \
           "  -f <FILE>, --config=<FILE>   overrides default configuration file  (requires root privileges)\n\n" \
-          "For reporting bugs please use http:://bts.aiken.cz\n"
+          "For reporting bugs please use http://bts.aiken.cz\n"
                 
 
 

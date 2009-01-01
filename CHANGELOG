@@ -1,3 +1,9 @@
+0.5.8    2008-12-29
+* more includes added for GCC 4.3 compatibility (#0000178)
+* typo in help messages fixed (#0000172)
+* some warnings fixed (#0000372)
+
+
 0.5.7    2007-09-04
 * man pages updated (mainly due to #0000157)
 * some includes added for GCC 4.3 compatibility (#0000158)

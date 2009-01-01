@@ -5,7 +5,7 @@
  * 
  * incron configuration
  * 
- * Copyright (C) 2007 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -18,7 +18,7 @@
 #define INCRONCFG_H_
 
 
-#include <string>
+#include <cstring>
 #include <map>
 
 /// Configuration class.

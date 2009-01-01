@@ -3,7 +3,7 @@
 /**
  * \file appinst.cpp
  * 
- * Copyright (C) 2007 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of one of the following licenses:

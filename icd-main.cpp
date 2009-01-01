@@ -5,7 +5,7 @@
  * 
  * inotify cron system
  * 
- * Copyright (C) 2006, 2007 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <sys/poll.h>
 #include <sys/stat.h>
+#include <cstring>
 
 #include "inotify-cxx.h"
 #include "appinst.h"
@@ -45,7 +46,7 @@
 
 /// incrontab description string
 #define INCROND_DESCRIPTION "incrond - inotify cron daemon\n" \
-                            "(c) Lukas Jelinek, 2006, 2007"
+                            "(c) Lukas Jelinek, 2006, 2007, 2008"
 
 /// incrontab help string
 #define INCROND_HELP INCROND_DESCRIPTION "\n\n" \
@@ -58,7 +59,7 @@
           "  -k, --kill                   terminates running instance of incrond\n" \
           "  -f <FILE>, --config=<FILE>   overrides default configuration file  (requires root privileges)\n" \
           "  -V, --version                prints program version\n\n" \
-          "For reporting bugs please use http:://bts.aiken.cz\n"
+          "For reporting bugs please use http://bts.aiken.cz\n"
 
 
 
@@ -99,7 +100,9 @@ void on_signal(int signo)
       do {} while (read(g_cldPipe[0], g_cldPipeBuf, CHILD_PIPE_BUF_LEN) > 0);
       
       // now write one character
-      write(g_cldPipe[1], "X", 1);
+      if (write(g_cldPipe[1], "X", 1) <= 0) {
+        syslog(LOG_WARNING, "cannot send SIGCHLD token to notification pipe");
+      }
       break;
     default:;
   }
@@ -382,7 +385,12 @@ int main(int argc, char** argv)
   
   try {
     if (g_daemon)
-      daemon(0, 0);
+      if (daemon(0, 0) == -1) {
+        syslog(LOG_CRIT, "daemonizing failed: (%i) %s", errno, strerror(errno));
+        fprintf(stderr, "daemonizing failed: (%i) %s\n", errno, strerror(errno));
+        ret = 1;
+        goto error;
+      }
   
     try {
     if (!app.Lock()) {
