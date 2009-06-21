@@ -1,3 +1,10 @@
+0.5.9    2009-06-21
+* spaces in event-related file names now handled correctly (#0000174)
+* crashing on 'incrontab --user' fixed (#0000187)
+* man pages improved (bug reporting info as of #0000407)
+* Makefile improved ('release-clean' also removes 'doc')
+
+
 0.5.8    2008-12-29
 * more includes added for GCC 4.3 compatibility (#0000178)
 * typo in help messages fixed (#0000172)

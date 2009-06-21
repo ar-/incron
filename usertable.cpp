@@ -2,18 +2,19 @@
 /// inotify cron daemon user tables implementation
 /**
  * \file usertable.cpp
- * 
+ *
  * inotify cron system
- * 
+ *
  * Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
- * 
+ *
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
  * License, version 2 (see LICENSE-GPL).
- * 
+ *
  * Credits:
  *   David Santinoli (supplementary groups)
- * 
+ *   Boris Lechner (spaces in event-related file names)
+ *
  */
 
 
@@ -29,6 +30,7 @@
 
 #include "usertable.h"
 #include "incroncfg.h"
+#include "incrontab.h"
 
 #ifdef IN_DONT_FOLLOW
 #define DONT_FOLLOW(mask) InotifyEvent::IsType(mask, IN_DONT_FOLLOW)
@@ -78,24 +80,24 @@ bool EventDispatcher::ProcessEvents()
     while (read(m_pPoll[0].fd, &c, 1) > 0) {}
     m_pPoll[0].revents = 0;
   }
-  
+
   // process table management events if any
   if (m_pPoll[1].revents & POLLIN) {
-    ProcessMgmtEvents(); 
+    ProcessMgmtEvents();
     m_pPoll[1].revents = 0;
   }
-    
+
   InotifyEvent evt;
-    
+
   for (size_t i=2; i<m_size; i++) {
-    
+
     // process events if occurred
     if (m_pPoll[i].revents & POLLIN) {
       FDUT_MAP::iterator it = m_maps.find(m_pPoll[i].fd);
       if (it != m_maps.end()) {
         Inotify* pIn = ((*it).second)->GetInotify();
         pIn->WaitForEvents(true);
-        
+
         // process events for this object
         while (pIn->GetEvent(evt)) {
           ((*it).second)->OnEvent(evt);
@@ -104,10 +106,10 @@ bool EventDispatcher::ProcessEvents()
       m_pPoll[i].revents = 0;
     }
   }
-    
+
   return pipe;
 }
-  
+
 void EventDispatcher::Register(UserTable* pTab)
 {
   if (pTab != NULL) {
@@ -121,7 +123,7 @@ void EventDispatcher::Register(UserTable* pTab)
     }
   }
 }
-  
+
 void EventDispatcher::Unregister(UserTable* pTab)
 {
   FDUT_MAP::iterator it = m_maps.find(pTab->GetInotify()->GetDescriptor());
@@ -136,21 +138,21 @@ void EventDispatcher::Rebuild()
   // delete old data if exists
   if (m_pPoll != NULL)
     delete[] m_pPoll;
-    
+
   // allocate memory
   m_size = m_maps.size() + 2;
   m_pPoll = new struct pollfd[m_size];
-  
+
   // add pipe descriptor
   m_pPoll[0].fd = m_iPipeFd;
   m_pPoll[0].events = POLLIN;
   m_pPoll[0].revents = 0;
-  
+
   // add table management descriptor
   m_pPoll[1].fd = m_iMgmtFd;
   m_pPoll[1].events = POLLIN;
   m_pPoll[1].revents = 0;
-  
+
   // add all inotify descriptors
   FDUT_MAP::iterator it = m_maps.begin();
   for (size_t i=2; i<m_size; i++, it++) {
@@ -163,9 +165,9 @@ void EventDispatcher::Rebuild()
 void EventDispatcher::ProcessMgmtEvents()
 {
   m_pIn->WaitForEvents(true);
-  
+
   InotifyEvent e;
-  
+
   while (m_pIn->GetEvent(e)) {
     if (e.GetWatch() == m_pSys) {
       if (e.IsType(IN_DELETE_SELF) || e.IsType(IN_UNMOUNT)) {
@@ -236,7 +238,7 @@ UserTable::UserTable(EventDispatcher* pEd, const std::string& rUser, bool fSysTa
   m_fSysTable(fSysTable)
 {
   m_pEd = pEd;
-  
+
   m_in.SetNonBlock(true);
   m_in.SetCloseOnExec(true);
 }
@@ -245,22 +247,22 @@ UserTable::~UserTable()
 {
   Dispose();
 }
-  
+
 void UserTable::Load()
 {
   m_tab.Load(m_fSysTable
       ? IncronTab::GetSystemTablePath(m_user)
       : IncronTab::GetUserTablePath(m_user));
-  
+
   int cnt = m_tab.GetCount();
   for (int i=0; i<cnt; i++) {
     IncronTabEntry& rE = m_tab.GetEntry(i);
     InotifyWatch* pW = new InotifyWatch(rE.GetPath(), rE.GetMask());
-    
+
     // warning only - permissions may change later
     if (!(m_fSysTable || MayAccess(rE.GetPath(), DONT_FOLLOW(rE.GetMask()))))
       syslog(LOG_WARNING, "access denied on %s - events will be discarded silently", rE.GetPath().c_str());
-    
+
     try {
       m_in.Add(pW);
       m_map.insert(IWCE_MAP::value_type(pW, &rE));
@@ -272,19 +274,19 @@ void UserTable::Load()
       delete pW;
     }
   }
-  
+
   m_pEd->Register(this);
 }
 
 void UserTable::Dispose()
 {
   m_pEd->Unregister(this);
-  
+
   IWCE_MAP::iterator it = m_map.begin();
   while (it != m_map.end()) {
     InotifyWatch* pW = (*it).first;
     m_in.Remove(pW);
-    
+
     PROC_MAP::iterator it2 = s_procMap.begin();
     while (it2 != s_procMap.end()) {
       if ((*it2).second.pWatch == pW) {
@@ -296,27 +298,27 @@ void UserTable::Dispose()
         it2++;
       }
     }
-    
+
     delete pW;
     it++;
   }
-  
+
   m_map.clear();
 }
-  
+
 void UserTable::OnEvent(InotifyEvent& rEvt)
 {
   InotifyWatch* pW = rEvt.GetWatch();
   IncronTabEntry* pE = FindEntry(pW);
-  
+
   // no entry found - this shouldn't occur
   if (pE == NULL)
     return;
-  
+
   // discard event if user has no access rights to watch path
   if (!(m_fSysTable || MayAccess(pW->GetPath(), DONT_FOLLOW(rEvt.GetMask()))))
     return;
-  
+
   std::string cmd;
   const std::string& cs = pE->GetCmd();
   size_t pos = 0;
@@ -336,7 +338,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
           oldpos = pos + 2;
         }
         else if (cs[px] == '#') {     // file name
-          cmd.append(rEvt.GetName());
+          cmd.append(IncronTabEntry::GetSafePath(rEvt.GetName()));
           oldpos = pos + 2;
         }
         else if (cs[px] == '%') {     // mask symbols
@@ -361,27 +363,27 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       cmd.append(cs.substr(oldpos, pos-oldpos));
       oldpos = pos + 1;
     }
-  }    
+  }
   cmd.append(cs.substr(oldpos));
-  
+
   int argc;
   char** argv;
   if (!PrepareArgs(cmd, argc, argv)) {
     syslog(LOG_ERR, "cannot prepare command arguments");
     return;
   }
-  
+
   if (m_fSysTable)
     syslog(LOG_INFO, "(system::%s) CMD (%s)", m_user.c_str(), cmd.c_str());
   else
     syslog(LOG_INFO, "(%s) CMD (%s)", m_user.c_str(), cmd.c_str());
-  
+
   if (pE->IsNoLoop())
     pW->SetEnabled(false);
-  
+
   pid_t pid = fork();
   if (pid == 0) {
-    
+
     // for system table
     if (m_fSysTable) {
       if (execvp(argv[0], argv) != 0) // exec failed
@@ -405,16 +407,16 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       pd.onDone = NULL;
       pd.pWatch = NULL;
     }
-    
+
     s_procMap.insert(PROC_MAP::value_type(pid, pd));
   }
   else {
     if (pE->IsNoLoop())
       pW->SetEnabled(true);
-      
+
     syslog(LOG_ERR, "cannot fork process: %s", strerror(errno));
   }
-  
+
   CleanupArgs(argc, argv);
 }
 
@@ -423,7 +425,7 @@ IncronTabEntry* UserTable::FindEntry(InotifyWatch* pWatch)
   IWCE_MAP::iterator it = m_map.find(pWatch);
   if (it == m_map.end())
     return NULL;
-    
+
   return (*it).second;
 }
 
@@ -431,27 +433,27 @@ bool UserTable::PrepareArgs(const std::string& rCmd, int& argc, char**& argv)
 {
   if (rCmd.empty())
     return false;
-    
+
   StringTokenizer tok(rCmd, ' ', '\\');
   std::deque<std::string> args;
   while (tok.HasMoreTokens()) {
     args.push_back(tok.GetNextToken());
   }
-  
+
   if (args.empty())
     return false;
-  
+
   argc = (int) args.size();
   argv = new char*[argc+1];
   argv[argc] = NULL;
-  
+
   for (int i=0; i<argc; i++) {
     const std::string& s = args[i];
     size_t len = s.length();
     argv[i] = new char[len+1];
     strcpy(argv[i], s.c_str());
   }
-  
+
   return true;
 }
 
@@ -460,7 +462,7 @@ void UserTable::CleanupArgs(int argc, char** argv)
   for (int i=0; i<argc; i++) {
     delete[] argv[i];
   }
-  
+
   delete[] argv;
 }
 
@@ -476,7 +478,7 @@ void UserTable::FinishDone()
         (*pd.onDone)(pd.pWatch);
       s_procMap.erase(it);
     }
-  }  
+  }
 }
 
 bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
@@ -488,25 +490,25 @@ bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
       : stat(rPath.c_str(), &st);
   if (res != 0)
     return false; // retrieving permissions failed
-  
+
   // file accessible to everyone
   if (st.st_mode & S_IRWXO)
     return true;
-  
+
   // retrieve user data
   struct passwd* pwd = getpwnam(m_user.c_str());
-  
+
   // root may always access
   if (pwd->pw_uid == 0)
     return true;
-  
-  // file accesible to group
+
+  // file accessible to group
   if (st.st_mode & S_IRWXG) {
-    
+
     // user's primary group
     if (pwd != NULL && pwd->pw_gid == st.st_gid)
         return true;
-    
+
     // now check group database
     struct group *gr = getgrgid(st.st_gid);
     if (gr != NULL) {
@@ -519,13 +521,13 @@ bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
       }
     }
   }
-  
+
   // file accessible to owner
-  if (st.st_mode & S_IRWXU) {  
+  if (st.st_mode & S_IRWXU) {
     if (pwd != NULL && pwd->pw_uid == st.st_uid)
       return true;
   }
-  
+
   return false; // no access right found
 }
 
@@ -539,11 +541,11 @@ void UserTable::RunAsUser(char* const* argv) const
   {
     goto failed;
   }
-  
-  if (pwd->pw_uid != 0) { 
+
+  if (pwd->pw_uid != 0) {
     if (clearenv() != 0)
       goto failed;
-      
+
     if (    setenv("LOGNAME",   pwd->pw_name,   1) != 0
         ||  setenv("USER",      pwd->pw_name,   1) != 0
         ||  setenv("USERNAME",  pwd->pw_name,   1) != 0
@@ -554,11 +556,11 @@ void UserTable::RunAsUser(char* const* argv) const
       goto failed;
     }
   }
-  
+
   execvp(argv[0], argv);  // this may return only on failure
-  
+
 failed:
-    
+
   syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
   _exit(1);
 }

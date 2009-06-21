@@ -99,6 +99,7 @@ release:
 	rm -rf $(RELEASEDIR)
 
 release-clean:
+	rm -rf doc
 	rm -f $(RELEASE).tar.bz2
 	rm -f $(RELEASE).tar.gz
 	rm -f $(RELEASE).zip
