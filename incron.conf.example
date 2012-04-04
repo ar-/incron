@@ -63,7 +63,7 @@
 
 # Parameter:   editor
 # Meaning:     editor executable
-# Description: This name or path is used to run as an editor for editting
+# Description: This name or path is used to run as an editor for editing
 #              user tables.
 # Default:     vim
 #

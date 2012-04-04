@@ -1,7 +1,7 @@
 
 inotify cron system
 
-(c) Lukas Jelinek, 2006, 2007, 2008, 2009
+(c) Lukas Jelinek, 2006, 2007, 2008, 2009, 2012
 
 1. About
 2. Requirements
@@ -41,7 +41,7 @@ now build the files ('make').
 
 The binaries must be of course installed as root.
 
-If you want to use (after editting) the example configuration
+If you want to use (after editing) the example configuration
 file simply rename it from /etc/incron.conf.example to
 /etc/incron.conf (you can also use -f <config> for one-time
 use of a custom configuration file).

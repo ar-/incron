@@ -1,3 +1,11 @@
+0.5.10   2012-04-05
+* some includes fixed to build correctly with GCC 4.6 (and 4.4-4.5 - #0000385, #0000447)
+* some type issues fixed (#0000447)
+* EAGAIN handling in poll() (#0000399, #0000686, #0000691)
+* Makefile improved as of #0000512
+* typo in various files fixed (#0000412)
+
+
 0.5.9    2009-06-21
 * spaces in event-related file names now handled correctly (#0000174)
 * crashing on 'incrontab --user' fixed (#0000187)

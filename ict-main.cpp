@@ -5,7 +5,7 @@
  *
  * inotify cron system
  *
- * Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
  *
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -13,6 +13,7 @@
  *
  * Credits:
  *   kolter (fix for segfaulting on --user)
+ *   Christian Ruppert (new include to build with GCC 4.4+)
  *
  */
 
@@ -20,7 +21,6 @@
 #include <argp.h>
 #include <pwd.h>
 #include <string>
-#include <stdio.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <cstring>
+#include <cstdio>
 
 #include "inotify-cxx.h"
 #include "appargs.h"
@@ -60,7 +61,7 @@
           "  -h, --help                   prints this help text\n" \
           "  -l, --list                   lists user table\n" \
           "  -r, --remove                 removes user table\n" \
-          "  -e, --edit                   provides editting user table\n" \
+          "  -e, --edit                   provides editing user table\n" \
           "  -t, --types                  list supported event types\n" \
           "  -d, --reload                 request incrond to reload user table\n" \
           "  -V, --version                prints program version\n\n" \

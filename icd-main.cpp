@@ -5,12 +5,15 @@
  * 
  * inotify cron system
  * 
- * Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
  * License, version 2 (see LICENSE-GPL).
  *  
+ * Credits:
+ *   Christian Ruppert (new include to build with GCC 4.4+)
+ * 
  */
 
 #include <map>
@@ -23,6 +26,7 @@
 #include <errno.h>
 #include <sys/poll.h>
 #include <sys/stat.h>
+#include <cstdio>
 #include <cstring>
 
 #include "inotify-cxx.h"
@@ -78,6 +82,9 @@ char g_cldPipeBuf[CHILD_PIPE_BUF_LEN];
 
 /// Daemonize true/false
 bool g_daemon = true;
+
+/// Second to wait on EAGAIN
+#define POLL_EAGAIN_WAIT 3
 
 /// Handles a signal.
 /**
@@ -448,8 +455,16 @@ int main(int argc, char** argv)
           UserTable::FinishDone();
       }
       else if (res < 0) {
-        if (errno != EINTR)
-          throw InotifyException("polling failed", errno, NULL);
+        switch (errno) {
+          case EINTR:   // syscall interrupted - continue polling
+            break;
+          case EAGAIN:  // not enough resources - wait a moment and try again
+            syslog(LOG_WARNING, "polling failed due to resource shortage, retrying later...");
+            sleep(POLL_EAGAIN_WAIT);
+            break;
+          default:
+            throw InotifyException("polling failed", errno, NULL);
+        } 
       }
       
     }
