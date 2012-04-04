@@ -3,13 +3,14 @@ PREFIX = /usr/local
 USERDATADIR = /var/spool/incron
 SYSDATADIR = /etc/incron.d
 CFGDIR = /etc
-MANPATH = /usr/share/man
+MANPATH = $(PREFIX)/share/man
 RELEASE = incron-`cat VERSION`
 RELEASEDIR = /tmp/$(RELEASE)
+DOCDIR = $(PREFIX)/share/doc/$(RELEASE)/
 
 USER = root
 
-CXX = g++
+CXX ?= g++
 INSTALL = install
 
 OPTIMIZE = -O2
@@ -17,8 +18,8 @@ DEBUG = -g0
 WARNINGS = -Wall
 CXXAUX = -pipe
 
-CXXFLAGS = $(OPTIMIZE) $(DEBUG) $(WARNINGS) $(CXXAUX)
-LDFLAGS = $(WARNINGS)
+CXXFLAGS ?= $(OPTIMIZE) $(DEBUG) $(CXXAUX)
+CXXFLAGS += $(WARNINGS)
 
 PROGRAMS = incrond incrontab
 
@@ -29,10 +30,10 @@ INCRONTAB_OBJ = ict-main.o incrontab.o inotify-cxx.o strtok.o incroncfg.o apparg
 all:	$(PROGRAMS)
 
 incrond:	$(INCROND_OBJ)
-	$(CXX) $(LDFLAGS) -o $@ $(INCROND_OBJ)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(INCROND_OBJ)
 
 incrontab:	$(INCRONTAB_OBJ)
-	$(CXX) $(LDFLAGS) -o $@ $(INCRONTAB_OBJ)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(INCRONTAB_OBJ)
 
 .cpp.o:
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
@@ -44,33 +45,34 @@ clean:
 distclean: clean
 
 install:	all install-man
-	[ -d $(PREFIX) ]
-	$(INSTALL) -m 04755 -o $(USER) incrontab $(PREFIX)/bin/
-	$(INSTALL) -m 0755 incrond $(PREFIX)/sbin/
-	$(INSTALL) -m 0755 -o $(USER) -d $(USERDATADIR)
-	$(INSTALL) -m 0755 -o $(USER) -d $(SYSDATADIR)
-	$(INSTALL) -m 0644 -o $(USER) incron.conf.example $(CFGDIR)
+	$(INSTALL) -m 0755 -d $(DESTDIR)$(PREFIX)/bin/
+	$(INSTALL) -m 0755 -d $(DESTDIR)$(PREFIX)/sbin/
+	$(INSTALL) -m 0755 -d $(DESTDIR)$(DOCDIR)/
+	$(INSTALL) -m 04755 -o $(USER) incrontab $(DESTDIR)$(PREFIX)/bin/
+	$(INSTALL) -m 0755 incrond $(DESTDIR)$(PREFIX)/sbin/
+	$(INSTALL) -m 0755 -o $(USER) -d $(DESTDIR)$(USERDATADIR)
+	$(INSTALL) -m 0755 -o $(USER) -d $(DESTDIR)$(SYSDATADIR)
+	$(INSTALL) -m 0644 incron.conf.example $(DESTDIR)$(DOCDIR)/
 
 install-man:	incrontab.1 incrontab.5 incrond.8 incron.conf.5
-	$(INSTALL) -m 0755 -d $(MANPATH)/man1
-	$(INSTALL) -m 0755 -d $(MANPATH)/man5
-	$(INSTALL) -m 0755 -d $(MANPATH)/man8
-	$(INSTALL) -m 0644 incrontab.1 $(MANPATH)/man1
-	$(INSTALL) -m 0644 incrontab.5 $(MANPATH)/man5
-	$(INSTALL) -m 0644 incrond.8 $(MANPATH)/man8
-	$(INSTALL) -m 0644 incron.conf.5 $(MANPATH)/man5
+	$(INSTALL) -m 0755 -d $(DESTDIR)$(MANPATH)/man1
+	$(INSTALL) -m 0755 -d $(DESTDIR)$(MANPATH)/man5
+	$(INSTALL) -m 0755 -d $(DESTDIR)$(MANPATH)/man8
+	$(INSTALL) -m 0644 incrontab.1 $(DESTDIR)$(MANPATH)/man1
+	$(INSTALL) -m 0644 incrontab.5 $(DESTDIR)$(MANPATH)/man5
+	$(INSTALL) -m 0644 incrond.8 $(DESTDIR)$(MANPATH)/man8
+	$(INSTALL) -m 0644 incron.conf.5 $(DESTDIR)$(MANPATH)/man5
 
 uninstall:	uninstall-man
-	[ -d $(PREFIX) ]
-	rm -f $(PREFIX)/bin/incrontab
-	rm -f $(PREFIX)/sbin/incrond
-	rm -f $(CFGDIR)/incron.conf.example
+	rm -f $(DESTDIR)$(PREFIX)/bin/incrontab
+	rm -f $(DESTDIR)$(PREFIX)/sbin/incrond
+	rm -rf $(DESTDIR)$(DOCDIR)/
 
 uninstall-man:
-	rm -f $(MANPATH)/man1/incrontab.1
-	rm -f $(MANPATH)/man5/incrontab.5
-	rm -f $(MANPATH)/man8/incrond.8
-	rm -f $(MANPATH)/man5/incron.conf.5
+	rm -f $(DESTDIR)$(MANPATH)/man1/incrontab.1
+	rm -f $(DESTDIR)$(MANPATH)/man5/incrontab.5
+	rm -f $(DESTDIR)$(MANPATH)/man8/incrond.8
+	rm -f $(DESTDIR)$(MANPATH)/man5/incron.conf.5
 
 update:		uninstall install
 

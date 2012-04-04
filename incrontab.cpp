@@ -5,17 +5,20 @@
  * 
  * inotify cron system
  * 
- * Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
  * License, version 2 (see LICENSE-GPL).
  *  
+ * Credits:
+ *   Christian Ruppert (new include to build with GCC 4.4+)
+ * 
  */
 
 
 #include <sstream>
-#include <stdio.h>
+#include <cstdio>
 #include <errno.h>
 
 #include "inotify-cxx.h"

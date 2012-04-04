@@ -5,12 +5,15 @@
  * 
  * incron configuration
  * 
- * Copyright (C) 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
  * License, version 2 (see LICENSE-GPL).
  *  
+ * Credits:
+ *   Christian Ruppert (new include to build with GCC 4.4+)
+ * 
  */
 
 
@@ -181,7 +184,7 @@ bool IncronCfg::ParseLine(const char* s, std::string& rKey, std::string& rVal)
 
 bool IncronCfg::IsComment(const char* s)
 {
-  char* sx = strchr(s, '#');
+  const char* sx = strchr(s, '#'); // 
   if (sx == NULL)
     return false;
     

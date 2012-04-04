@@ -3,7 +3,7 @@
 /**
  * \file appinst.cpp
  * 
- * Copyright (C) 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of one of the following licenses:
@@ -15,14 +15,17 @@
  * If you want to help with choosing the best license for you,
  * please visit http://www.gnu.org/licenses/license-list.html.
  * 
+ * Credits:
+ *   Christian Ruppert (new include to build with GCC 4.4+)
+ * 
  */
  
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <errno.h>
 #include <signal.h>
+#include <cstdio>
 
 #include "appinst.h"
 
