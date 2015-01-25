@@ -108,9 +108,9 @@ bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
     rEntry.m_uMask = (uint32_t) u;
   }
   else {
-    StringTokenizer tok(s2);
-    while (tok.HasMoreTokens()) {
-      std::string s(tok.GetNextToken());
+    StringTokenizer tok2(s2);
+    while (tok2.HasMoreTokens()) {
+      std::string s(tok2.GetNextToken());
       if (s == "IN_NO_LOOP")
         rEntry.m_fNoLoop = true;
       else

@@ -29,6 +29,7 @@
 #include <cstdio>
 
 #include "inotify-cxx.h"
+#pragma GCC diagnostic ignored "-Wpedantic"  // inotify-cxx is not pedantic
 
 /// procfs inotify base path
 #define PROCFS_INOTIFY_BASE "/proc/sys/fs/inotify/"
@@ -632,3 +633,4 @@ std::string Inotify::GetCapabilityPath(InotifyCapability_t cap) throw (InotifyEx
   return path;
 }
 
+#pragma GCC diagnostic warning "-Wpedantic"
