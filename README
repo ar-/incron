@@ -2,13 +2,16 @@
 inotify cron system
 
 (c) Lukas Jelinek, 2006, 2007, 2008, 2009, 2012
+(c) Andreas Altair Redmer, 2014, 2015
 
 1. About
-2. Requirements
-3. How to use
-4. Bugs, suggestions
-5. Licensing
-6. Documentation
+2. Install a binary version
+3. Obtain the source code
+4. Requirements
+5. How to use
+6. Bugs, suggestions
+7. Licensing
+8. Documentation
 
 
 ========================================================================
@@ -20,8 +23,20 @@ a table manipulator. You can use it a similar way as the regular cron.
 The difference is that the inotify cron handles filesystem events
 rather than time periods.
 
+2. Install a binary version
+On Debian and Ubuntu based systems you can install this software with
+sudo apt-get install incron
 
-2. Requirements
+On all other Linux based systems you have to build it from source.
+
+3. Obtain the source code
+You can download the latest stable version from 
+https://github.com/ar-/incron/archive/master.tar.gz
+
+You can download older versions from 
+https://github.com/ar-/incron/releases
+
+4. Requirements
 * Linux kernel 2.6.13 or later (with inotify compiled in)
 * inotify headers (inotify.h, sometimes inotify-syscalls.h) installed in
   <INCLUDE_DIR>/sys. The most common place is /usr/include/sys.
@@ -29,7 +44,7 @@ rather than time periods.
   older versions too)
 
   
-3. How to build
+5. How to build
 Because this version is very early it does not contain a standard
 portable build mechanism. There is only a Makefile which must be
 modified manually. On many Linux systems you need not to change
@@ -53,7 +68,7 @@ The doxygen program must be installed and its control file 'Doxygen'
 created for generating the API documentation.
 
 
-4. How to use
+6. How to use
 The incron daemon (incrond) must be run under root (typically from
 runlevel script etc.). It loads the current user tables and hooks
 them for later changes.
@@ -104,15 +119,15 @@ Some parameters of both incrontab and incrond can be changed by
 the configuration. See the example file for more information.
 
 
-5. Bugs, suggestions
+7. Bugs, suggestions
 THIS PROGRAM IS AN ALPHA VERSION. IT PROBABLY CONTAINS BUGS AND
 THEREFORE IT IS NOT INTENDED FOR PRODUCTION USE.
 
 If you find a bug or have a suggestion how to improve the program,
-please use the bug tracking system at http://bts.aiken.cz.
+please use the bug tracking system at https://github.com/ar-/incron/issues.
 
 
-6. Licensing
+8. Licensing
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License,
 version 2  (see LICENSE-GPL).
