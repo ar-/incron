@@ -1,2 +1,3 @@
 version=3
-http://inotify.aiken.cz/download/incron/incron-([.0-9]*)\.tar\.gz
+opts=filenamemangle=s/.+\/v?(\d\S*)\.tar\.gz/incron-$1\.tar\.gz/ \
+  https://github.com/ar-/incron/tags .*/v?(\d\S*)\.tar\.gz
