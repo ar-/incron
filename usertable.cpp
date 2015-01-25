@@ -351,7 +351,9 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
         }
         else if (cs[px] == '&') {     // numeric mask
           char* s;
+#pragma GCC diagnostic ignored "-Wunused-result"  
           asprintf(&s, "%u", (unsigned) rEvt.GetMask());
+#pragma GCC diagnostic warning "-Wunused-result"
           cmd.append(s);
           free(s);
           oldpos = pos + 2;
