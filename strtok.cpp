@@ -6,6 +6,7 @@
  * string tokenizer
  * 
  * Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2012, 2013 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of one of the following licenses:
@@ -24,7 +25,7 @@
 
 #include "strtok.h"
 
-StringTokenizer::StringTokenizer(const std::string& rStr, char cDelim, char cPrefix)
+StringTokenizer::StringTokenizer(const std::string& rStr, const std::string& cDelim, char cPrefix)
 {
   m_str = rStr;
   m_cDelim = cDelim;
@@ -99,10 +100,13 @@ void StringTokenizer::_GetNextTokenNoPrefix(std::string& rToken)
 {
   const char* s = m_str.c_str();
   for (SIZE i=m_pos; i<m_len; i++) {
-    if (s[i] == m_cDelim) {
-      rToken = m_str.substr(m_pos, i - m_pos);
-      m_pos = i + 1;
-      return;
+    // check all possible delimiters
+    for (SIZE delimIndex=0; delimIndex<m_cDelim.length(); delimIndex++) {
+      if (s[i] == m_cDelim[delimIndex]) {
+        rToken = m_str.substr(m_pos, i - m_pos);
+        m_pos = i + 1;
+        return;
+      }
     }    
   }
   
@@ -115,24 +119,26 @@ void StringTokenizer::_GetNextTokenWithPrefix(std::string& rToken)
   int pref = 0;
   const char* s = m_str.c_str();
   for (SIZE i=m_pos; i<m_len; i++) {
-    if (s[i] == m_cDelim) {
-      if (pref == 0) {
-        rToken = m_str.substr(m_pos, i - m_pos);
-        m_pos = i + 1;
-        return;
+    for (SIZE delimIndex=0; delimIndex<m_cDelim.length(); delimIndex++) {
+      if (s[i] == m_cDelim[delimIndex]) {
+        if (pref == 0) {
+          rToken = m_str.substr(m_pos, i - m_pos);
+          m_pos = i + 1;
+          return;
+        }
+        else {
+          pref = 0;
+        }
+      }
+      else if (s[i] == m_cPrefix) {
+        if (pref == 1)
+          pref = 0;
+        else
+          pref = 1;
       }
       else {
         pref = 0;
       }
-    }
-    else if (s[i] == m_cPrefix) {
-      if (pref == 1)
-        pref = 0;
-      else
-        pref = 1;
-    }
-    else {
-      pref = 0;
     }
   }
   

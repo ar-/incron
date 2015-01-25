@@ -6,6 +6,7 @@
  * string tokenizer
  * 
  * Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2012, 2013 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of one of the following licenses:
@@ -63,7 +64,7 @@ public:
    * \param[in] cPrefix character which is prepended if a
    *            character must not separate tokens
    */
-  StringTokenizer(const std::string& rStr, char cDelim = ',', char cPrefix = '\0');
+  StringTokenizer(const std::string& rStr, const std::string& cDelim = ",", char cPrefix = '\0');
   
   /// Destructor.
   ~StringTokenizer() {}
@@ -125,7 +126,7 @@ public:
    * 
    * \param[in] cDelim delimiter character
    */
-  inline void SetDelimiter(char cDelim)
+  inline void SetDelimiter(std::string cDelim)
   {
     m_cDelim = cDelim;
   }
@@ -134,7 +135,7 @@ public:
   /**
    * \return delimiter character
    */
-  inline char GetDelimiter() const
+  inline std::string GetDelimiter() const
   {
     return m_cDelim;
   }
@@ -184,7 +185,7 @@ public:
   
 private:
   std::string m_str;            ///< tokenized string
-  char m_cDelim;                ///< delimiter character
+  std::string m_cDelim;                ///< delimiter character
   char m_cPrefix;               ///< prefix character
   std::string::size_type m_pos; ///< current position
   std::string::size_type m_len; ///< string length

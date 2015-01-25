@@ -441,7 +441,7 @@ bool UserTable::PrepareArgs(const std::string& rCmd, int& argc, char**& argv)
   if (rCmd.empty())
     return false;
 
-  StringTokenizer tok(rCmd, ' ', '\\');
+  StringTokenizer tok(rCmd, " \t", '\\');
   std::deque<std::string> args;
   while (tok.HasMoreTokens()) {
     args.push_back(tok.GetNextToken());

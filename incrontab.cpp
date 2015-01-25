@@ -6,6 +6,7 @@
  * inotify cron system
  * 
  * Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2012, 2013 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -79,7 +80,7 @@ std::string IncronTabEntry::ToString() const
       m.append(",IN_NO_LOOP");
   }
   
-  ss << GetSafePath(m_path) << " " << m << " " << m_cmd;
+  ss << GetSafePath(m_path) << "\t" << m << "\t" << m_cmd;
   return ss.str();
 }
 
@@ -88,7 +89,7 @@ bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
   unsigned long u;
   std::string s1, s2, s3;
   
-  StringTokenizer tok(rStr, ' ', '\\');
+  StringTokenizer tok(rStr, " \t", '\\');
   if (!tok.HasMoreTokens())
     return false;
     

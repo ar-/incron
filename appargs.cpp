@@ -6,6 +6,7 @@
  * application arguments processor
  * 
  * Copyright (C) 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2012, 2013 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of one of the following licenses:
@@ -222,7 +223,7 @@ bool AppArgs::IsLongOption(const char* pchStr)
 
 bool AppArgs::ParseLong(const char* pchStr, std::string& rName, std::string& rVal, bool& rfHasVal)
 {
-  StringTokenizer tok(pchStr+2, '=');
+  StringTokenizer tok(pchStr+2, "=");
   if (!tok.HasMoreTokens())
     return false;
   
