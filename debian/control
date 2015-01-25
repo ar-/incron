@@ -7,9 +7,9 @@ Build-Depends:
     debhelper (>= 9),
     dh-systemd (>= 1.5)
 Standards-Version: 3.9.5
-Homepage: http://inotify.aiken.cz/
-Vcs-Git: git://anonscm.debian.org/users/kolter/incron.git
-Vcs-Browser: http://anonscm.debian.org/git/users/kolter/incron.git
+Homepage: https://github.com/ar-/incron
+Vcs-Git: https://github.com/ar-/incron.git
+Vcs-Browser: https://github.com/ar-/incron
 
 Package: incron
 Architecture: any

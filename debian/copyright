@@ -5,6 +5,7 @@ Source: http://inotify.aiken.cz/
 
 Files: *
 Copyright: 2006-2012, Lukas Jelinek, <lukas@aiken.cz>
+           2014-2015, Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
 License: GPL-2+
 
 Files: debian/*
