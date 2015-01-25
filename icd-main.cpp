@@ -6,7 +6,7 @@
  * inotify cron system
  * 
  * Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
- * Copyright (C) 2012, 2013 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
+ * Copyright (C) 2014, 2015 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -153,6 +153,9 @@ void load_tables(EventDispatcher* pEd) throw (InotifyException)
       }
       
       if (ok) {
+		// ignore files that start with a dot
+		if (pDe->d_name[0] == '.')
+			continue;
         syslog(LOG_INFO, "loading table %s", pDe->d_name);
         UserTable* pUt = new UserTable(pEd, un, true);
         g_ut.insert(SUT_MAP::value_type(path, pUt));

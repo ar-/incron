@@ -6,6 +6,7 @@
  * inotify cron system
  * 
  * Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2014, 2015 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
  * 
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -21,14 +22,6 @@
 #include <deque>
 
 #include "strtok.h"
-
-/*
-/// Incron user table base directory
-#define INCRON_USER_TABLE_BASE "/var/spool/incron/"
-
-/// Incron system table base directory
-#define INCRON_SYS_TABLE_BASE "/etc/incron.d/"
-*/
 
 /// Incron table entry class.
 class IncronTabEntry

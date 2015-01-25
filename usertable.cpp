@@ -6,7 +6,7 @@
  * inotify cron system
  *
  * Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
- * Copyright (C) 2012, 2013 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
+ * Copyright (C) 2014, 2015 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
  *
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -178,6 +178,12 @@ void EventDispatcher::ProcessMgmtEvents()
         g_fFinish = true;
       }
       else if (!e.GetName().empty()) {
+		//ignore all names that start with a dot
+		const std::string eventName = e.GetName();
+		if (eventName[0] == '.') 
+			continue;
+		  
+		//start the actual process here
         SUT_MAP::iterator it = g_ut.find(IncronCfg::BuildPath(m_pSys->GetPath(), e.GetName()));
         if (it != g_ut.end()) {
           UserTable* pUt = (*it).second;
