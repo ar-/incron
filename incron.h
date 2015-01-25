@@ -6,6 +6,7 @@
  * inotify cron system
  *
  * Copyright (C) 2006, 2007, 2008, 2009 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2012, 2013 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
  *
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -27,10 +28,7 @@
 #define INCRONTAB_NAME "incrontab"
 
 /// Application version (release)
-#define INCRON_VERSION "0.5.10"
-
-/// Address for sending bugs
-#define INCRON_BUG_ADDRESS "<bugs@aiken.cz>"
+#define INCRON_VERSION "0.5.11"
 
 /// Default configuration file
 #define INCRON_CONFIG "/etc/incron.conf"

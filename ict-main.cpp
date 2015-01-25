@@ -6,6 +6,7 @@
  * inotify cron system
  *
  * Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
+ * Copyright (C) 2012, 2013 Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>
  *
  * This program is free software; you can use it, redistribute
  * it and/or modify it under the terms of the GNU General Public
@@ -69,7 +70,7 @@
           "These options may be used:\n" \
           "  -u <USER>, --user=<USER>     overrides current user (requires root privileges)\n" \
           "  -f <FILE>, --config=<FILE>   overrides default configuration file  (requires root privileges)\n\n" \
-          "For reporting bugs please use http://bts.aiken.cz\n"
+          "For reporting bugs please use https://github.com/ar-/incron/issues\n"
 
 
 
