@@ -2,6 +2,7 @@ incron (0.5.11-1) unstable; urgency=medium
 
   * linked homepage, watch-file and bugtracker to changes upstream on github
   * removed 5 debian patches since they are now included in the upstream
+  * Bump Standards-Version to 3.9.6
 
  -- Andreas Altair Redmer, <altair.ibn.la.ahad.sy@gmail.com>  Sun, Jan 25 2015 16:46:00 +0100 
 
