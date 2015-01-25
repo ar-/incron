@@ -1,0 +1,287 @@
+.TH "icd-main.cpp" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+icd-main.cpp \- 
+.PP
+inotify cron daemon main file  
+
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <map>\fP
+.br
+\fC#include <signal\&.h>\fP
+.br
+\fC#include <wait\&.h>\fP
+.br
+\fC#include <fcntl\&.h>\fP
+.br
+\fC#include <pwd\&.h>\fP
+.br
+\fC#include <dirent\&.h>\fP
+.br
+\fC#include <syslog\&.h>\fP
+.br
+\fC#include <errno\&.h>\fP
+.br
+\fC#include <sys/poll\&.h>\fP
+.br
+\fC#include <sys/stat\&.h>\fP
+.br
+\fC#include <cstdio>\fP
+.br
+\fC#include <cstring>\fP
+.br
+\fC#include 'inotify-cxx\&.h'\fP
+.br
+\fC#include 'appinst\&.h'\fP
+.br
+\fC#include 'appargs\&.h'\fP
+.br
+\fC#include 'incron\&.h'\fP
+.br
+\fC#include 'incrontab\&.h'\fP
+.br
+\fC#include 'usertable\&.h'\fP
+.br
+\fC#include 'incroncfg\&.h'\fP
+.br
+
+.SS "Defines"
+
+.in +1c
+.ti -1c
+.RI "#define \fBINCRON_LOG_OPTS\fP   (LOG_CONS | LOG_PID)"
+.br
+.RI "\fILogging options (console as fallback, log PID) \fP"
+.ti -1c
+.RI "#define \fBINCRON_LOG_FACIL\fP   LOG_CRON"
+.br
+.RI "\fILogging facility (use CRON) \fP"
+.ti -1c
+.RI "#define \fBINCROND_VERSION\fP   INCROND_NAME ' ' INCRON_VERSION"
+.br
+.RI "\fIincrond version string \fP"
+.ti -1c
+.RI "#define \fBINCROND_DESCRIPTION\fP"
+.br
+.RI "\fIincrontab description string \fP"
+.ti -1c
+.RI "#define \fBINCROND_HELP\fP"
+.br
+.RI "\fIincrontab help string \fP"
+.ti -1c
+.RI "#define \fBCHILD_PIPE_BUF_LEN\fP   32"
+.br
+.ti -1c
+.RI "#define \fBPOLL_EAGAIN_WAIT\fP   3"
+.br
+.RI "\fISecond to wait on EAGAIN'\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBon_signal\fP (int signo)"
+.br
+.RI "\fIHandles a signal'\&. \fP"
+.ti -1c
+.RI "void \fBload_tables\fP (\fBEventDispatcher\fP *pEd)  throw (InotifyException)"
+.br
+.RI "\fIAttempts to load all (user and system) incron tables'\&. \fP"
+.ti -1c
+.RI "void \fBfree_tables\fP (\fBEventDispatcher\fP *pEd)"
+.br
+.RI "\fIDeallocates all memory used by incron tables and unregisters them from the dispatcher'\&. \fP"
+.ti -1c
+.RI "void \fBprepare_pipe\fP ()"
+.br
+.RI "\fIPrepares a 'dead/done child' notification pipe'\&. \fP"
+.ti -1c
+.RI "void \fBinit_poll_array\fP (struct pollfd pfd[], int pipefd, int infd)"
+.br
+.RI "\fIChecks whether a parameter string is a specific command'\&. \fP"
+.ti -1c
+.RI "int \fBmain\fP (int argc, char **argv)"
+.br
+.RI "\fIMain application function'\&. \fP"
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "\fBSUT_MAP\fP \fBg_ut\fP"
+.br
+.RI "\fIUser name to user table mapping table'\&. \fP"
+.ti -1c
+.RI "volatile bool \fBg_fFinish\fP = false"
+.br
+.RI "\fIFinish program yes/no'\&. \fP"
+.ti -1c
+.RI "int \fBg_cldPipe\fP [2]"
+.br
+.RI "\fIPipe for notifying about dead children'\&. \fP"
+.ti -1c
+.RI "char \fBg_cldPipeBuf\fP [CHILD_PIPE_BUF_LEN]"
+.br
+.ti -1c
+.RI "bool \fBg_daemon\fP = true"
+.br
+.RI "\fIDaemonize true/false'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+inotify cron daemon main file 
+
+inotify cron system
+.PP
+Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
+.PP
+This program is free software; you can use it, redistribute it and/or modify it under the terms of the GNU General Public License, version 2 (see LICENSE-GPL)'\&.
+.PP
+Credits: Christian Ruppert (new include to build with GCC 4'\&.4+) 
+.SH "Define Documentation"
+.PP 
+.SS "#define CHILD_PIPE_BUF_LEN   32"
+.SS "#define INCRON_LOG_FACIL   LOG_CRON"
+.PP
+Logging facility (use CRON) 
+.SS "#define INCRON_LOG_OPTS   (LOG_CONS | LOG_PID)"
+.PP
+Logging options (console as fallback, log PID) 
+.SS "#define INCROND_DESCRIPTION"\fBValue:\fP
+.PP
+.nf
+'incrond - inotify cron daemon\n' \
+                            '(c) Lukas Jelinek, 2006, 2007, 2008'
+.fi
+.PP
+incrontab description string 
+.SS "#define INCROND_HELP"\fBValue:\fP
+.PP
+.nf
+INCROND_DESCRIPTION '\n\n' \
+          'usage: incrond [<options>]\n\n' \
+          '<operation> may be one of the following:\n' \
+          'These options may be used:\n' \
+          '  -?, --about                  gives short information about program\n' \
+          '  -h, --help                   prints this help text\n' \
+          '  -n, --foreground             runs on foreground (no daemonizing)\n' \
+          '  -k, --kill                   terminates running instance of incrond\n' \
+          '  -f <FILE>, --config=<FILE>   overrides default configuration file  (requires root privileges)\n' \
+          '  -V, --version                prints program version\n\n' \
+          'For reporting bugs please use http://bts\&.aiken\&.cz\n'
+.fi
+.PP
+incrontab help string 
+.SS "#define INCROND_VERSION   INCROND_NAME ' ' INCRON_VERSION"
+.PP
+incrond version string 
+.SS "#define POLL_EAGAIN_WAIT   3"
+.PP
+Second to wait on EAGAIN'\&. 
+.SH "Function Documentation"
+.PP 
+.SS "void free_tables (\fBEventDispatcher\fP *pEd)"
+.PP
+Deallocates all memory used by incron tables and unregisters them from the dispatcher'\&. \fBParameters:\fP
+.RS 4
+\fIpEd\fP event dispatcher 
+.RE
+.PP
+
+.SS "void init_poll_array (struct pollfdpfd[], intpipefd, intinfd)"
+.PP
+Checks whether a parameter string is a specific command'\&. The string is accepted if it equals either the short or long form of the command'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIs\fP checked string 
+.br
+\fIshortCmd\fP short form of command 
+.br
+\fIlongCmd\fP long form of command 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = string accepted, false = otherwise Initializes a poll array'\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpfd\fP poll structure array 
+.br
+\fIpipefd\fP pipe file descriptor 
+.br
+\fIinfd\fP inotify infrastructure file descriptor 
+.RE
+.PP
+
+.SS "void load_tables (\fBEventDispatcher\fP *pEd)  throw (\fBInotifyException\fP)"
+.PP
+Attempts to load all (user and system) incron tables'\&. Loaded tables are registered for processing events'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpEd\fP inotify event dispatcher
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if base table directory cannot be read 
+.RE
+.PP
+
+.SS "int main (intargc, char **argv)"
+.PP
+Main application function'\&. \fBParameters:\fP
+.RS 4
+\fIargc\fP argument count 
+.br
+\fIargv\fP argument array 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, 1 on error
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+In daemon mode, it finishes immediately'\&. 
+.RE
+.PP
+
+.SS "void on_signal (intsigno)"
+.PP
+Handles a signal'\&. For SIGTERM and SIGINT it sets the program finish variable'\&. For SIGCHLD it writes a character into the notification pipe (this is a workaround made due to disability to reliably wait for dead children)'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsigno\fP signal number 
+.RE
+.PP
+
+.SS "void prepare_pipe ()"
+.PP
+Prepares a 'dead/done child' notification pipe'\&. This function returns no value at all and on error it throws an exception'\&. 
+.SH "Variable Documentation"
+.PP 
+.SS "int \fBg_cldPipe\fP[2]"
+.PP
+Pipe for notifying about dead children'\&. 
+.SS "char \fBg_cldPipeBuf\fP[CHILD_PIPE_BUF_LEN]"
+.SS "bool \fBg_daemon\fP = true"
+.PP
+Daemonize true/false'\&. 
+.SS "volatile bool \fBg_fFinish\fP = false"
+.PP
+Finish program yes/no'\&. 
+.SS "\fBSUT_MAP\fP \fBg_ut\fP"
+.PP
+User name to user table mapping table'\&. 
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

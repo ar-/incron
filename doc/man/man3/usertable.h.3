@@ -1,0 +1,99 @@
+.TH "usertable.h" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+usertable.h \- 
+.PP
+inotify cron daemon user tables header  
+
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <map>\fP
+.br
+\fC#include <deque>\fP
+.br
+\fC#include <sys/poll\&.h>\fP
+.br
+\fC#include 'inotify-cxx\&.h'\fP
+.br
+\fC#include 'incrontab\&.h'\fP
+.br
+
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "struct \fBProcData_t\fP"
+.br
+.RI "\fIChild process data'\&. \fP"
+.ti -1c
+.RI "class \fBEventDispatcher\fP"
+.br
+.RI "\fIEvent dispatcher class'\&. \fP"
+.ti -1c
+.RI "class \fBUserTable\fP"
+.br
+.RI "\fIUser table class'\&. \fP"
+.in -1c
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef std::map< std::string, 
+.br
+\fBUserTable\fP * > \fBSUT_MAP\fP"
+.br
+.RI "\fIUser name to user table mapping definition'\&. \fP"
+.ti -1c
+.RI "typedef void(* \fBproc_done_cb\fP )(\fBInotifyWatch\fP *)"
+.br
+.RI "\fICallback for calling after a process finishes'\&. \fP"
+.ti -1c
+.RI "typedef std::map< int, 
+.br
+\fBUserTable\fP * > \fBFDUT_MAP\fP"
+.br
+.RI "\fIfd-to-usertable mapping \fP"
+.ti -1c
+.RI "typedef std::map< \fBInotifyWatch\fP 
+.br
+*, \fBIncronTabEntry\fP * > \fBIWCE_MAP\fP"
+.br
+.RI "\fIWatch-to-tableentry mapping'\&. \fP"
+.ti -1c
+.RI "typedef std::map< pid_t, 
+.br
+\fBProcData_t\fP > \fBPROC_MAP\fP"
+.br
+.RI "\fIChild process list'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+inotify cron daemon user tables header 
+
+inotify cron system
+.PP
+Copyright (C) 2006, 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+.PP
+This program is free software; you can use it, redistribute it and/or modify it under the terms of the GNU General Public License, version 2 (see LICENSE-GPL)'\&. 
+.SH "Typedef Documentation"
+.PP 
+.SS "typedef std::map<int, \fBUserTable\fP*> \fBFDUT_MAP\fP"
+.PP
+fd-to-usertable mapping 
+.SS "typedef std::map<\fBInotifyWatch\fP*, \fBIncronTabEntry\fP*> \fBIWCE_MAP\fP"
+.PP
+Watch-to-tableentry mapping'\&. 
+.SS "typedef void(* \fBproc_done_cb\fP)(\fBInotifyWatch\fP *)"
+.PP
+Callback for calling after a process finishes'\&. 
+.SS "typedef std::map<pid_t, \fBProcData_t\fP> \fBPROC_MAP\fP"
+.PP
+Child process list'\&. 
+.SS "typedef std::map<std::string, \fBUserTable\fP*> \fBSUT_MAP\fP"
+.PP
+User name to user table mapping definition'\&. 
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

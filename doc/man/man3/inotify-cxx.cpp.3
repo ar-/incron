@@ -1,0 +1,74 @@
+.TH "inotify-cxx.cpp" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+inotify-cxx.cpp \- 
+.PP
+inotify C++ interface implementation  
+
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <errno\&.h>\fP
+.br
+\fC#include <unistd\&.h>\fP
+.br
+\fC#include <fcntl\&.h>\fP
+.br
+\fC#include <cstdio>\fP
+.br
+\fC#include 'inotify-cxx\&.h'\fP
+.br
+
+.SS "Defines"
+
+.in +1c
+.ti -1c
+.RI "#define \fBPROCFS_INOTIFY_BASE\fP   '/proc/sys/fs/inotify/'"
+.br
+.RI "\fIprocfs inotify base path \fP"
+.ti -1c
+.RI "#define \fBDUMP_SEP\fP"
+.br
+.RI "\fIdump separator (between particular entries) \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+inotify C++ interface implementation 
+
+inotify C++ interface
+.PP
+Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek <lukas@aiken.cz>
+.PP
+This program is free software; you can redistribute it and/or modify it under the terms of one of the following licenses:
+.PP
+.PD 0
+.IP "\(bu" 2
+1'\&. X11-style license (see LICENSE-X11) 
+.IP "\(bu" 2
+2'\&. GNU Lesser General Public License, version 2'\&.1 (see LICENSE-LGPL) 
+.IP "\(bu" 2
+3'\&. GNU General Public License, version 2 (see LICENSE-GPL)
+.PP
+If you want to help with choosing the best license for you, please visit http://www.gnu.org/licenses/license-list.html.
+.PP
+Credits: Christian Ruppert (new include to build with GCC 4'\&.4+) 
+.SH "Define Documentation"
+.PP 
+.SS "#define DUMP_SEP"\fBValue:\fP
+.PP
+.nf
+({ \
+    if (!rStr\&.empty()) { \
+      rStr\&.append(','); \
+    } \
+  })
+.fi
+.PP
+dump separator (between particular entries) 
+.SS "#define PROCFS_INOTIFY_BASE   '/proc/sys/fs/inotify/'"
+.PP
+procfs inotify base path 
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

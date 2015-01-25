@@ -1,0 +1,96 @@
+.TH "usertable.cpp" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+usertable.cpp \- 
+.PP
+inotify cron daemon user tables implementation  
+
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <pwd\&.h>\fP
+.br
+\fC#include <syslog\&.h>\fP
+.br
+\fC#include <errno\&.h>\fP
+.br
+\fC#include <sys/wait\&.h>\fP
+.br
+\fC#include <unistd\&.h>\fP
+.br
+\fC#include <grp\&.h>\fP
+.br
+\fC#include <stdlib\&.h>\fP
+.br
+\fC#include <sys/stat\&.h>\fP
+.br
+\fC#include <cstdio>\fP
+.br
+\fC#include <cstring>\fP
+.br
+\fC#include 'usertable\&.h'\fP
+.br
+\fC#include 'incroncfg\&.h'\fP
+.br
+\fC#include 'incrontab\&.h'\fP
+.br
+
+.SS "Defines"
+
+.in +1c
+.ti -1c
+.RI "#define \fBDONT_FOLLOW\fP(mask)   (false)"
+.br
+.ti -1c
+.RI "#define \fBDEFAULT_PATH\fP   '/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin'"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBon_proc_done\fP (\fBInotifyWatch\fP *pW)"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "volatile bool \fBg_fFinish\fP"
+.br
+.RI "\fIFinish program yes/no'\&. \fP"
+.ti -1c
+.RI "\fBSUT_MAP\fP \fBg_ut\fP"
+.br
+.RI "\fIUser name to user table mapping table'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+inotify cron daemon user tables implementation 
+
+inotify cron system
+.PP
+Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
+.PP
+This program is free software; you can use it, redistribute it and/or modify it under the terms of the GNU General Public License, version 2 (see LICENSE-GPL)'\&.
+.PP
+Credits: David Santinoli (supplementary groups) Boris Lechner (spaces in event-related file names) Christian Ruppert (new include to build with GCC 4'\&.4+) 
+.SH "Define Documentation"
+.PP 
+.SS "#define DEFAULT_PATH   '/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin'"
+.SS "#define DONT_FOLLOW(mask)   (false)"
+.SH "Function Documentation"
+.PP 
+.SS "void on_proc_done (\fBInotifyWatch\fP *pW)"
+.SH "Variable Documentation"
+.PP 
+.SS "volatile bool \fBg_fFinish\fP"
+.PP
+Finish program yes/no'\&. 
+.SS "\fBSUT_MAP\fP \fBg_ut\fP"
+.PP
+User name to user table mapping table'\&. 
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

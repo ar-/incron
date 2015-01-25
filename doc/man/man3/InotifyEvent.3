@@ -1,0 +1,239 @@
+.TH "InotifyEvent" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+InotifyEvent \- 
+.PP
+inotify event class  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <inotify-cxx\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBInotifyEvent\fP ()"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "\fBInotifyEvent\fP (const struct inotify_event *pEvt, \fBInotifyWatch\fP *pWatch)"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "\fB~InotifyEvent\fP ()"
+.br
+.RI "\fIDestructor'\&. \fP"
+.ti -1c
+.RI "int32_t \fBGetDescriptor\fP () const "
+.br
+.RI "\fIReturns the event watch descriptor'\&. \fP"
+.ti -1c
+.RI "uint32_t \fBGetMask\fP () const "
+.br
+.RI "\fIReturns the event mask'\&. \fP"
+.ti -1c
+.RI "bool \fBIsType\fP (uint32_t uType) const "
+.br
+.RI "\fIChecks for the event type'\&. \fP"
+.ti -1c
+.RI "uint32_t \fBGetCookie\fP () const "
+.br
+.RI "\fIReturns the event cookie'\&. \fP"
+.ti -1c
+.RI "uint32_t \fBGetLength\fP () const "
+.br
+.RI "\fIReturns the event name length'\&. \fP"
+.ti -1c
+.RI "const std::string & \fBGetName\fP () const "
+.br
+.RI "\fIReturns the event name'\&. \fP"
+.ti -1c
+.RI "void \fBGetName\fP (std::string &rName) const "
+.br
+.RI "\fIExtracts the event name'\&. \fP"
+.ti -1c
+.RI "\fBInotifyWatch\fP * \fBGetWatch\fP ()"
+.br
+.RI "\fIReturns the source watch'\&. \fP"
+.ti -1c
+.RI "void \fBDumpTypes\fP (std::string &rStr) const "
+.br
+.RI "\fIFills the string with all types contained in the event mask'\&. \fP"
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static bool \fBIsType\fP (uint32_t uValue, uint32_t uType)"
+.br
+.RI "\fIChecks a value for the event type'\&. \fP"
+.ti -1c
+.RI "static uint32_t \fBGetMaskByName\fP (const std::string &rName)"
+.br
+.RI "\fIFinds the appropriate mask for a name'\&. \fP"
+.ti -1c
+.RI "static void \fBDumpTypes\fP (uint32_t uValue, std::string &rStr)"
+.br
+.RI "\fIFills the string with all types contained in an event mask value'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+inotify event class 
+
+It holds all information about inotify event and provides access to its particular values'\&.
+.PP
+This class is not (and is not intended to be) thread-safe and therefore it must not be used concurrently in multiple threads'\&. 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "InotifyEvent::InotifyEvent ()\fC [inline]\fP"
+.PP
+Constructor'\&. Creates a plain event'\&. 
+.SS "InotifyEvent::InotifyEvent (const struct inotify_event *pEvt, \fBInotifyWatch\fP *pWatch)\fC [inline]\fP"
+.PP
+Constructor'\&. Creates an event based on inotify event data'\&. For NULL pointers it works the same way as \fBInotifyEvent()\fP'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpEvt\fP event data 
+.br
+\fIpWatch\fP inotify watch 
+.RE
+.PP
+
+.SS "InotifyEvent::~InotifyEvent ()\fC [inline]\fP"
+.PP
+Destructor'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "void InotifyEvent::DumpTypes (uint32_tuValue, std::string &rStr)\fC [static]\fP"
+.PP
+Fills the string with all types contained in an event mask value'\&. \fBParameters:\fP
+.RS 4
+\fIuValue\fP event mask value 
+.br
+\fIrStr\fP dumped event types 
+.RE
+.PP
+
+.SS "void InotifyEvent::DumpTypes (std::string &rStr) const"
+.PP
+Fills the string with all types contained in the event mask'\&. \fBParameters:\fP
+.RS 4
+\fIrStr\fP dumped event types 
+.RE
+.PP
+
+.SS "uint32_t InotifyEvent::GetCookie () const\fC [inline]\fP"
+.PP
+Returns the event cookie'\&. \fBReturns:\fP
+.RS 4
+event cookie 
+.RE
+.PP
+
+.SS "int32_t InotifyEvent::GetDescriptor () const"
+.PP
+Returns the event watch descriptor'\&. \fBReturns:\fP
+.RS 4
+watch descriptor
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBInotifyWatch::GetDescriptor()\fP 
+.RE
+.PP
+
+.SS "uint32_t InotifyEvent::GetLength () const\fC [inline]\fP"
+.PP
+Returns the event name length'\&. \fBReturns:\fP
+.RS 4
+event name length 
+.RE
+.PP
+
+.SS "uint32_t InotifyEvent::GetMask () const\fC [inline]\fP"
+.PP
+Returns the event mask'\&. \fBReturns:\fP
+.RS 4
+event mask
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBInotifyWatch::GetMask()\fP 
+.RE
+.PP
+
+.SS "uint32_t InotifyEvent::GetMaskByName (const std::string &rName)\fC [static]\fP"
+.PP
+Finds the appropriate mask for a name'\&. \fBParameters:\fP
+.RS 4
+\fIrName\fP mask name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+mask for name; 0 on failure 
+.RE
+.PP
+
+.SS "const std::string& InotifyEvent::GetName () const\fC [inline]\fP"
+.PP
+Returns the event name'\&. \fBReturns:\fP
+.RS 4
+event name 
+.RE
+.PP
+
+.SS "void InotifyEvent::GetName (std::string &rName) const\fC [inline]\fP"
+.PP
+Extracts the event name'\&. \fBParameters:\fP
+.RS 4
+\fIrName\fP event name 
+.RE
+.PP
+
+.SS "\fBInotifyWatch\fP* InotifyEvent::GetWatch ()\fC [inline]\fP"
+.PP
+Returns the source watch'\&. \fBReturns:\fP
+.RS 4
+source watch 
+.RE
+.PP
+
+.SS "static bool InotifyEvent::IsType (uint32_tuValue, uint32_tuType)\fC [inline, static]\fP"
+.PP
+Checks a value for the event type'\&. \fBParameters:\fP
+.RS 4
+\fIuValue\fP checked value 
+.br
+\fIuType\fP type which is checked for 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = the value contains the given type, false = otherwise 
+.RE
+.PP
+
+.SS "bool InotifyEvent::IsType (uint32_tuType) const\fC [inline]\fP"
+.PP
+Checks for the event type'\&. \fBParameters:\fP
+.RS 4
+\fIuType\fP type which is checked for 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = event mask contains the given type, false = otherwise 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

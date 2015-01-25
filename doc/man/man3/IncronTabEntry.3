@@ -1,0 +1,209 @@
+.TH "IncronTabEntry" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+IncronTabEntry \- 
+.PP
+Incron table entry class'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <incrontab\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBIncronTabEntry\fP ()"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "\fBIncronTabEntry\fP (const std::string &rPath, uint32_t uMask, const std::string &rCmd)"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "\fB~IncronTabEntry\fP ()"
+.br
+.RI "\fIDestructor'\&. \fP"
+.ti -1c
+.RI "std::string \fBToString\fP () const "
+.br
+.RI "\fIConverts the entry to string representation'\&. \fP"
+.ti -1c
+.RI "const std::string & \fBGetPath\fP () const "
+.br
+.RI "\fIReturns the watch filesystem path'\&. \fP"
+.ti -1c
+.RI "int32_t \fBGetMask\fP () const "
+.br
+.RI "\fIReturns the event mask'\&. \fP"
+.ti -1c
+.RI "const std::string & \fBGetCmd\fP () const "
+.br
+.RI "\fIReturns the command string'\&. \fP"
+.ti -1c
+.RI "bool \fBIsNoLoop\fP () const "
+.br
+.RI "\fIChecks whether this entry has set loop-avoidance'\&. \fP"
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static bool \fBParse\fP (const std::string &rStr, \fBIncronTabEntry\fP &rEntry)"
+.br
+.RI "\fIParses a string and attempts to extract entry parameters'\&. \fP"
+.ti -1c
+.RI "static std::string \fBGetSafePath\fP (const std::string &rPath)"
+.br
+.RI "\fIAdd backslashes before spaces in the source path'\&. \fP"
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "std::string \fBm_path\fP"
+.br
+.RI "\fIwatch path \fP"
+.ti -1c
+.RI "uint32_t \fBm_uMask\fP"
+.br
+.RI "\fIevent mask \fP"
+.ti -1c
+.RI "std::string \fBm_cmd\fP"
+.br
+.RI "\fIcommand string \fP"
+.ti -1c
+.RI "bool \fBm_fNoLoop\fP"
+.br
+.RI "\fIno loop yes/no \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Incron table entry class'\&. 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "IncronTabEntry::IncronTabEntry ()"
+.PP
+Constructor'\&. Creates an empty entry for later use with \fBParse()\fP'\&.
+.PP
+\fBSee also:\fP
+.RS 4
+\fBParse()\fP 
+.RE
+.PP
+
+.SS "IncronTabEntry::IncronTabEntry (const std::string &rPath, uint32_tuMask, const std::string &rCmd)"
+.PP
+Constructor'\&. Creates an entry based on defined parameters'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrPath\fP watched filesystem path 
+.br
+\fIuMask\fP event mask 
+.br
+\fIrCmd\fP command string 
+.RE
+.PP
+
+.SS "IncronTabEntry::~IncronTabEntry ()\fC [inline]\fP"
+.PP
+Destructor'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "const std::string& IncronTabEntry::GetCmd () const\fC [inline]\fP"
+.PP
+Returns the command string'\&. \fBReturns:\fP
+.RS 4
+command string 
+.RE
+.PP
+
+.SS "int32_t IncronTabEntry::GetMask () const\fC [inline]\fP"
+.PP
+Returns the event mask'\&. \fBReturns:\fP
+.RS 4
+event mask 
+.RE
+.PP
+
+.SS "const std::string& IncronTabEntry::GetPath () const\fC [inline]\fP"
+.PP
+Returns the watch filesystem path'\&. \fBReturns:\fP
+.RS 4
+watch path 
+.RE
+.PP
+
+.SS "std::string IncronTabEntry::GetSafePath (const std::string &rPath)\fC [static]\fP"
+.PP
+Add backslashes before spaces in the source path'\&. It also adds backslashes before all original backslashes of course'\&.
+.PP
+The source string is not modified and a copy is returned instead'\&.
+.PP
+This method is intended to be used for paths in user tables'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrPath\fP path to be modified 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+modified path 
+.RE
+.PP
+
+.SS "bool IncronTabEntry::IsNoLoop () const\fC [inline]\fP"
+.PP
+Checks whether this entry has set loop-avoidance'\&. \fBReturns:\fP
+.RS 4
+true = no loop, false = loop allowed 
+.RE
+.PP
+
+.SS "bool IncronTabEntry::Parse (const std::string &rStr, \fBIncronTabEntry\fP &rEntry)\fC [static]\fP"
+.PP
+Parses a string and attempts to extract entry parameters'\&. \fBParameters:\fP
+.RS 4
+\fIrStr\fP parsed string 
+.br
+\fIrEntry\fP parametrized entry 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure 
+.RE
+.PP
+
+.SS "std::string IncronTabEntry::ToString () const"
+.PP
+Converts the entry to string representation'\&. This method creates a string for use in a table file'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+string representation 
+.RE
+.PP
+
+.SH "Member Data Documentation"
+.PP 
+.SS "std::string \fBIncronTabEntry::m_cmd\fP\fC [protected]\fP"
+.PP
+command string 
+.SS "bool \fBIncronTabEntry::m_fNoLoop\fP\fC [protected]\fP"
+.PP
+no loop yes/no 
+.SS "std::string \fBIncronTabEntry::m_path\fP\fC [protected]\fP"
+.PP
+watch path 
+.SS "uint32_t \fBIncronTabEntry::m_uMask\fP\fC [protected]\fP"
+.PP
+event mask 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

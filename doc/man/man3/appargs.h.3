@@ -1,0 +1,121 @@
+.TH "appargs.h" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+appargs.h \- 
+.PP
+application arguments processor header  
+
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <cstring>\fP
+.br
+\fC#include <map>\fP
+.br
+\fC#include <deque>\fP
+.br
+
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "struct \fBAppArgOption_t\fP"
+.br
+.RI "\fIArgument option type'\&. \fP"
+.ti -1c
+.RI "class \fBAppArgs\fP"
+.br
+.RI "\fIApplication arguments'\&. \fP"
+.in -1c
+.SS "Defines"
+
+.in +1c
+.ti -1c
+.RI "#define \fBAPPARGS_NOLIMIT\fP   0x7fffffff"
+.br
+.RI "\fIvalue count has no limit \fP"
+.in -1c
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef std::map< std::string, 
+.br
+\fBAppArgOption_t\fP * > \fBAA_LONG_MAP\fP"
+.br
+.RI "\fIMapping from long option name to option data'\&. \fP"
+.ti -1c
+.RI "typedef std::map< char, 
+.br
+\fBAppArgOption_t\fP * > \fBAA_SHORT_MAP\fP"
+.br
+.RI "\fIMapping from short option name to option data'\&. \fP"
+.ti -1c
+.RI "typedef std::deque< std::string > \fBAA_VAL_LIST\fP"
+.br
+.RI "\fIValue list type'\&. \fP"
+.in -1c
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBAppArgType_t\fP { \fBAAT_NO_VALUE\fP, \fBAAT_OPTIONAL_VALUE\fP, \fBAAT_MANDATORY_VALUE\fP }"
+.br
+.RI "\fIOption argument type'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+application arguments processor header 
+
+application arguments processor
+.PP
+Copyright (C) 2007, 2008 Lukas Jelinek, <lukas@aiken.cz>
+.PP
+This program is free software; you can redistribute it and/or modify it under the terms of one of the following licenses:
+.PP
+.PD 0
+.IP "\(bu" 2
+1'\&. X11-style license (see LICENSE-X11) 
+.IP "\(bu" 2
+2'\&. GNU Lesser General Public License, version 2'\&.1 (see LICENSE-LGPL) 
+.IP "\(bu" 2
+3'\&. GNU General Public License, version 2 (see LICENSE-GPL)
+.PP
+If you want to help with choosing the best license for you, please visit http://www.gnu.org/licenses/license-list.html. 
+.SH "Define Documentation"
+.PP 
+.SS "#define APPARGS_NOLIMIT   0x7fffffff"
+.PP
+value count has no limit 
+.SH "Typedef Documentation"
+.PP 
+.SS "typedef std::map<std::string, \fBAppArgOption_t\fP*> \fBAA_LONG_MAP\fP"
+.PP
+Mapping from long option name to option data'\&. 
+.SS "typedef std::map<char, \fBAppArgOption_t\fP*> \fBAA_SHORT_MAP\fP"
+.PP
+Mapping from short option name to option data'\&. 
+.SS "typedef std::deque<std::string> \fBAA_VAL_LIST\fP"
+.PP
+Value list type'\&. 
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBAppArgType_t\fP"
+.PP
+Option argument type'\&. 
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fIAAT_NO_VALUE \fP\fP
+no value needed 
+.TP
+\fB\fIAAT_OPTIONAL_VALUE \fP\fP
+optional value 
+.TP
+\fB\fIAAT_MANDATORY_VALUE \fP\fP
+mandatory value 
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

@@ -1,0 +1,113 @@
+.TH "InotifyException" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+InotifyException \- 
+.PP
+Class for inotify exceptions'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <inotify-cxx\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBInotifyException\fP (const std::string &rMsg='', int iErr=0, void *pSrc=NULL)"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "const std::string & \fBGetMessage\fP () const "
+.br
+.RI "\fIReturns the exception message'\&. \fP"
+.ti -1c
+.RI "int \fBGetErrorNumber\fP () const "
+.br
+.RI "\fIReturns the exception error number'\&. \fP"
+.ti -1c
+.RI "void * \fBGetSource\fP () const "
+.br
+.RI "\fIReturns the exception source'\&. \fP"
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "std::string \fBm_msg\fP"
+.br
+.RI "\fImessage \fP"
+.ti -1c
+.RI "int \fBm_err\fP"
+.br
+.RI "\fIerror number \fP"
+.ti -1c
+.RI "void * \fBm_pSrc\fP"
+.br
+.RI "\fIsource \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Class for inotify exceptions'\&. 
+
+This class allows to acquire information about exceptional events'\&. It makes easier to log or display error messages and to identify problematic code locations'\&.
+.PP
+Although this class is basically thread-safe it is not intended to be shared between threads'\&. 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "InotifyException::InotifyException (const std::string &rMsg = \fC''\fP, intiErr = \fC0\fP, void *pSrc = \fCNULL\fP)\fC [inline]\fP"
+.PP
+Constructor'\&. \fBParameters:\fP
+.RS 4
+\fIrMsg\fP message 
+.br
+\fIiErr\fP error number (see errno'\&.h) 
+.br
+\fIpSrc\fP source 
+.RE
+.PP
+
+.SH "Member Function Documentation"
+.PP 
+.SS "int InotifyException::GetErrorNumber () const\fC [inline]\fP"
+.PP
+Returns the exception error number'\&. If not applicable this value is 0 (zero)'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+error number (standardized; see errno'\&.h) 
+.RE
+.PP
+
+.SS "const std::string& InotifyException::GetMessage () const\fC [inline]\fP"
+.PP
+Returns the exception message'\&. \fBReturns:\fP
+.RS 4
+message 
+.RE
+.PP
+
+.SS "void* InotifyException::GetSource () const\fC [inline]\fP"
+.PP
+Returns the exception source'\&. \fBReturns:\fP
+.RS 4
+source 
+.RE
+.PP
+
+.SH "Member Data Documentation"
+.PP 
+.SS "int \fBInotifyException::m_err\fP\fC [protected]\fP"
+.PP
+error number 
+.SS "std::string \fBInotifyException::m_msg\fP\fC [protected]\fP"
+.PP
+message 
+.SS "void* \fBInotifyException::m_pSrc\fP\fC [mutable, protected]\fP"
+.PP
+source 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

@@ -1,0 +1,60 @@
+.TH "incroncfg.cpp" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+incroncfg.cpp \- 
+.PP
+inotify cron configuration implementation  
+
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <fstream>\fP
+.br
+\fC#include <sstream>\fP
+.br
+\fC#include <cstring>\fP
+.br
+\fC#include 'incroncfg\&.h'\fP
+.br
+
+.SS "Defines"
+
+.in +1c
+.ti -1c
+.RI "#define \fBINCRON_CFG_DEFAULT\fP   '/etc/incron\&.conf'"
+.br
+.in -1c
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef std::map< std::string, 
+.br
+std::string > \fBCFG_MAP\fP"
+.br
+.ti -1c
+.RI "typedef CFG_MAP::iterator \fBCFG_ITER\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+inotify cron configuration implementation 
+
+incron configuration
+.PP
+Copyright (C) 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
+.PP
+This program is free software; you can use it, redistribute it and/or modify it under the terms of the GNU General Public License, version 2 (see LICENSE-GPL)'\&.
+.PP
+Credits: Christian Ruppert (new include to build with GCC 4'\&.4+) 
+.SH "Define Documentation"
+.PP 
+.SS "#define INCRON_CFG_DEFAULT   '/etc/incron\&.conf'"
+.SH "Typedef Documentation"
+.PP 
+.SS "typedef CFG_MAP::iterator \fBCFG_ITER\fP"
+.SS "typedef std::map<std::string, std::string> \fBCFG_MAP\fP"
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

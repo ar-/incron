@@ -1,0 +1,176 @@
+.TH "UserTable" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+UserTable \- 
+.PP
+User table class'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <usertable\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBUserTable\fP (\fBEventDispatcher\fP *pEd, const std::string &rUser, bool fSysTable)"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "virtual \fB~UserTable\fP ()"
+.br
+.RI "\fIDestructor'\&. \fP"
+.ti -1c
+.RI "void \fBLoad\fP ()"
+.br
+.RI "\fILoads the table'\&. \fP"
+.ti -1c
+.RI "void \fBDispose\fP ()"
+.br
+.RI "\fIRemoves all entries from the table'\&. \fP"
+.ti -1c
+.RI "void \fBOnEvent\fP (\fBInotifyEvent\fP &rEvt)"
+.br
+.RI "\fIProcesses an inotify event'\&. \fP"
+.ti -1c
+.RI "bool \fBMayAccess\fP (const std::string &rPath, bool fNoFollow) const "
+.br
+.RI "\fIChecks whether the user may access a file'\&. \fP"
+.ti -1c
+.RI "bool \fBIsSystem\fP () const "
+.br
+.RI "\fIChecks whether it is a system table'\&. \fP"
+.ti -1c
+.RI "\fBInotify\fP * \fBGetInotify\fP ()"
+.br
+.RI "\fIReturns the related inotify object'\&. \fP"
+.ti -1c
+.RI "void \fBRunAsUser\fP (char *const *argv) const "
+.br
+.RI "\fIRuns a program as the table's user'\&. \fP"
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static void \fBFinishDone\fP ()"
+.br
+.RI "\fICleans-up all zombie child processes and enables disabled watches'\&. \fP"
+.ti -1c
+.RI "static bool \fBCheckUser\fP (const char *user)"
+.br
+.RI "\fIChecks whether an user exists and has permission to use incron'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+User table class'\&. 
+
+This class processes inotify events for an user'\&. It creates child processes which do appropriate actions as defined in the user table file'\&. 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "UserTable::UserTable (\fBEventDispatcher\fP *pEd, const std::string &rUser, boolfSysTable)"
+.PP
+Constructor'\&. \fBParameters:\fP
+.RS 4
+\fIpEd\fP event dispatcher 
+.br
+\fIrUser\fP user name 
+.br
+\fIfSysTable\fP system table yes/no 
+.RE
+.PP
+
+.SS "UserTable::~UserTable ()\fC [virtual]\fP"
+.PP
+Destructor'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "static bool UserTable::CheckUser (const char *user)\fC [inline, static]\fP"
+.PP
+Checks whether an user exists and has permission to use incron'\&. It searches for the given user name in the user database'\&. If it failes it returns 'false''\&. Otherwise it checks permission files for this user (see InCronTab::CheckUser())'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIuser\fP user name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = user has permission to use incron, false = otherwise
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+InCronTab::CheckUser() 
+.RE
+.PP
+
+.SS "void UserTable::Dispose ()"
+.PP
+Removes all entries from the table'\&. All entries are unregistered from the event dispatcher and their watches are destroyed'\&. 
+.SS "void UserTable::FinishDone ()\fC [static]\fP"
+.PP
+Cleans-up all zombie child processes and enables disabled watches'\&. \fBAttention:\fP
+.RS 4
+This method must be called AFTER processing all events which has been caused by the processes'\&. 
+.RE
+.PP
+
+.SS "\fBInotify\fP* UserTable::GetInotify ()\fC [inline]\fP"
+.PP
+Returns the related inotify object'\&. \fBReturns:\fP
+.RS 4
+related inotify object 
+.RE
+.PP
+
+.SS "bool UserTable::IsSystem () const"
+.PP
+Checks whether it is a system table'\&. \fBReturns:\fP
+.RS 4
+true = system table, false = user table 
+.RE
+.PP
+
+.SS "void UserTable::Load ()"
+.PP
+Loads the table'\&. All loaded entries have their inotify watches and are registered for event dispatching'\&. If loading fails the table remains empty'\&. 
+.SS "bool UserTable::MayAccess (const std::string &rPath, boolfNoFollow) const"
+.PP
+Checks whether the user may access a file'\&. Any access right (RWX) is sufficient'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrPath\fP absolute file path 
+.br
+\fIfNoFollow\fP don't follow a symbolic link 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = access granted, false = otherwise 
+.RE
+.PP
+
+.SS "void UserTable::OnEvent (\fBInotifyEvent\fP &rEvt)"
+.PP
+Processes an inotify event'\&. \fBParameters:\fP
+.RS 4
+\fIrEvt\fP inotify event 
+.RE
+.PP
+
+.SS "void UserTable::RunAsUser (char *const *argv) const"
+.PP
+Runs a program as the table's user'\&. \fBAttention:\fP
+.RS 4
+Don't call from the main process (before forking)! 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

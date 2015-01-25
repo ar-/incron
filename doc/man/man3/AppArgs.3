@@ -1,0 +1,322 @@
+.TH "AppArgs" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+AppArgs \- 
+.PP
+Application arguments'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <appargs\&.h>\fP
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static void \fBInit\fP (size_t valMinCnt=0, size_t valMaxCnt=APPARGS_NOLIMIT)"
+.br
+.RI "\fIInitializes the processor'\&. \fP"
+.ti -1c
+.RI "static void \fBDestroy\fP ()"
+.br
+.RI "\fIReleases resources allocated by the processor'\&. \fP"
+.ti -1c
+.RI "static void \fBParse\fP (int argc, const char *const *argv)"
+.br
+.RI "\fIParses arguments and builds the appropriate structure'\&. \fP"
+.ti -1c
+.RI "static bool \fBIsValid\fP ()"
+.br
+.RI "\fIChecks whether the arguments have valid form'\&. \fP"
+.ti -1c
+.RI "static bool \fBExistsOption\fP (const std::string &rArg)"
+.br
+.RI "\fIChecks whether an option exists'\&. \fP"
+.ti -1c
+.RI "static bool \fBGetOption\fP (const std::string &rArg, std::string &rVal)"
+.br
+.RI "\fIExtracts an option value'\&. \fP"
+.ti -1c
+.RI "static bool \fBAddOption\fP (const std::string &rName, char cShort, \fBAppArgType_t\fP type, bool fMandatory)"
+.br
+.RI "\fIAdds an option'\&. \fP"
+.ti -1c
+.RI "static size_t \fBGetValueCount\fP ()"
+.br
+.RI "\fIReturns the count of values'\&. \fP"
+.ti -1c
+.RI "static bool \fBGetValue\fP (size_t index, std::string &rVal)"
+.br
+.RI "\fIExtracts a value'\&. \fP"
+.ti -1c
+.RI "static void \fBDump\fP ()"
+.br
+.RI "\fIDumps information about options and value to STDERR'\&. \fP"
+.in -1c
+.SS "Static Protected Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static bool \fBIsOption\fP (const char *pchStr)"
+.br
+.RI "\fIChecks whether a string is an option'\&. \fP"
+.ti -1c
+.RI "static bool \fBIsLongOption\fP (const char *pchStr)"
+.br
+.RI "\fIChecks whether a string is a long option'\&. \fP"
+.ti -1c
+.RI "static bool \fBParseLong\fP (const char *pchStr, std::string &rName, std::string &rVal, bool &rfHasVal)"
+.br
+.RI "\fIParses a string and attempts to treat it as a long option'\&. \fP"
+.ti -1c
+.RI "static void \fBParseShort\fP (const char *pchStr, char &rcName, std::string &rVal, bool &rfHasVal)"
+.br
+.RI "\fIParses a string and attempts to treat it as a short option'\&. \fP"
+.ti -1c
+.RI "static void \fBDumpOption\fP (const std::string &rName, char cShort, \fBAppArgOption_t\fP *pOpt)"
+.br
+.RI "\fIDumps an option to STDERR'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Application arguments'\&. 
+
+This class is set-up for processing command line arguments'\&. Then it parses these arguments and builds data which can be queried later'\&.
+.PP
+There are two categories of arguments: 
+.PD 0
+
+.IP "\(bu" 2
+options (a'\&.k'\&.a'\&. switches) 
+.IP "\(bu" 2
+values
+.PP
+Options represent changeable parameters of the application'\&. Values are a kind of input data'\&.
+.PP
+Each option has one of the following types: 
+.PD 0
+
+.IP "\(bu" 2
+no value (two-state logic, e'\&.g'\&. running on foreground/background) 
+.IP "\(bu" 2
+optional value (e'\&.g'\&. for logging: another file than default can be specified) 
+.IP "\(bu" 2
+mandatory value (e'\&.g'\&. custom configuration file)
+.PP
+Each option always have two forms - long one (introcuded by two hyphens, e'\&.g'\&. --edit) and short one (introduced by one hyphen, e'\&.g'\&. -e)'\&. These forms are functionally equivalent'\&.
+.PP
+Unknown options are silently ignored'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "bool AppArgs::AddOption (const std::string &rName, charcShort, \fBAppArgType_t\fPtype, boolfMandatory)\fC [static]\fP"
+.PP
+Adds an option'\&. This method is intended to be called between initilization and parsing'\&. It adds an option which may (or must) occur inside the argument vector'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrName\fP long option name 
+.br
+\fIcShort\fP short (one-character) option name 
+.br
+\fItype\fP argument type 
+.br
+\fIfMandatory\fP option is mandatory yes/no 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure (e'\&.g'\&. option already exists) 
+.RE
+.PP
+
+.SS "void AppArgs::Destroy ()\fC [static]\fP"
+.PP
+Releases resources allocated by the processor'\&. This method should be called if the argument values are no longer needed'\&. 
+.SS "void AppArgs::Dump ()\fC [static]\fP"
+.PP
+Dumps information about options and value to STDERR'\&. \fBAttention:\fP
+.RS 4
+This method may be very slow'\&. 
+.RE
+.PP
+
+.SS "void AppArgs::DumpOption (const std::string &rName, charcShort, \fBAppArgOption_t\fP *pOpt)\fC [static, protected]\fP"
+.PP
+Dumps an option to STDERR'\&. \fBParameters:\fP
+.RS 4
+\fIrName\fP long option name 
+.br
+\fIcShort\fP short option name 
+.br
+\fIpOpt\fP option data 
+.RE
+.PP
+
+.SS "bool AppArgs::ExistsOption (const std::string &rArg)\fC [static]\fP"
+.PP
+Checks whether an option exists'\&. \fBParameters:\fP
+.RS 4
+\fIrArg\fP long option name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = option exists, false = otherwise 
+.RE
+.PP
+
+.SS "bool AppArgs::GetOption (const std::string &rArg, std::string &rVal)\fC [static]\fP"
+.PP
+Extracts an option value'\&. \fBParameters:\fP
+.RS 4
+\fIrArg\fP long option name 
+.br
+\fIrVal\fP option value 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = value extracted, false = option not found or has no value 
+.RE
+.PP
+
+.SS "bool AppArgs::GetValue (size_tindex, std::string &rVal)\fC [static]\fP"
+.PP
+Extracts a value'\&. \fBParameters:\fP
+.RS 4
+\fIindex\fP value index 
+.br
+\fIrVal\fP extracted value 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = value extracted, false = otherwise 
+.RE
+.PP
+
+.SS "size_t AppArgs::GetValueCount ()\fC [static]\fP"
+.PP
+Returns the count of values'\&. \fBReturns:\fP
+.RS 4
+count of values 
+.RE
+.PP
+
+.SS "void AppArgs::Init (size_tvalMinCnt = \fC0\fP, size_tvalMaxCnt = \fCAPPARGS_NOLIMIT\fP)\fC [static]\fP"
+.PP
+Initializes the processor'\&. \fBParameters:\fP
+.RS 4
+\fIvalMinCnt\fP minimum count of values 
+.br
+\fIvalMaxCnt\fP maximum number of values (no effect if lower than valMinCnt) 
+.RE
+.PP
+
+.SS "bool AppArgs::IsLongOption (const char *pchStr)\fC [static, protected]\fP"
+.PP
+Checks whether a string is a long option'\&. This methos assumes the string is an option (if not the behavior is undefined)'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpchStr\fP text string 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = option, false = otherwise 
+.RE
+.PP
+
+.SS "bool AppArgs::IsOption (const char *pchStr)\fC [static, protected]\fP"
+.PP
+Checks whether a string is an option'\&. \fBParameters:\fP
+.RS 4
+\fIpchStr\fP text string 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = option, false = otherwise 
+.RE
+.PP
+
+.SS "bool AppArgs::IsValid ()\fC [static]\fP"
+.PP
+Checks whether the arguments have valid form'\&. Arguments are valid if: 
+.PD 0
+
+.IP "\(bu" 2
+all mandatory options are present 
+.IP "\(bu" 2
+all options with mandatory values have their values 
+.IP "\(bu" 2
+value count is between its minimum and maximum 
+.IP "\(bu" 2
+there are no unknown options (if unknown options are not accepted)
+.PP
+\fBReturns:\fP
+.RS 4
+true = arguments valid, false = otherwise 
+.RE
+.PP
+
+.SS "void AppArgs::Parse (intargc, const char *const *argv)\fC [static]\fP"
+.PP
+Parses arguments and builds the appropriate structure'\&. \fBParameters:\fP
+.RS 4
+\fIargc\fP argument count 
+.br
+\fIargv\fP argument vector
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+All errors are silently ignored'\&. 
+.RE
+.PP
+
+.SS "bool AppArgs::ParseLong (const char *pchStr, std::string &rName, std::string &rVal, bool &rfHasVal)\fC [static, protected]\fP"
+.PP
+Parses a string and attempts to treat it as a long option'\&. \fBParameters:\fP
+.RS 4
+\fIpchStr\fP text string 
+.br
+\fIrName\fP option name 
+.br
+\fIrVal\fP value string 
+.br
+\fIrfHasVal\fP option has value yes/no 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure 
+.RE
+.PP
+
+.SS "void AppArgs::ParseShort (const char *pchStr, char &rcName, std::string &rVal, bool &rfHasVal)\fC [static, protected]\fP"
+.PP
+Parses a string and attempts to treat it as a short option'\&. \fBParameters:\fP
+.RS 4
+\fIpchStr\fP text string 
+.br
+\fIrcName\fP option name 
+.br
+\fIrVal\fP value string 
+.br
+\fIrfHasVal\fP option has value yes/no
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+This method assumes the string is a valid short option'\&. 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

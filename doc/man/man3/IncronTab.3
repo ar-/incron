@@ -1,0 +1,214 @@
+.TH "IncronTab" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+IncronTab \- 
+.PP
+Incron table class'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <incrontab\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBIncronTab\fP ()"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "\fB~IncronTab\fP ()"
+.br
+.RI "\fIDestructor'\&. \fP"
+.ti -1c
+.RI "void \fBAdd\fP (const \fBIncronTabEntry\fP &rEntry)"
+.br
+.RI "\fIAdd an entry to the table'\&. \fP"
+.ti -1c
+.RI "void \fBClear\fP ()"
+.br
+.RI "\fIRemoves all entries'\&. \fP"
+.ti -1c
+.RI "bool \fBIsEmpty\fP () const "
+.br
+.RI "\fIChecks whether the table is empty'\&. \fP"
+.ti -1c
+.RI "int \fBGetCount\fP () const "
+.br
+.RI "\fIReturns the count of entries'\&. \fP"
+.ti -1c
+.RI "\fBIncronTabEntry\fP & \fBGetEntry\fP (int index)"
+.br
+.RI "\fIReturns an entry'\&. \fP"
+.ti -1c
+.RI "bool \fBLoad\fP (const std::string &rPath)"
+.br
+.RI "\fILoads the table'\&. \fP"
+.ti -1c
+.RI "bool \fBSave\fP (const std::string &rPath)"
+.br
+.RI "\fISaves the table'\&. \fP"
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static bool \fBCheckUser\fP (const std::string &rUser)"
+.br
+.RI "\fIChecks whether an user has permission to use incron'\&. \fP"
+.ti -1c
+.RI "static std::string \fBGetUserTablePath\fP (const std::string &rUser)"
+.br
+.RI "\fIComposes a path to an user incron table file'\&. \fP"
+.ti -1c
+.RI "static std::string \fBGetSystemTablePath\fP (const std::string &rName)"
+.br
+.RI "\fIComposes a path to a system incron table file'\&. \fP"
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "std::deque< \fBIncronTabEntry\fP > \fBm_tab\fP"
+.br
+.RI "\fIincron table \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Incron table class'\&. 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "IncronTab::IncronTab ()\fC [inline]\fP"
+.PP
+Constructor'\&. 
+.SS "IncronTab::~IncronTab ()\fC [inline]\fP"
+.PP
+Destructor'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "void IncronTab::Add (const \fBIncronTabEntry\fP &rEntry)\fC [inline]\fP"
+.PP
+Add an entry to the table'\&. \fBParameters:\fP
+.RS 4
+\fIrEntry\fP table entry 
+.RE
+.PP
+
+.SS "bool IncronTab::CheckUser (const std::string &rUser)\fC [static]\fP"
+.PP
+Checks whether an user has permission to use incron'\&. \fBParameters:\fP
+.RS 4
+\fIrUser\fP user name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = permission OK, false = otherwise 
+.RE
+.PP
+
+.SS "void IncronTab::Clear ()\fC [inline]\fP"
+.PP
+Removes all entries'\&. 
+.SS "int IncronTab::GetCount () const\fC [inline]\fP"
+.PP
+Returns the count of entries'\&. \fBReturns:\fP
+.RS 4
+count of entries 
+.RE
+.PP
+
+.SS "\fBIncronTabEntry\fP& IncronTab::GetEntry (intindex)\fC [inline]\fP"
+.PP
+Returns an entry'\&. \fBReturns:\fP
+.RS 4
+reference to the entry for the given index
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+This method doesn't test index bounds'\&. If you pass an invalid value the program may crash and/or behave unpredictible way! 
+.RE
+.PP
+
+.SS "std::string IncronTab::GetSystemTablePath (const std::string &rName)\fC [static]\fP"
+.PP
+Composes a path to a system incron table file'\&. \fBParameters:\fP
+.RS 4
+\fIrName\fP table name (pseudouser) 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+path to the table file
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+No tests (existence, permission etc'\&.) are done'\&. 
+.RE
+.PP
+
+.SS "std::string IncronTab::GetUserTablePath (const std::string &rUser)\fC [static]\fP"
+.PP
+Composes a path to an user incron table file'\&. \fBParameters:\fP
+.RS 4
+\fIrUser\fP user name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+path to the table file
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+No tests (existence, permission etc'\&.) are done'\&. 
+.RE
+.PP
+
+.SS "bool IncronTab::IsEmpty () const\fC [inline]\fP"
+.PP
+Checks whether the table is empty'\&. \fBReturns:\fP
+.RS 4
+true = empty, false = otherwise 
+.RE
+.PP
+
+.SS "bool IncronTab::Load (const std::string &rPath)"
+.PP
+Loads the table'\&. \fBParameters:\fP
+.RS 4
+\fIrPath\fP path to a source table file 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure 
+.RE
+.PP
+
+.SS "bool IncronTab::Save (const std::string &rPath)"
+.PP
+Saves the table'\&. \fBParameters:\fP
+.RS 4
+\fIrPath\fP path to a destination table file 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure 
+.RE
+.PP
+
+.SH "Member Data Documentation"
+.PP 
+.SS "std::deque<\fBIncronTabEntry\fP> \fBIncronTab::m_tab\fP\fC [protected]\fP"
+.PP
+incron table 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

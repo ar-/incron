@@ -1,0 +1,196 @@
+.TH "IncronCfg" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+IncronCfg \- 
+.PP
+Configuration class'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <incroncfg\&.h>\fP
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static void \fBInit\fP ()"
+.br
+.RI "\fIInitializes default configuration values'\&. \fP"
+.ti -1c
+.RI "static void \fBLoad\fP (const std::string &rPath)"
+.br
+.RI "\fILoads configuration values'\&. \fP"
+.ti -1c
+.RI "static bool \fBGetValue\fP (const std::string &rKey, std::string &rVal)"
+.br
+.RI "\fIRetrieves a configuration value'\&. \fP"
+.ti -1c
+.RI "static bool \fBGetValue\fP (const std::string &rKey, int &rVal)"
+.br
+.RI "\fIRetrieves a configuration value'\&. \fP"
+.ti -1c
+.RI "static bool \fBGetValue\fP (const std::string &rKey, unsigned &rVal)"
+.br
+.RI "\fIRetrieves a configuration value'\&. \fP"
+.ti -1c
+.RI "static bool \fBGetValue\fP (const std::string &rKey, bool &rVal)"
+.br
+.RI "\fIRetrieves a configuration value'\&. \fP"
+.ti -1c
+.RI "static std::string \fBBuildPath\fP (const std::string &rPath, const std::string &rName)"
+.br
+.RI "\fIBuilds a file path'\&. \fP"
+.in -1c
+.SS "Static Protected Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static bool \fBParseLine\fP (const char *s, std::string &rKey, std::string &rVal)"
+.br
+.RI "\fIParses a line a attempts to get a key and a value'\&. \fP"
+.ti -1c
+.RI "static bool \fBIsComment\fP (const char *s)"
+.br
+.RI "\fIChecks whether a line is a comment'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Configuration class'\&. 
+
+This class provides access to values loaded from a configuration file (either a explicitly specified one or the default one)'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "std::string IncronCfg::BuildPath (const std::string &rPath, const std::string &rName)\fC [static]\fP"
+.PP
+Builds a file path'\&. This function composes a path from a base path and a file name'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrPath\fP base path 
+.br
+\fIrName\fP file name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+full path 
+.RE
+.PP
+
+.SS "bool IncronCfg::GetValue (const std::string &rKey, std::string &rVal)\fC [static]\fP"
+.PP
+Retrieves a configuration value'\&. This method attempts to find the appropriate configuration value for the given key and stores it into the given variable'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrKey\fP value key 
+.br
+\fIrVal\fP retrieved value 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure (invalid key) 
+.RE
+.PP
+
+.SS "bool IncronCfg::GetValue (const std::string &rKey, int &rVal)\fC [static]\fP"
+.PP
+Retrieves a configuration value'\&. This method attempts to find the appropriate configuration value for the given key and stores it into the given variable'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrKey\fP value key 
+.br
+\fIrVal\fP retrieved value 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure (invalid key) 
+.RE
+.PP
+
+.SS "bool IncronCfg::GetValue (const std::string &rKey, unsigned &rVal)\fC [static]\fP"
+.PP
+Retrieves a configuration value'\&. This method attempts to find the appropriate configuration value for the given key and stores it into the given variable'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrKey\fP value key 
+.br
+\fIrVal\fP retrieved value 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure (invalid key) 
+.RE
+.PP
+
+.SS "bool IncronCfg::GetValue (const std::string &rKey, bool &rVal)\fC [static]\fP"
+.PP
+Retrieves a configuration value'\&. This method attempts to find the appropriate configuration value for the given key and stores it into the given variable'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrKey\fP value key 
+.br
+\fIrVal\fP retrieved value 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure (invalid key) 
+.RE
+.PP
+
+.SS "void IncronCfg::Init ()\fC [static]\fP"
+.PP
+Initializes default configuration values'\&. 
+.SS "bool IncronCfg::IsComment (const char *s)\fC [static, protected]\fP"
+.PP
+Checks whether a line is a comment'\&. \fBParameters:\fP
+.RS 4
+\fIs\fP text line 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = comment, false = otherwise 
+.RE
+.PP
+
+.SS "void IncronCfg::Load (const std::string &rPath)\fC [static]\fP"
+.PP
+Loads configuration values'\&. This method attempts to load configuration values from the specified file'\&. If it fails (e'\&.g'\&. the file doesn't exist) the default file is read'\&. As the last resort (for the case the default file can't be loaded) the hard-wired values are used'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrPath\fP configuration file path 
+.RE
+.PP
+
+.SS "bool IncronCfg::ParseLine (const char *s, std::string &rKey, std::string &rVal)\fC [static, protected]\fP"
+.PP
+Parses a line a attempts to get a key and a value'\&. \fBParameters:\fP
+.RS 4
+\fIs\fP text line 
+.br
+\fIrKey\fP key 
+.br
+\fIrVal\fP value 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

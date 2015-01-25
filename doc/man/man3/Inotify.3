@@ -1,0 +1,584 @@
+.TH "Inotify" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Inotify \- 
+.PP
+inotify class  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <inotify-cxx\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBInotify\fP ()  throw (InotifyException)"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "\fB~Inotify\fP ()"
+.br
+.RI "\fIDestructor'\&. \fP"
+.ti -1c
+.RI "void \fBClose\fP ()"
+.br
+.RI "\fIRemoves all watches and closes the inotify device'\&. \fP"
+.ti -1c
+.RI "void \fBAdd\fP (\fBInotifyWatch\fP *pWatch)  throw (InotifyException)"
+.br
+.RI "\fIAdds a new watch'\&. \fP"
+.ti -1c
+.RI "void \fBAdd\fP (\fBInotifyWatch\fP &rWatch)  throw (InotifyException)"
+.br
+.RI "\fIAdds a new watch'\&. \fP"
+.ti -1c
+.RI "void \fBRemove\fP (\fBInotifyWatch\fP *pWatch)  throw (InotifyException)"
+.br
+.RI "\fIRemoves a watch'\&. \fP"
+.ti -1c
+.RI "void \fBRemove\fP (\fBInotifyWatch\fP &rWatch)  throw (InotifyException)"
+.br
+.RI "\fIRemoves a watch'\&. \fP"
+.ti -1c
+.RI "void \fBRemoveAll\fP ()"
+.br
+.RI "\fIRemoves all watches'\&. \fP"
+.ti -1c
+.RI "size_t \fBGetWatchCount\fP () const "
+.br
+.RI "\fIReturns the count of watches'\&. \fP"
+.ti -1c
+.RI "size_t \fBGetEnabledCount\fP () const "
+.br
+.RI "\fIReturns the count of enabled watches'\&. \fP"
+.ti -1c
+.RI "void \fBWaitForEvents\fP (bool fNoIntr=false)  throw (InotifyException)"
+.br
+.RI "\fIWaits for inotify events'\&. \fP"
+.ti -1c
+.RI "size_t \fBGetEventCount\fP ()"
+.br
+.RI "\fIReturns the count of received and queued events'\&. \fP"
+.ti -1c
+.RI "bool \fBGetEvent\fP (\fBInotifyEvent\fP *pEvt)  throw (InotifyException)"
+.br
+.RI "\fIExtracts a queued inotify event'\&. \fP"
+.ti -1c
+.RI "bool \fBGetEvent\fP (\fBInotifyEvent\fP &rEvt)  throw (InotifyException)"
+.br
+.RI "\fIExtracts a queued inotify event'\&. \fP"
+.ti -1c
+.RI "bool \fBPeekEvent\fP (\fBInotifyEvent\fP *pEvt)  throw (InotifyException)"
+.br
+.RI "\fIExtracts a queued inotify event (without removing)'\&. \fP"
+.ti -1c
+.RI "bool \fBPeekEvent\fP (\fBInotifyEvent\fP &rEvt)  throw (InotifyException)"
+.br
+.RI "\fIExtracts a queued inotify event (without removing)'\&. \fP"
+.ti -1c
+.RI "\fBInotifyWatch\fP * \fBFindWatch\fP (int iDescriptor)"
+.br
+.RI "\fISearches for a watch by a watch descriptor'\&. \fP"
+.ti -1c
+.RI "\fBInotifyWatch\fP * \fBFindWatch\fP (const std::string &rPath)"
+.br
+.RI "\fISearches for a watch by a filesystem path'\&. \fP"
+.ti -1c
+.RI "int \fBGetDescriptor\fP () const "
+.br
+.RI "\fIReturns the file descriptor'\&. \fP"
+.ti -1c
+.RI "void \fBSetNonBlock\fP (bool fNonBlock)  throw (InotifyException)"
+.br
+.RI "\fIEnables/disables non-blocking mode'\&. \fP"
+.ti -1c
+.RI "void \fBSetCloseOnExec\fP (bool fClOnEx)  throw (InotifyException)"
+.br
+.RI "\fIEnables/disables closing on exec'\&. \fP"
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static uint32_t \fBGetCapability\fP (\fBInotifyCapability_t\fP cap)  throw (InotifyException)"
+.br
+.RI "\fIAcquires a particular inotify capability/limit'\&. \fP"
+.ti -1c
+.RI "static void \fBSetCapability\fP (\fBInotifyCapability_t\fP cap, uint32_t val)  throw (InotifyException)"
+.br
+.RI "\fIModifies a particular inotify capability/limit'\&. \fP"
+.ti -1c
+.RI "static uint32_t \fBGetMaxEvents\fP ()  throw (InotifyException)"
+.br
+.RI "\fIReturns the maximum number of events in the kernel queue'\&. \fP"
+.ti -1c
+.RI "static void \fBSetMaxEvents\fP (uint32_t val)  throw (InotifyException)"
+.br
+.RI "\fISets the maximum number of events in the kernel queue'\&. \fP"
+.ti -1c
+.RI "static uint32_t \fBGetMaxInstances\fP ()  throw (InotifyException)"
+.br
+.RI "\fIReturns the maximum number of inotify instances per process'\&. \fP"
+.ti -1c
+.RI "static void \fBSetMaxInstances\fP (uint32_t val)  throw (InotifyException)"
+.br
+.RI "\fISets the maximum number of inotify instances per process'\&. \fP"
+.ti -1c
+.RI "static uint32_t \fBGetMaxWatches\fP ()  throw (InotifyException)"
+.br
+.RI "\fIReturns the maximum number of inotify watches per instance'\&. \fP"
+.ti -1c
+.RI "static void \fBSetMaxWatches\fP (uint32_t val)  throw (InotifyException)"
+.br
+.RI "\fISets the maximum number of inotify watches per instance'\&. \fP"
+.in -1c
+.SS "Friends"
+
+.in +1c
+.ti -1c
+.RI "class \fBInotifyWatch\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+inotify class 
+
+It holds information about the inotify device descriptor and manages the event queue'\&.
+.PP
+If the INOTIFY_THREAD_SAFE is defined this class is thread-safe'\&. 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "Inotify::Inotify ()  throw (\fBInotifyException\fP)"
+.PP
+Constructor'\&. Creates and initializes an instance of inotify communication object (opens the inotify device)'\&.
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if inotify isn't available 
+.RE
+.PP
+
+.SS "Inotify::~Inotify ()"
+.PP
+Destructor'\&. Calls \fBClose()\fP due to clean-up'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "void Inotify::Add (\fBInotifyWatch\fP *pWatch)  throw (\fBInotifyException\fP)"
+.PP
+Adds a new watch'\&. \fBParameters:\fP
+.RS 4
+\fIpWatch\fP inotify watch
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if adding failed 
+.RE
+.PP
+
+.SS "void Inotify::Add (\fBInotifyWatch\fP &rWatch)  throw (\fBInotifyException\fP)\fC [inline]\fP"
+.PP
+Adds a new watch'\&. \fBParameters:\fP
+.RS 4
+\fIrWatch\fP inotify watch
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if adding failed 
+.RE
+.PP
+
+.SS "void Inotify::Close ()"
+.PP
+Removes all watches and closes the inotify device'\&. 
+.SS "\fBInotifyWatch\fP * Inotify::FindWatch (intiDescriptor)"
+.PP
+Searches for a watch by a watch descriptor'\&. It tries to find a watch by the given descriptor'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIiDescriptor\fP watch descriptor 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+pointer to a watch; NULL if no such watch exists 
+.RE
+.PP
+
+.SS "\fBInotifyWatch\fP * Inotify::FindWatch (const std::string &rPath)"
+.PP
+Searches for a watch by a filesystem path'\&. It tries to find a watch by the given filesystem path'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrPath\fP filesystem path 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+pointer to a watch; NULL if no such watch exists
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+The path must be exactly identical to the one used for the searched watch'\&. Be careful about absolute/relative and case-insensitive paths'\&. 
+.RE
+.PP
+
+.SS "uint32_t Inotify::GetCapability (\fBInotifyCapability_t\fPcap)  throw (\fBInotifyException\fP)\fC [static]\fP"
+.PP
+Acquires a particular inotify capability/limit'\&. \fBParameters:\fP
+.RS 4
+\fIcap\fP capability/limit identifier 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+capability/limit value 
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the given value cannot be acquired 
+.RE
+.PP
+
+.SS "int Inotify::GetDescriptor () const\fC [inline]\fP"
+.PP
+Returns the file descriptor'\&. The descriptor can be used in standard low-level file functions (poll(), select(), fcntl() etc'\&.)'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+valid file descriptor or -1 for inactive object
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBSetNonBlock()\fP 
+.RE
+.PP
+
+.SS "size_t Inotify::GetEnabledCount () const\fC [inline]\fP"
+.PP
+Returns the count of enabled watches'\&. \fBReturns:\fP
+.RS 4
+count of enabled watches
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBGetWatchCount()\fP 
+.RE
+.PP
+
+.SS "bool Inotify::GetEvent (\fBInotifyEvent\fP *pEvt)  throw (\fBInotifyException\fP)"
+.PP
+Extracts a queued inotify event'\&. The extracted event is removed from the queue'\&. If the pointer is NULL it does nothing'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpEvt\fP event object
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the provided pointer is NULL 
+.RE
+.PP
+
+.SS "bool Inotify::GetEvent (\fBInotifyEvent\fP &rEvt)  throw (\fBInotifyException\fP)\fC [inline]\fP"
+.PP
+Extracts a queued inotify event'\&. The extracted event is removed from the queue'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrEvt\fP event object
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown only in very anomalous cases 
+.RE
+.PP
+
+.SS "size_t Inotify::GetEventCount ()\fC [inline]\fP"
+.PP
+Returns the count of received and queued events'\&. This number is related to the events in the queue inside this object, not to the events pending in the kernel'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+count of events 
+.RE
+.PP
+
+.SS "static uint32_t Inotify::GetMaxEvents ()  throw (\fBInotifyException\fP)\fC [inline, static]\fP"
+.PP
+Returns the maximum number of events in the kernel queue'\&. \fBReturns:\fP
+.RS 4
+maximum number of events in the kernel queue 
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the given value cannot be acquired 
+.RE
+.PP
+
+.SS "static uint32_t Inotify::GetMaxInstances ()  throw (\fBInotifyException\fP)\fC [inline, static]\fP"
+.PP
+Returns the maximum number of inotify instances per process'\&. It means the maximum number of open inotify file descriptors per running process'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+maximum number of inotify instances 
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the given value cannot be acquired 
+.RE
+.PP
+
+.SS "static uint32_t Inotify::GetMaxWatches ()  throw (\fBInotifyException\fP)\fC [inline, static]\fP"
+.PP
+Returns the maximum number of inotify watches per instance'\&. It means the maximum number of inotify watches per inotify file descriptor'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+maximum number of inotify watches 
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the given value cannot be acquired 
+.RE
+.PP
+
+.SS "size_t Inotify::GetWatchCount () const\fC [inline]\fP"
+.PP
+Returns the count of watches'\&. This is the total count of all watches (regardless whether enabled or not)'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+count of watches
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBGetEnabledCount()\fP 
+.RE
+.PP
+
+.SS "bool Inotify::PeekEvent (\fBInotifyEvent\fP *pEvt)  throw (\fBInotifyException\fP)"
+.PP
+Extracts a queued inotify event (without removing)'\&. The extracted event stays in the queue'\&. If the pointer is NULL it does nothing'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpEvt\fP event object
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the provided pointer is NULL 
+.RE
+.PP
+
+.SS "bool Inotify::PeekEvent (\fBInotifyEvent\fP &rEvt)  throw (\fBInotifyException\fP)\fC [inline]\fP"
+.PP
+Extracts a queued inotify event (without removing)'\&. The extracted event stays in the queue'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrEvt\fP event object
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown only in very anomalous cases 
+.RE
+.PP
+
+.SS "void Inotify::Remove (\fBInotifyWatch\fP *pWatch)  throw (\fBInotifyException\fP)"
+.PP
+Removes a watch'\&. If the given watch is not present it does nothing'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpWatch\fP inotify watch
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if removing failed 
+.RE
+.PP
+
+.SS "void Inotify::Remove (\fBInotifyWatch\fP &rWatch)  throw (\fBInotifyException\fP)\fC [inline]\fP"
+.PP
+Removes a watch'\&. If the given watch is not present it does nothing'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrWatch\fP inotify watch
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if removing failed 
+.RE
+.PP
+
+.SS "void Inotify::RemoveAll ()"
+.PP
+Removes all watches'\&. 
+.SS "void Inotify::SetCapability (\fBInotifyCapability_t\fPcap, uint32_tval)  throw (\fBInotifyException\fP)\fC [static]\fP"
+.PP
+Modifies a particular inotify capability/limit'\&. \fBParameters:\fP
+.RS 4
+\fIcap\fP capability/limit identifier 
+.br
+\fIval\fP new capability/limit value 
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the given value cannot be set 
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+Using this function requires root privileges'\&. Beware of setting extensive values - it may seriously affect system performance and/or stability'\&. 
+.RE
+.PP
+
+.SS "void Inotify::SetCloseOnExec (boolfClOnEx)  throw (\fBInotifyException\fP)"
+.PP
+Enables/disables closing on exec'\&. Enable this if you want to close the descriptor when executing another program'\&. Otherwise, the descriptor will be inherited'\&.
+.PP
+Closing on exec is disabled by default'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfClOnEx\fP enable/disable closing on exec
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if setting failed
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBGetDescriptor()\fP, \fBSetNonBlock()\fP 
+.RE
+.PP
+
+.SS "static void Inotify::SetMaxEvents (uint32_tval)  throw (\fBInotifyException\fP)\fC [inline, static]\fP"
+.PP
+Sets the maximum number of events in the kernel queue'\&. \fBParameters:\fP
+.RS 4
+\fIval\fP new value 
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the given value cannot be set 
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+Using this function requires root privileges'\&. Beware of setting extensive values - the greater value is set here the more physical memory may be used for the inotify infrastructure'\&. 
+.RE
+.PP
+
+.SS "static void Inotify::SetMaxInstances (uint32_tval)  throw (\fBInotifyException\fP)\fC [inline, static]\fP"
+.PP
+Sets the maximum number of inotify instances per process'\&. \fBParameters:\fP
+.RS 4
+\fIval\fP new value 
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the given value cannot be set 
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+Using this function requires root privileges'\&. Beware of setting extensive values - the greater value is set here the more physical memory may be used for the inotify infrastructure'\&. 
+.RE
+.PP
+
+.SS "static void Inotify::SetMaxWatches (uint32_tval)  throw (\fBInotifyException\fP)\fC [inline, static]\fP"
+.PP
+Sets the maximum number of inotify watches per instance'\&. \fBParameters:\fP
+.RS 4
+\fIval\fP new value 
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if the given value cannot be set 
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+Using this function requires root privileges'\&. Beware of setting extensive values - the greater value is set here the more physical memory may be used for the inotify infrastructure'\&. 
+.RE
+.PP
+
+.SS "void Inotify::SetNonBlock (boolfNonBlock)  throw (\fBInotifyException\fP)"
+.PP
+Enables/disables non-blocking mode'\&. Use this mode if you want to monitor the descriptor (acquired thru \fBGetDescriptor()\fP) in functions such as poll(), select() etc'\&.
+.PP
+Non-blocking mode is disabled by default'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfNonBlock\fP enable/disable non-blocking mode
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if setting mode failed
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBGetDescriptor()\fP, \fBSetCloseOnExec()\fP 
+.RE
+.PP
+
+.SS "void Inotify::WaitForEvents (boolfNoIntr = \fCfalse\fP)  throw (\fBInotifyException\fP)"
+.PP
+Waits for inotify events'\&. It waits until one or more events occur'\&. When called in nonblocking mode it only retrieves occurred events to the internal queue and exits'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfNoIntr\fP if true it re-calls the system call after a handled signal
+.RE
+.PP
+\fBExceptions:\fP
+.RS 4
+\fI\fBInotifyException\fP\fP thrown if reading events failed
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBSetNonBlock()\fP 
+.RE
+.PP
+
+.SH "Friends And Related Function Documentation"
+.PP 
+.SS "friend class \fBInotifyWatch\fP\fC [friend]\fP"
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

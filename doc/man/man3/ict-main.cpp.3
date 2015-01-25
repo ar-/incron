@@ -1,0 +1,235 @@
+.TH "ict-main.cpp" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ict-main.cpp \- 
+.PP
+inotify cron table manipulator main file  
+
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <argp\&.h>\fP
+.br
+\fC#include <pwd\&.h>\fP
+.br
+\fC#include <string>\fP
+.br
+\fC#include <unistd\&.h>\fP
+.br
+\fC#include <sys/stat\&.h>\fP
+.br
+\fC#include <sys/wait\&.h>\fP
+.br
+\fC#include <sys/inotify\&.h>\fP
+.br
+\fC#include <fcntl\&.h>\fP
+.br
+\fC#include <stdlib\&.h>\fP
+.br
+\fC#include <limits\&.h>\fP
+.br
+\fC#include <cstring>\fP
+.br
+\fC#include <cstdio>\fP
+.br
+\fC#include 'inotify-cxx\&.h'\fP
+.br
+\fC#include 'appargs\&.h'\fP
+.br
+\fC#include 'incron\&.h'\fP
+.br
+\fC#include 'incrontab\&.h'\fP
+.br
+\fC#include 'incroncfg\&.h'\fP
+.br
+
+.SS "Defines"
+
+.in +1c
+.ti -1c
+.RI "#define \fBINCRON_ALT_EDITOR\fP   '/etc/alternatives/editor'"
+.br
+.RI "\fIAlternative editor'\&. \fP"
+.ti -1c
+.RI "#define \fBINCRON_DEFAULT_EDITOR\fP   'vim'"
+.br
+.RI "\fIDefault (hard-wired) editor'\&. \fP"
+.ti -1c
+.RI "#define \fBINCRONTAB_VERSION\fP   INCRONTAB_NAME ' ' INCRON_VERSION"
+.br
+.RI "\fIincrontab version string \fP"
+.ti -1c
+.RI "#define \fBINCRONTAB_DESCRIPTION\fP"
+.br
+.RI "\fIincrontab description string \fP"
+.ti -1c
+.RI "#define \fBINCRONTAB_HELP\fP"
+.br
+.RI "\fIincrontab help string \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "bool \fBcopy_from_file\fP (const std::string &rPath, const std::string &rUser)"
+.br
+.RI "\fICopies a file to an user table'\&. \fP"
+.ti -1c
+.RI "bool \fBremove_table\fP (const std::string &rUser)"
+.br
+.RI "\fIRemoves an user table'\&. \fP"
+.ti -1c
+.RI "bool \fBlist_table\fP (const std::string &rUser)"
+.br
+.RI "\fILists an user table'\&. \fP"
+.ti -1c
+.RI "bool \fBedit_table\fP (const std::string &rUser)"
+.br
+.RI "\fIAllows to edit an user table'\&. \fP"
+.ti -1c
+.RI "void \fBlist_types\fP ()"
+.br
+.RI "\fIPrints the list of all available inotify event types'\&. \fP"
+.ti -1c
+.RI "bool \fBreload_table\fP (const std::string &rUser)"
+.br
+.RI "\fIReloads an user table'\&. \fP"
+.ti -1c
+.RI "int \fBmain\fP (int argc, char **argv)"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+inotify cron table manipulator main file 
+
+inotify cron system
+.PP
+Copyright (C) 2006, 2007, 2008, 2012 Lukas Jelinek, <lukas@aiken.cz>
+.PP
+This program is free software; you can use it, redistribute it and/or modify it under the terms of the GNU General Public License, version 2 (see LICENSE-GPL)'\&.
+.PP
+Credits: kolter (fix for segfaulting on --user) Christian Ruppert (new include to build with GCC 4'\&.4+) 
+.SH "Define Documentation"
+.PP 
+.SS "#define INCRON_ALT_EDITOR   '/etc/alternatives/editor'"
+.PP
+Alternative editor'\&. 
+.SS "#define INCRON_DEFAULT_EDITOR   'vim'"
+.PP
+Default (hard-wired) editor'\&. 
+.SS "#define INCRONTAB_DESCRIPTION"\fBValue:\fP
+.PP
+.nf
+'incrontab - inotify cron table manipulator\n' \
+                              '(c) Lukas Jelinek, 2006, 2007, 208'
+.fi
+.PP
+incrontab description string 
+.SS "#define INCRONTAB_HELP"\fBValue:\fP
+.PP
+.nf
+INCRONTAB_DESCRIPTION '\n\n' \
+          'usage: incrontab [<options>] <operation>\n' \
+          '       incrontab [<options>] <FILE-TO-IMPORT>\n\n' \
+          '<operation> may be one of the following:\n' \
+          '  -?, --about                  gives short information about program\n' \
+          '  -h, --help                   prints this help text\n' \
+          '  -l, --list                   lists user table\n' \
+          '  -r, --remove                 removes user table\n' \
+          '  -e, --edit                   provides editing user table\n' \
+          '  -t, --types                  list supported event types\n' \
+          '  -d, --reload                 request incrond to reload user table\n' \
+          '  -V, --version                prints program version\n\n' \
+          '\n' \
+          'These options may be used:\n' \
+          '  -u <USER>, --user=<USER>     overrides current user (requires root privileges)\n' \
+          '  -f <FILE>, --config=<FILE>   overrides default configuration file  (requires root privileges)\n\n' \
+          'For reporting bugs please use http://bts\&.aiken\&.cz\n'
+.fi
+.PP
+incrontab help string 
+.SS "#define INCRONTAB_VERSION   INCRONTAB_NAME ' ' INCRON_VERSION"
+.PP
+incrontab version string 
+.SH "Function Documentation"
+.PP 
+.SS "bool copy_from_file (const std::string &rPath, const std::string &rUser)"
+.PP
+Copies a file to an user table'\&. \fBParameters:\fP
+.RS 4
+\fIrPath\fP path to file 
+.br
+\fIrUser\fP user name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure 
+.RE
+.PP
+
+.SS "bool edit_table (const std::string &rUser)"
+.PP
+Allows to edit an user table'\&. \fBParameters:\fP
+.RS 4
+\fIrUser\fP user name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+This function is very complex and may contain various bugs including security ones'\&. Please keep it in mind'\&.'\&. 
+.RE
+.PP
+
+.SS "bool list_table (const std::string &rUser)"
+.PP
+Lists an user table'\&. \fBParameters:\fP
+.RS 4
+\fIrUser\fP user name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure 
+.RE
+.PP
+
+.SS "void list_types ()"
+.PP
+Prints the list of all available inotify event types'\&. 
+.SS "int main (intargc, char **argv)"
+.SS "bool reload_table (const std::string &rUser)"
+.PP
+Reloads an user table'\&. \fBParameters:\fP
+.RS 4
+\fIrUser\fP user name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = otherwise 
+.RE
+.PP
+
+.SS "bool remove_table (const std::string &rUser)"
+.PP
+Removes an user table'\&. \fBParameters:\fP
+.RS 4
+\fIrUser\fP user name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = failure 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

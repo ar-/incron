@@ -1,0 +1,221 @@
+.TH "StringTokenizer" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+StringTokenizer \- 
+.PP
+Simple string tokenizer class'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <strtok\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBStringTokenizer\fP (const std::string &rStr, char cDelim= ',', char cPrefix= '\\0')"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "\fB~StringTokenizer\fP ()"
+.br
+.RI "\fIDestructor'\&. \fP"
+.ti -1c
+.RI "bool \fBHasMoreTokens\fP () const "
+.br
+.RI "\fIChecks whether the tokenizer can provide more tokens'\&. \fP"
+.ti -1c
+.RI "std::string \fBGetNextToken\fP (bool fSkipEmpty=false)"
+.br
+.RI "\fIReturns the next token'\&. \fP"
+.ti -1c
+.RI "std::string \fBGetNextTokenRaw\fP (bool fSkipEmpty=false)"
+.br
+.RI "\fIReturns the next token'\&. \fP"
+.ti -1c
+.RI "std::string \fBGetRemainder\fP ()"
+.br
+.RI "\fIReturns the remainder of the source string'\&. \fP"
+.ti -1c
+.RI "void \fBSetDelimiter\fP (char cDelim)"
+.br
+.RI "\fISets a delimiter (separator) character'\&. \fP"
+.ti -1c
+.RI "char \fBGetDelimiter\fP () const "
+.br
+.RI "\fIReturns the delimiter (separator) character'\&. \fP"
+.ti -1c
+.RI "void \fBSetPrefix\fP (char cPrefix)"
+.br
+.RI "\fISets a prefix character'\&. \fP"
+.ti -1c
+.RI "char \fBGetPrefix\fP () const "
+.br
+.RI "\fIReturns the prefix character'\&. \fP"
+.ti -1c
+.RI "void \fBSetNoPrefix\fP ()"
+.br
+.RI "\fISets the prefix to 'no prefix''\&. \fP"
+.ti -1c
+.RI "void \fBReset\fP ()"
+.br
+.RI "\fIResets the tokenizer'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Simple string tokenizer class'\&. 
+
+This class implements a string tokenizer'\&. It splits a string by a character to a number of elements (tokens) which are provided sequentially'\&.
+.PP
+All operations are made on a copy of the original string (which may be in fact a copy-on-write instance)'\&.
+.PP
+The original string is left unchanged'\&. All tokens are returned as newly created strings'\&.
+.PP
+There is possibility to specify a prefix character which causes the consecutive character is not considered as a delimiter'\&. If you don't specify this character (or specify the NUL character, 0x00) this feature is disabled'\&. The mostly used prefix is a backslash ('\\')'\&.
+.PP
+This class is not thread-safe'\&.
+.PP
+Performance note: This class is currently not intended to be very fast'\&. Speed optimizations will be done later'\&. 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "StringTokenizer::StringTokenizer (const std::string &rStr, charcDelim = \fC','\fP, charcPrefix = \fC'\\0'\fP)"
+.PP
+Constructor'\&. Creates a ready-to-use tokenizer'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrStr\fP string for tokenizing 
+.br
+\fIcDelim\fP delimiter (separator) character 
+.br
+\fIcPrefix\fP character which is prepended if a character must not separate tokens 
+.RE
+.PP
+
+.SS "StringTokenizer::~StringTokenizer ()\fC [inline]\fP"
+.PP
+Destructor'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "char StringTokenizer::GetDelimiter () const\fC [inline]\fP"
+.PP
+Returns the delimiter (separator) character'\&. \fBReturns:\fP
+.RS 4
+delimiter character 
+.RE
+.PP
+
+.SS "std::string StringTokenizer::GetNextToken (boolfSkipEmpty = \fCfalse\fP)"
+.PP
+Returns the next token'\&. If a prefix is defined it is stripped from the returned string (e'\&.g'\&. 'abc\\ def' is transformed to 'abc def' while the prefix is '\\')'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfSkipEmpty\fP skip empty strings (more consecutive delimiters) 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+next token or '' if no more tokens available
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBGetNextTokenRaw()\fP 
+.RE
+.PP
+
+.SS "std::string StringTokenizer::GetNextTokenRaw (boolfSkipEmpty = \fCfalse\fP)"
+.PP
+Returns the next token'\&. This method always returns an unmodified string even if it contains prefix characters'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfSkipEmpty\fP skip empty strings (more consecutive delimiters) 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+next token or '' if no more tokens available
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBGetNextToken()\fP 
+.RE
+.PP
+
+.SS "char StringTokenizer::GetPrefix () const\fC [inline]\fP"
+.PP
+Returns the prefix character'\&. \fBReturns:\fP
+.RS 4
+prefix character 
+.RE
+.PP
+
+.SS "std::string StringTokenizer::GetRemainder ()"
+.PP
+Returns the remainder of the source string'\&. This method returns everything what has not been processed (tokenized) yet and moves the current position to the end of the string'\&.
+.PP
+If a prefix is defined it is stripped from the returned string'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+remainder string 
+.RE
+.PP
+
+.SS "bool StringTokenizer::HasMoreTokens () const\fC [inline]\fP"
+.PP
+Checks whether the tokenizer can provide more tokens'\&. \fBReturns:\fP
+.RS 4
+true = more tokens available, false = otherwise 
+.RE
+.PP
+
+.SS "void StringTokenizer::Reset ()\fC [inline]\fP"
+.PP
+Resets the tokenizer'\&. Re-initializes tokenizing to the start of the string'\&. 
+.SS "void StringTokenizer::SetDelimiter (charcDelim)\fC [inline]\fP"
+.PP
+Sets a delimiter (separator) character'\&. The new delimiter has effect only to tokens returned later; the position in the string is not affected'\&.
+.PP
+If you specify a NUL character (0x00) here the prefix will not be used'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcDelim\fP delimiter character 
+.RE
+.PP
+
+.SS "void StringTokenizer::SetNoPrefix ()\fC [inline]\fP"
+.PP
+Sets the prefix to 'no prefix''\&. Calling this method is equivalent to SetPrefix((char) 0)'\&.
+.PP
+\fBSee also:\fP
+.RS 4
+\fBSetPrefix()\fP 
+.RE
+.PP
+
+.SS "void StringTokenizer::SetPrefix (charcPrefix)\fC [inline]\fP"
+.PP
+Sets a prefix character'\&. The new prefix has effect only to tokens returned later; the position in the string is not affected'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcPrefix\fP prefix character
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBSetNoPrefix()\fP 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

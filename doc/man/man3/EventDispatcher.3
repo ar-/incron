@@ -1,0 +1,129 @@
+.TH "EventDispatcher" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+EventDispatcher \- 
+.PP
+Event dispatcher class'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <usertable\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBEventDispatcher\fP (int iPipeFd, \fBInotify\fP *pIn, \fBInotifyWatch\fP *pSys, \fBInotifyWatch\fP *pUser)"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "\fB~EventDispatcher\fP ()"
+.br
+.RI "\fIDestructor'\&. \fP"
+.ti -1c
+.RI "bool \fBProcessEvents\fP ()"
+.br
+.RI "\fIProcesses events'\&. \fP"
+.ti -1c
+.RI "void \fBRegister\fP (\fBUserTable\fP *pTab)"
+.br
+.RI "\fIRegisters an user table'\&. \fP"
+.ti -1c
+.RI "void \fBUnregister\fP (\fBUserTable\fP *pTab)"
+.br
+.RI "\fIUnregisters an user table'\&. \fP"
+.ti -1c
+.RI "size_t \fBGetSize\fP () const "
+.br
+.RI "\fIReturns the poll data size'\&. \fP"
+.ti -1c
+.RI "struct pollfd * \fBGetPollData\fP ()"
+.br
+.RI "\fIReturns the poll data'\&. \fP"
+.ti -1c
+.RI "void \fBRebuild\fP ()"
+.br
+.RI "\fIRebuilds the poll array data'\&. \fP"
+.ti -1c
+.RI "void \fBClear\fP ()"
+.br
+.RI "\fIRemoves all registered user tables'\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Event dispatcher class'\&. 
+
+This class processes events and distributes them as needed'\&. 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "EventDispatcher::EventDispatcher (intiPipeFd, \fBInotify\fP *pIn, \fBInotifyWatch\fP *pSys, \fBInotifyWatch\fP *pUser)"
+.PP
+Constructor'\&. \fBParameters:\fP
+.RS 4
+\fIiPipeFd\fP pipe descriptor 
+.br
+\fIpIn\fP inotify object for table management 
+.br
+\fIpSys\fP watch for system tables 
+.br
+\fIpUser\fP watch for user tables 
+.RE
+.PP
+
+.SS "EventDispatcher::~EventDispatcher ()"
+.PP
+Destructor'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "void EventDispatcher::Clear ()\fC [inline]\fP"
+.PP
+Removes all registered user tables'\&. It doesn't cause poll data rebuilding'\&. 
+.SS "struct pollfd* EventDispatcher::GetPollData ()\fC [inline, read]\fP"
+.PP
+Returns the poll data'\&. \fBReturns:\fP
+.RS 4
+poll data 
+.RE
+.PP
+
+.SS "size_t EventDispatcher::GetSize () const\fC [inline]\fP"
+.PP
+Returns the poll data size'\&. \fBReturns:\fP
+.RS 4
+poll data size 
+.RE
+.PP
+
+.SS "bool EventDispatcher::ProcessEvents ()"
+.PP
+Processes events'\&. \fBReturns:\fP
+.RS 4
+pipe event occurred yes/no 
+.RE
+.PP
+
+.SS "void EventDispatcher::Rebuild ()"
+.PP
+Rebuilds the poll array data'\&. 
+.SS "void EventDispatcher::Register (\fBUserTable\fP *pTab)"
+.PP
+Registers an user table'\&. \fBParameters:\fP
+.RS 4
+\fIpTab\fP user table 
+.RE
+.PP
+
+.SS "void EventDispatcher::Unregister (\fBUserTable\fP *pTab)"
+.PP
+Unregisters an user table'\&. \fBParameters:\fP
+.RS 4
+\fIpTab\fP user table 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.

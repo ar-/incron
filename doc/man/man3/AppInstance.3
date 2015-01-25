@@ -1,0 +1,132 @@
+.TH "AppInstance" 3 "Sat Apr 7 2012" "Version 0.5.10" "incron" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+AppInstance \- 
+.PP
+Application instance management class'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <appinst\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBAppInstance\fP (const std::string &rName, const std::string &rBase=APPLOCK_BASEDIR)"
+.br
+.RI "\fIConstructor'\&. \fP"
+.ti -1c
+.RI "\fB~AppInstance\fP ()"
+.br
+.RI "\fIDestructor'\&. \fP"
+.ti -1c
+.RI "bool \fBLock\fP ()"
+.br
+.RI "\fIAttempts to lock the instance'\&. \fP"
+.ti -1c
+.RI "void \fBUnlock\fP ()"
+.br
+.RI "\fIUnlocks the instance'\&. \fP"
+.ti -1c
+.RI "bool \fBExists\fP () const "
+.br
+.RI "\fIChecks whether an instance of this application exists'\&. \fP"
+.ti -1c
+.RI "bool \fBSendSignal\fP (int iSigNo) const "
+.br
+.RI "\fISends a signal to an instance of this application'\&. \fP"
+.ti -1c
+.RI "bool \fBTerminate\fP () const "
+.br
+.RI "\fITerminates an instance of this application'\&. \fP"
+.in -1c
+.SS "Protected Member Functions"
+
+.in +1c
+.ti -1c
+.RI "bool \fBDoLock\fP ()"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Application instance management class'\&. 
+
+This class is intended for application which require to be running only once (one instance only)'\&. It provides some methods for simple locking, signaling etc'\&. 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "AppInstance::AppInstance (const std::string &rName, const std::string &rBase = \fCAPPLOCK_BASEDIR\fP)"
+.PP
+Constructor'\&. \fBParameters:\fP
+.RS 4
+\fIrName\fP application name 
+.br
+\fIrBase\fP lockfile base directory
+.RE
+.PP
+\fBAttention:\fP
+.RS 4
+If an empty base directory is given it is replaced by the default value'\&. 
+.RE
+.PP
+
+.SS "AppInstance::~AppInstance ()"
+.PP
+Destructor'\&. 
+.SH "Member Function Documentation"
+.PP 
+.SS "bool AppInstance::DoLock ()\fC [protected]\fP"
+.SS "bool AppInstance::Exists () const"
+.PP
+Checks whether an instance of this application exists'\&. If this instance has acquired the lockfile the call will be successful'\&. Otherwise it checks for existence of another running instance'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+true = instance exists, false = otherwise 
+.RE
+.PP
+
+.SS "bool AppInstance::Lock ()"
+.PP
+Attempts to lock the instance'\&. This method attempts to create a lockfile'\&. If the file already exists it checks whether its owner is still living'\&. If it does this method fails'\&. Otherwise it unlinks this file and re-attempts to create it'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+true = instance locked, false = otherwise 
+.RE
+.PP
+
+.SS "bool AppInstance::SendSignal (intiSigNo) const"
+.PP
+Sends a signal to an instance of this application'\&. This method doesn't signal the current instance'\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIiSigNo\fP signal number 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = otherwise 
+.RE
+.PP
+
+.SS "bool AppInstance::Terminate () const\fC [inline]\fP"
+.PP
+Terminates an instance of this application'\&. This method doesn't terminate the current instance'\&.
+.PP
+\fBReturns:\fP
+.RS 4
+true = success, false = otherwise 
+.RE
+.PP
+
+.SS "void AppInstance::Unlock ()"
+.PP
+Unlocks the instance'\&. This method removes (unlinks) the appropriate lockfile'\&. If the instance hasn't been locked this method has no effect'\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for incron from the source code'\&.
