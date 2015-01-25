@@ -336,7 +336,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       else {
         cmd.append(cs.substr(oldpos, pos-oldpos));
         if (cs[px] == '@') {          // base path
-          cmd.append(pW->GetPath());
+          cmd.append(IncronTabEntry::GetSafePath(pW->GetPath()));
           oldpos = pos + 2;
         }
         else if (cs[px] == '#') {     // file name

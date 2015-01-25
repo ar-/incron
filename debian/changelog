@@ -1,0 +1,125 @@
+incron (0.5.10-3) unstable; urgency=medium
+
+  * Add a patch to allow build on architectures where deprecated inotify_init
+  syscall is not defined (in particular arm64). Thanks to Peter Michael Green
+  for the patch. (Closes: #767758)
+  * Add missing sources (in debian/missing-sources) for doc/html/jquery.js
+  shipped in upstream sources.
+
+ -- Emmanuel Bouthenot <kolter@debian.org>  Mon, 03 Nov 2014 21:34:17 +0100
+
+incron (0.5.10-2) unstable; urgency=medium
+
+  * Add a patch to fix bad handling of arguments with spaces in incrontabs
+    (Closes: #605021)
+  * Add a patch to fix bad ownership of user's incrontab installed by root
+    (Closes: #709300)
+  * Add support for systemd
+  * Bump Standards-Version to 3.9.5
+  * Update debhelper dependency to >= 9
+  * Cleanup in debian/copyright
+  * Cleanup in maintainer scripts
+  * Remove useless debian/README.source
+
+ -- Emmanuel Bouthenot <kolter@debian.org>  Thu, 20 Mar 2014 23:37:54 +0100
+
+incron (0.5.10-1) unstable; urgency=low
+
+  * New upstream release
+    - Remove patches merged upstream
+  * Switch to dpkg-source 3.0 (quilt) format (Closes: #570943)
+  * Bump Standards-Version to 3.9.3
+  * Add a patch to fix a FTBFS with g++ 4.7 (Closes: #667209)
+  * Update Vcs-Browser and Vcs-Git fields
+  * Switch debhelper compat to v9
+  * Switch copyright file to DEP5 format
+  * Switch patches to DEP3 format
+  * Some clean up in init script
+
+ -- Emmanuel Bouthenot <kolter@debian.org>  Sun, 08 Apr 2012 21:05:07 +0000
+
+incron (0.5.9-5) unstable; urgency=low
+
+  * Fix LSB Default-Stop values in init script (Closes: #559643)
+  * Fix typos in copyright and README.Debian files.
+  * Fix typo in manpage (update existing patch).
+  * Maintainer became Debian Developer: adjust email, VCS and DM fields.
+
+ -- Emmanuel Bouthenot <kolter@debian.org>  Tue, 26 Jan 2010 22:27:21 +0100
+
+incron (0.5.9-4) unstable; urgency=low
+
+  * Add status command to init script (Closes: #557805).
+
+ -- Emmanuel Bouthenot <kolter@openics.org>  Tue, 24 Nov 2009 21:14:25 +0000
+
+incron (0.5.9-3) unstable; urgency=low
+
+  * Fix a FTBFS with gcc 4.4 and glibc >= 2.10 (Closes: #548786). Thanks
+    to Fabrice Coutadeur for the patch.
+
+ -- Emmanuel Bouthenot <kolter@openics.org>  Fri, 20 Nov 2009 20:40:02 +0000
+
+incron (0.5.9-2) unstable; urgency=low
+
+  * Fix incorrects runlevels and depends in init script (Closes: 541866)
+  * Bump Standards-Version to 3.8.3.
+  * Minify and clean debian/rules.
+  * Add README.source file.
+
+ -- Emmanuel Bouthenot <kolter@openics.org>  Wed, 23 Sep 2009 20:27:34 +0000
+
+incron (0.5.9-1) unstable; urgency=low
+
+  * New upstream release
+    - Fix bad handling of arguments with spaces (Closes: #470391).
+  * Drop the patch to fix a segfault with option '--user' (fixed upstream).
+  * Update debian/rules (mostly cleaning).
+  * Update debian/copyright: licences adjustments.
+  * Add a patch to fix some typos with the word 'editing'.
+  * Update debian/control: bump Standards-Version to 3.8.2
+
+ -- Emmanuel Bouthenot <kolter@openics.org>  Wed, 15 Jul 2009 19:28:44 +0000
+
+incron (0.5.8-1) unstable; urgency=low
+
+  * New upstream release (Closes: #448650).
+  * Add a patch to fix a small typo in incrontab manpage (Closes: #501587).
+  * Remove patch gcc_43_fix (fixed upstream).
+  * Add a patch to fix a FTBFS with GCC 4.4 (Closes: #504964).
+  * Add a patch to fix a segfault with option '--user' (Closes: #468417).
+  * Update debian packaging to debhelper 7.
+  * Update url pattern in debian/watch file.
+  * Drop Homepage from description.
+  * Bump Standards-Version to 3.8.0.
+  * Minor updates in debian/copyright.
+  * Add ${misc:Depends} to incron dependencies.
+  * Add Vcs-Browser and Vcs-Git fields in debian/control.
+  * Add DM-Upload-Allowed field.
+
+ -- Emmanuel Bouthenot <kolter@openics.org>  Tue, 10 Feb 2009 23:49:08 +0000
+
+incron (0.5.7-1) unstable; urgency=low
+
+  * New upstream release (Closes: #418851)
+  * Switch from dpatch to quilt
+  * Remove patch related to inotify syscalls (not needed since
+    libc6 >= 2.6.x)
+  * Add patch to fix FTBFS with GCC 4.3 (Closes: #419269)
+  * Fix lintian warning on "make clean"
+
+ -- Emmanuel Bouthenot <kolter@openics.org>  Fri, 07 Sep 2007 13:17:48 +0200
+
+incron (0.5.5-2) unstable; urgency=low
+
+  * missing dependency on adduser (Closes: #431510)
+
+ -- Emmanuel Bouthenot <kolter@openics.org>  Tue, 03 Jul 2007 12:44:21 +0200
+
+incron (0.5.5-1) unstable; urgency=low
+
+  * Initial release (Closes: #409173)
+
+ -- Emmanuel Bouthenot <kolter@openics.org>  Sat, 17 Feb 2007 11:03:57 +0100
+
+

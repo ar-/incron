@@ -1,0 +1,14 @@
+incron for Debian
+-----------------
+
+ By default users are not allowed to use incron. To allow or deny some users,
+ take a look at the information related to /etc/incron.allow and
+ /etc/incron.deny in incrond(8) manpage.
+
+ Users are not allowed to use incron by default because a bad usage of incron
+ with (loops) can make the whole system hanging. See BUGS section in incrond(8)
+ manpage. Be carefull with users allowed to use incron.
+
+ Systems incrontabs goes to /etc/incron.d .
+
+ -- Emmanuel Bouthenot <kolter@openics.org>, Tue, 13 Feb 2007 11:12:57 +0100

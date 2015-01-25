@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# postinst script for incron
+#
+
+set -e
+
+case "$1" in
+    configure|reconfigure)
+        # add group for incrontabs
+        getent group incron > /dev/null 2>&1 || addgroup --system incron
+
+        if ! dpkg-statoverride --list /usr/bin/incrontab > /dev/null ; then
+            dpkg-statoverride --update --add root incron 2755 /usr/bin/incrontab
+        fi
+
+        if ! dpkg-statoverride --list /var/spool/incron > /dev/null ; then
+            dpkg-statoverride --update --add root incron 1731 /var/spool/incron
+        fi
+
+        for f in /etc/incron.allow /etc/incron.deny ; do
+            if ! dpkg-statoverride --list $f > /dev/null ; then
+                dpkg-statoverride --update --add root incron 640 $f
+            fi
+        done
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

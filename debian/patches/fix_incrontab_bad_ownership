@@ -1,0 +1,26 @@
+Description: Fix bad ownership of user's incrontab installed by root
+Author: Emmanuel Bouthenot <kolter@debian.org>
+Bug-Debian: https://bugs.debian.org/709300
+Forwarded: http://bts.aiken.cz/view.php?id=744
+Last-Update: 2014-03-20
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/ict-main.cpp
++++ b/ict-main.cpp
+@@ -99,6 +99,16 @@
+     return false;
+   }
+ 
++  struct passwd* ppwd = getpwnam(rUser.c_str());
++  if (ppwd == NULL) {
++    fprintf(stderr, "cannot find user '%s': %s\n", rUser.c_str(), strerror(errno));
++    return false;
++  }
++  if (chown(out.c_str(), ppwd->pw_uid, -1) != 0) {
++    fprintf(stderr, "cannot set owner '%s' to table '%s': %s\n", rUser.c_str(), out.c_str(), strerror(errno));
++    return false;
++  }
++
+   return true;
+ }
+ 

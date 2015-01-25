@@ -36,7 +36,7 @@
 #include <sys/inotify.h>
 
 // Use this if syscalls not defined
-#ifndef __NR_inotify_init
+#if not defined(__NR_inotify_init) && not defined(__NR_inotify_init1)
 #include <sys/inotify-syscalls.h>
 #endif // __NR_inotify_init
 

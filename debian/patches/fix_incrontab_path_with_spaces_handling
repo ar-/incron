@@ -1,0 +1,18 @@
+Description: Fix badly escaped $@ in incrontabs with paths containing spaces
+Author: Emmanuel Bouthenot <kolter@debian.org>
+Bug-Debian: https://bugs.debian.org/605021
+Forwarded: http://bts.aiken.cz/view.php?id=741
+Last-Update: 2014-03-17
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/usertable.cpp
++++ b/usertable.cpp
+@@ -336,7 +336,7 @@
+       else {
+         cmd.append(cs.substr(oldpos, pos-oldpos));
+         if (cs[px] == '@') {          // base path
+-          cmd.append(pW->GetPath());
++          cmd.append(IncronTabEntry::GetSafePath(pW->GetPath()));
+           oldpos = pos + 2;
+         }
+         else if (cs[px] == '#') {     // file name

@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# postrm script for incron
+#
+
+set -e
+
+case "$1" in
+    remove)
+        if dpkg-statoverride --list /usr/bin/incrontab > /dev/null ; then
+            dpkg-statoverride --remove /usr/bin/incrontab
+        fi
+        ;;
+    purge)
+        for f in /etc/incron.allow /etc/incron.deny /var/spool/incron ; do
+            if dpkg-statoverride --list $f > /dev/null ; then
+                dpkg-statoverride --remove $f
+            fi
+        done
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

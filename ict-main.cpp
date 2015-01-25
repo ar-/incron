@@ -99,6 +99,16 @@ bool copy_from_file(const std::string& rPath, const std::string& rUser)
     return false;
   }
 
+  struct passwd* ppwd = getpwnam(rUser.c_str());
+  if (ppwd == NULL) {
+    fprintf(stderr, "cannot find user '%s': %s\n", rUser.c_str(), strerror(errno));
+    return false;
+  }
+  if (chown(out.c_str(), ppwd->pw_uid, -1) != 0) {
+    fprintf(stderr, "cannot set owner '%s' to table '%s': %s\n", rUser.c_str(), out.c_str(), strerror(errno));
+    return false;
+  }
+
   return true;
 }
 
