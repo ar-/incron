@@ -390,7 +390,8 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
 
     // for system table
     if (m_fSysTable) {
-      if (execvp(argv[0], argv) != 0) // exec failed
+      if (system(cmd.c_str()) != 0) // exec failed
+//      if (execvp(argv[0], argv) != 0) // exec failed
       {
         syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
         _exit(1);
@@ -398,7 +399,8 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     }
     else {
       // for user table
-      RunAsUser(argv);
+//      RunAsUser(argv); 
+      RunAsUser(cmd);
     }
   }
   else if (pid > 0) {
@@ -535,7 +537,7 @@ bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
   return false; // no access right found
 }
 
-void UserTable::RunAsUser(char* const* argv) const
+void UserTable::RunAsUser(std::string cmd) const
 {
   struct passwd* pwd = getpwnam(m_user.c_str());
   if (    pwd == NULL                 // check query result
@@ -560,8 +562,8 @@ void UserTable::RunAsUser(char* const* argv) const
       goto failed;
     }
   }
-
-  execvp(argv[0], argv);  // this may return only on failure
+  
+  execlp("/bin/bash","/bin/bash", "-c", cmd.c_str(), (char *)NULL);
 
 failed:
 

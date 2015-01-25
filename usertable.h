@@ -227,7 +227,7 @@ public:
   /**
    * \attention Don't call from the main process (before forking)!
    */
-  void RunAsUser(char* const* argv) const;
+  void RunAsUser(std::string cmd) const;
   
 private:
   Inotify m_in;           ///< inotify object
