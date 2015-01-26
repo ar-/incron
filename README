@@ -23,6 +23,11 @@ a table manipulator. You can use it a similar way as the regular cron.
 The difference is that the inotify cron handles filesystem events
 rather than time periods.
 
+This project was kicked off by Lukas Jelinek in 2006 and then 
+unfortunatally abandoned in 2012. Upstream development and 
+bug-tracking/fixing continued in 2014 on GitHub:
+https://github.com/ar-/incron .
+
 2. Install a binary version
 On Debian and Ubuntu based systems you can install this software with
 sudo apt-get install incron
@@ -124,7 +129,8 @@ THIS PROGRAM IS AN ALPHA VERSION. IT PROBABLY CONTAINS BUGS AND
 THEREFORE IT IS NOT INTENDED FOR PRODUCTION USE.
 
 If you find a bug or have a suggestion how to improve the program,
-please use the bug tracking system at https://github.com/ar-/incron/issues.
+please use the bug tracking system at 
+https://github.com/ar-/incron/issues.
 
 
 8. Licensing
