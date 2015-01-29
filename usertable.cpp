@@ -284,6 +284,7 @@ void UserTable::Load()
     }
   }
 
+	//TODO add recursive load here
   m_pEd->Register(this);
 }
 
@@ -317,6 +318,7 @@ void UserTable::Dispose()
 
 void UserTable::OnEvent(InotifyEvent& rEvt)
 {
+	// TODO add recursive watches here, as soon as new subdirs of observerved dirs are created
   InotifyWatch* pW = rEvt.GetWatch();
   IncronTabEntry* pE = FindEntry(pW);
 
