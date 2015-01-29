@@ -104,12 +104,13 @@ class Executor
 			return ret;
 		}
 	
+		// TODO make not stupid: no boost, no cli dependeny, no c++14 (for now)
+		// suppression of warning for not existign directories added
 		/**
 		 *Returns all subdirectories of the dirctory 'dir' as vector of strings.
 		 */
 		static const std::vector<std::string> getSubDirVec (std::string dir)
 		{
-			// suppression of warning for not existign directories added
 			return execBashVec("find "+dir+" -type d 2>/dev/null");
 		}
 };

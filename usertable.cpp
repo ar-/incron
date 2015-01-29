@@ -438,6 +438,8 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       // for user table
 //      RunAsUser(argv); 
       RunAsUser(cmd);
+	  if (pE->IsNoLoop())
+		pW->SetEnabled(true);
     }
   }
   else if (pid > 0) {
@@ -445,6 +447,8 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     if (pE->IsNoLoop()) {
       pd.onDone = on_proc_done;
       pd.pWatch = pW;
+//      pd.onDone = NULL; // TODO
+//      pd.pWatch = NULL;
     }
     else {
       pd.onDone = NULL;
