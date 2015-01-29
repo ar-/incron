@@ -34,6 +34,7 @@
 #include "usertable.h"
 #include "incroncfg.h"
 #include "incrontab.h"
+#include "executor.h"
 
 #ifdef IN_DONT_FOLLOW
 #define DONT_FOLLOW(mask) InotifyEvent::IsType(mask, IN_DONT_FOLLOW)
@@ -264,8 +265,24 @@ void UserTable::Load()
       : IncronTab::GetUserTablePath(m_user));
 
   int cnt = m_tab.GetCount();
+  
+  // add all subdirectories (recursively) as new tab entries with same events
   for (int i=0; i<cnt; i++) {
     IncronTabEntry& rE = m_tab.GetEntry(i);
+    std::vector<std::string> ssvec = Executor::getSubDirVec (rE.GetPath());
+    for (unsigned int j=0; j<ssvec.size(); j++) {
+	  std::string subDir = ssvec[j];
+	  IncronTabEntry ite = IncronTabEntry(subDir, rE.GetMask(), rE.GetCmd());
+	  m_tab.Add(ite);
+    }
+  }
+  
+  // recount table elements too iterate over all of them
+  cnt = m_tab.GetCount();
+  
+  for (int i=0; i<cnt; i++) {
+    IncronTabEntry& rE = m_tab.GetEntry(i);
+    syslog(LOG_INFO, "registering inotify for (%s)", rE.GetPath().c_str()); // TODO is this log spamming too much ?
     InotifyWatch* pW = new InotifyWatch(rE.GetPath(), rE.GetMask());
 
     // warning only - permissions may change later
@@ -283,8 +300,7 @@ void UserTable::Load()
       delete pW;
     }
   }
-
-	//TODO add recursive load here
+  
   m_pEd->Register(this);
 }
 
@@ -318,7 +334,7 @@ void UserTable::Dispose()
 
 void UserTable::OnEvent(InotifyEvent& rEvt)
 {
-	// TODO add recursive watches here, as soon as new subdirs of observerved dirs are created
+	// TODO add recursive watches here, as soon as new subdirs of observed dirs are created
   InotifyWatch* pW = rEvt.GetWatch();
   IncronTabEntry* pE = FindEntry(pW);
 

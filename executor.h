@@ -104,6 +104,14 @@ class Executor
 			return ret;
 		}
 	
+		/**
+		 *Returns all subdirectories of the dirctory 'dir' as vector of strings.
+		 */
+		static const std::vector<std::string> getSubDirVec (std::string dir)
+		{
+			// suppression of warning for not existign directories added
+			return execBashVec("find "+dir+" -type d 2>/dev/null");
+		}
 };
 
 #endif //_EXECUTOR_H_

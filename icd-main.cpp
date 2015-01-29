@@ -40,21 +40,6 @@
 #include "usertable.h"
 #include "incroncfg.h"
 
-//#include <iostream>
-//#include <filesystem>
-//#if 0
-#include "executor.h"
-
-// TODO remove this test
-void main2()
-{   
-	//std::cout << Executor::plain_exec(std::string("ls")) << "\n";
-	std::cout << Executor::plain_exec("find . -type d") << "\n";
-    //  cout << i->path().filename() << "\n";
-//	exit (0);
-}
-//#endif
-
 /// Logging options (console as fallback, log PID)
 #define INCRON_LOG_OPTS (LOG_CONS | LOG_PID)
 
@@ -316,7 +301,7 @@ void init_poll_array(struct pollfd pfd[], int pipefd, int infd)
  * \attention In daemon mode, it finishes immediately.
  */
 int main(int argc, char** argv)
-{main2();
+{
   AppArgs::Init();
 
   if (!(  AppArgs::AddOption("about",       '?', AAT_NO_VALUE, false)
