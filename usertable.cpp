@@ -269,9 +269,21 @@ void UserTable::Load()
   // add all subdirectories (recursively) as new tab entries with same events
   for (int i=0; i<cnt; i++) {
     IncronTabEntry& rE = m_tab.GetEntry(i);
+    
+    // skip if recursion is not wanted by user
+    if (rE.IsNoRecursion())
+		continue;
+	else
+		syslog(LOG_INFO, " OPPOSITE (%s)", rE.GetPath().c_str()); // TODO
+    
     std::vector<std::string> ssvec = Executor::getSubDirVec (rE.GetPath());
     for (unsigned int j=0; j<ssvec.size(); j++) {
 	  std::string subDir = ssvec[j];
+	  
+	  // skip if the subdir is the dir itself
+	  if (rE.GetPath() == subDir )
+		continue;
+		
 	  IncronTabEntry ite = IncronTabEntry(subDir, rE.GetMask(), rE.GetCmd());
 	  m_tab.Add(ite);
     }

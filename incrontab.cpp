@@ -21,11 +21,14 @@
 #include <sstream>
 #include <cstdio>
 #include <errno.h>
+#include <syslog.h> // TODO remove
 
 #include "inotify-cxx.h"
 
 #include "incrontab.h"
 #include "incroncfg.h"
+
+#define CT_NORECURSION "recursive=false"
 
 /*
  * ALLOW/DENY SEMANTICS
@@ -44,7 +47,8 @@
 
 IncronTabEntry::IncronTabEntry()
 : m_uMask(0),
-  m_fNoLoop(false)
+  m_fNoLoop(false),
+  m_fNoRecursion(false)
 {
   
 }
@@ -64,13 +68,18 @@ std::string IncronTabEntry::ToString() const
   std::string m;
   
   InotifyEvent::DumpTypes(m_uMask, m);
-  if (m.empty()) {
+  // add IN_NO_LOOP artificially
+  if (m.empty())
     m = m_fNoLoop ? "IN_NO_LOOP" : "0";
-  }
-  else {
-    if (m_fNoLoop)
-      m.append(",IN_NO_LOOP");
-  }
+  else
+    if (m_fNoLoop) m.append(",IN_NO_LOOP");
+
+  // add CT_NORECURSION artificially
+  if (m.empty())
+    m = m_fNoRecursion ? CT_NORECURSION : "0";
+  else
+    if (m_fNoRecursion) m.append(std::string(",")+CT_NORECURSION);
+  
   
   ss << GetSafePath(m_path) << "\t" << m << "\t" << m_cmd;
   return ss.str();
@@ -103,6 +112,7 @@ bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
   rEntry.m_cmd = s3;
   rEntry.m_uMask = 0;
   rEntry.m_fNoLoop = false;
+  rEntry.m_fNoRecursion = false;
   
   if (sscanf(s2.c_str(), "%lu", &u) == 1) {
     rEntry.m_uMask = (uint32_t) u;
@@ -113,6 +123,11 @@ bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
       std::string s(tok2.GetNextToken());
       if (s == "IN_NO_LOOP")
         rEntry.m_fNoLoop = true;
+      else if (s == CT_NORECURSION)
+      {
+        rEntry.m_fNoRecursion = true;
+syslog(LOG_INFO, "CT_NORECURSION in (%s)", s2.c_str()); // TODO remove
+	}
       else
         rEntry.m_uMask |= InotifyEvent::GetMaskByName(s);
     }
