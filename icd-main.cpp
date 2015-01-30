@@ -473,7 +473,7 @@ int main(int argc, char** argv)
       
       // TODO try to do the finish thing all the time (there is a race condition somewhere
       // it seem ProcessEvents returns too ealy sometimes
-      UserTable::FinishDone();
+      //UserTable::FinishDone();
     }
     
     free_tables(&ed);

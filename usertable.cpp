@@ -273,8 +273,6 @@ void UserTable::Load()
     // skip if recursion is not wanted by user
     if (rE.IsNoRecursion())
 		continue;
-	else
-		syslog(LOG_INFO, " OPPOSITE (%s)", rE.GetPath().c_str()); // TODO
     
     std::vector<std::string> ssvec = Executor::getSubDirVec (rE.GetPath());
     for (unsigned int j=0; j<ssvec.size(); j++) {
@@ -447,8 +445,6 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     if (pE->IsNoLoop()) {
       pd.onDone = on_proc_done;
       pd.pWatch = pW;
-//      pd.onDone = NULL; // TODO
-//      pd.pWatch = NULL;
     }
     else {
       pd.onDone = NULL;

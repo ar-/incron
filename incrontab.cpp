@@ -21,7 +21,7 @@
 #include <sstream>
 #include <cstdio>
 #include <errno.h>
-#include <syslog.h> // TODO remove
+//#include <syslog.h> // TODO remove
 
 #include "inotify-cxx.h"
 

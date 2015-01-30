@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdio>
-#include <syslog.h> // TODO remove
+//#include <syslog.h> // TODO remove
 
 #include "inotify-cxx.h"
 #pragma GCC diagnostic ignored "-Wpedantic"  // inotify-cxx is not pedantic
@@ -245,10 +245,9 @@ void InotifyWatch::SetMask(uint32_t uMask) throw (InotifyException)
 
 void InotifyWatch::SetEnabled(bool fEnabled) throw (InotifyException)
 {
-  syslog(LOG_INFO, "(SetEnabled) NOW (%i)", fEnabled);
+  //syslog(LOG_INFO, "(SetEnabled) NOW (%i)", fEnabled);
   IN_WRITE_BEGIN
 
-//TODO revert ignore current state  
   if (fEnabled == m_fEnabled) {
     IN_WRITE_END_NOTHROW
     return;
@@ -276,7 +275,7 @@ void InotifyWatch::SetEnabled(bool fEnabled) throw (InotifyException)
   m_fEnabled = fEnabled;
   
   IN_WRITE_END
-  syslog(LOG_INFO, "(SetEnabled) END (%i)", fEnabled);
+  //syslog(LOG_INFO, "(SetEnabled) END (%i)", fEnabled);
 }
 
 void InotifyWatch::__Disable()
