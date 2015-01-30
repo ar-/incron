@@ -109,9 +109,9 @@ class Executor
 		/**
 		 *Returns all subdirectories of the dirctory 'dir' as vector of strings.
 		 */
-		static const std::vector<std::string> getSubDirVec (std::string dir)
+		static const std::vector<std::string> getSubDirVec (std::string dir, bool includeDotDirs=false)
 		{
-			return execBashVec("find "+dir+" -type d 2>/dev/null");
+			return execBashVec("find "+dir+" -type d "+ (includeDotDirs?std::string():std::string("! -path '*/.*' ")) +"2>/dev/null");
 		}
 };
 

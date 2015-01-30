@@ -274,7 +274,7 @@ void UserTable::Load()
     if (rE.IsNoRecursion())
 		continue;
     
-    std::vector<std::string> ssvec = Executor::getSubDirVec (rE.GetPath());
+    std::vector<std::string> ssvec = Executor::getSubDirVec (rE.GetPath(),rE.IsDotDirs());
     for (unsigned int j=0; j<ssvec.size(); j++) {
 	  std::string subDir = ssvec[j];
 	  
@@ -355,6 +355,9 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   // discard event if user has no access rights to watch path
   if (!(m_fSysTable || MayAccess(pW->GetPath(), DONT_FOLLOW(rEvt.GetMask()))))
     return;
+    
+  // add new watch for newly created subdirs
+  syslog(LOG_INFO, "(%s) CMD (%s)", pW->GetPath().c_str() , rEvt.GetName().c_str() );
 
   std::string cmd;
   const std::string& cs = pE->GetCmd();

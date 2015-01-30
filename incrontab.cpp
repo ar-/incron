@@ -28,9 +28,10 @@
 #include "incrontab.h"
 #include "incroncfg.h"
 
-#define CT_NORECURSION "recursive=false" // recursive is default, no recusion must be set
 #define IN_NO_LOOP_OLD "IN_NO_LOOP" // depricated from original version: no loop is now default
 #define CT_LOOPABLE "loopable=true" // no loop is default. loopable must be set
+#define CT_NORECURSION "recursive=false" // recursive is default, no recusion must be set
+#define CT_DOTDIRS "dotdirs=true" // exclude dotdirs is default, include dotdirs must be set
 
 
 /*
@@ -51,7 +52,8 @@
 IncronTabEntry::IncronTabEntry()
 : m_uMask(0),
   m_fNoLoop(true),
-  m_fNoRecursion(false)
+  m_fNoRecursion(false),
+  m_fDotDirs(false)
 {
   
 }
@@ -89,6 +91,12 @@ std::string IncronTabEntry::ToString() const
   else
     if (!m_fNoLoop) m.append(std::string(",")+CT_LOOPABLE);
   
+  // add CT_DOTDIRS artificially
+  if (m.empty())
+    m = m_fDotDirs ? CT_DOTDIRS : m;
+  else
+    if (m_fDotDirs) m.append(std::string(",")+CT_DOTDIRS);
+  
   // fill a default value for broken lines
   if (m.empty())
     m = "IN_ALL_EVENTS";
@@ -125,6 +133,7 @@ bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
   rEntry.m_uMask = 0;
   rEntry.m_fNoLoop = true;
   rEntry.m_fNoRecursion = false;
+  rEntry.m_fDotDirs = false;
   
   if (sscanf(s2.c_str(), "%lu", &u) == 1) {
     rEntry.m_uMask = (uint32_t) u;
@@ -139,6 +148,8 @@ bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
         rEntry.m_fNoLoop = false;
       else if (s == CT_NORECURSION)
         rEntry.m_fNoRecursion = true;
+      else if (s == CT_DOTDIRS)
+        rEntry.m_fDotDirs = true;
       else
         rEntry.m_uMask |= InotifyEvent::GetMaskByName(s);
     }
