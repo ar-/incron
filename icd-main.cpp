@@ -455,8 +455,7 @@ int main(int argc, char** argv)
       int res = poll(ed.GetPollData(), ed.GetSize(), -1);
       
       if (res > 0) {
-        if (ed.ProcessEvents())
-          UserTable::FinishDone();
+        ed.ProcessEvents();
       }
       else if (res < 0) {
         switch (errno) {

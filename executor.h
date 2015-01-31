@@ -113,6 +113,14 @@ class Executor
 		{
 			return execBashVec("find "+dir+" -type d "+ (includeDotDirs?std::string():std::string("! -path '*/.*' ")) +"2>/dev/null");
 		}
+		
+		/**
+		 *Returns all files in case the file decriptor contains a star.
+		 */
+		static const std::vector<std::string> getAllFilesByDescriptor (std::string dir, bool includeDotDirs=false)
+		{
+			return execBashVec("find "+dir+" "+ (includeDotDirs?std::string():std::string("! -path '*/.*' ")) +"2>/dev/null");
+		}
 };
 
 #endif //_EXECUTOR_H_

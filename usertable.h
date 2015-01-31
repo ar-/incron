@@ -159,6 +159,8 @@ public:
    */
   void Load();
   
+  void AddTabEntry(IncronTabEntry& rE);
+
   /// Removes all entries from the table.
   /**
    * All entries are unregistered from the event dispatcher and
@@ -171,14 +173,7 @@ public:
    * \param[in] rEvt inotify event
    */
   void OnEvent(InotifyEvent& rEvt);
-  
-  /// Cleans-up all zombie child processes and enables disabled watches.
-  /**
-   * \attention This method must be called AFTER processing all events
-   *            which has been caused by the processes.
-   */
-  static void FinishDone();
-  
+
   /// Checks whether the user may access a file.
   /**
    * Any access right (RWX) is sufficient.
@@ -246,23 +241,7 @@ private:
    * \return pointer to the appropriate entry; NULL if no such entry exists
    */
   IncronTabEntry* FindEntry(InotifyWatch* pWatch);
-  
-  /// Prepares arguments for creating a child process.
-  /**
-   * \param[in] rCmd command string
-   * \param[out] argc argument count
-   * \param[out] argv argument array
-   * \return true = success, false = failure
-   */
-  bool PrepareArgs(const std::string& rCmd, int& argc, char**& argv);
-  
-  /// Frees memory allocated for arguments.
-  /**
-   * \param[in] argc argument count
-   * \param[in] argv argument array
-   */
-  void CleanupArgs(int argc, char** argv);
-  
+ 
 };
 
 #endif //_USERTABLE_H_

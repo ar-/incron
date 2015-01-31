@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 #include <cstdio>
 #include <cstring>
+#include <algorithm>
 
 #include "usertable.h"
 #include "incroncfg.h"
@@ -52,10 +53,12 @@ extern volatile bool g_fFinish;
 extern SUT_MAP g_ut;
 
 
+#ifdef LOOPER
 void on_proc_done(InotifyWatch* pW)
 {
   pW->SetEnabled(true);
 }
+#endif
 
 
 EventDispatcher::EventDispatcher(int iPipeFd, Inotify* pIn, InotifyWatch* pSys, InotifyWatch* pUser)
@@ -275,6 +278,19 @@ void UserTable::Load()
 		continue;
     
     std::vector<std::string> ssvec = Executor::getSubDirVec (rE.GetPath(),rE.IsDotDirs());
+	if (rE.GetPath().find("*") != std::string::npos) 
+	{
+		std::vector<std::string> allfilesvec = Executor::getAllFilesByDescriptor (rE.GetPath(),rE.IsDotDirs());
+		
+		// add to ssvec but without duplicates - in case user defined a dirctory with subdirectories via star descriptor
+		for (unsigned int j=0; j<allfilesvec.size(); j++) 
+		{
+			if(std::find(ssvec.begin(), ssvec.end(), allfilesvec[j]) == ssvec.end()) 
+			{
+				ssvec.push_back(allfilesvec[j]);
+			}
+		}
+	}    
     for (unsigned int j=0; j<ssvec.size(); j++) {
 	  std::string subDir = ssvec[j];
 	  
@@ -289,10 +305,20 @@ void UserTable::Load()
   
   // recount table elements too iterate over all of them
   cnt = m_tab.GetCount();
-  
   for (int i=0; i<cnt; i++) {
     IncronTabEntry& rE = m_tab.GetEntry(i);
-    syslog(LOG_INFO, "registering inotify for (%s)", rE.GetPath().c_str()); // TODO is this log spamming too much ?
+    // skip the wildcard selector, as they have been replace by the actual files
+	if (rE.GetPath().find("*") != std::string::npos) 
+		continue;
+	AddTabEntry(rE);
+  }
+  
+  m_pEd->Register(this);
+}
+
+void UserTable::AddTabEntry(IncronTabEntry& rE)
+{
+    //syslog(LOG_INFO, "registering inotify for (%s)", rE.GetPath().c_str()); // TODO is this log spamming too much ?
     InotifyWatch* pW = new InotifyWatch(rE.GetPath(), rE.GetMask());
 
     // warning only - permissions may change later
@@ -308,11 +334,9 @@ void UserTable::Load()
       else
         syslog(LOG_ERR, "cannot create watch for user %s: (%i) %s", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()));
       delete pW;
-    }
-  }
-  
-  m_pEd->Register(this);
+    }	
 }
+
 
 void UserTable::Dispose()
 {
@@ -344,7 +368,6 @@ void UserTable::Dispose()
 
 void UserTable::OnEvent(InotifyEvent& rEvt)
 {
-	// TODO add recursive watches here, as soon as new subdirs of observed dirs are created
   InotifyWatch* pW = rEvt.GetWatch();
   IncronTabEntry* pE = FindEntry(pW);
 
@@ -356,8 +379,33 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   if (!(m_fSysTable || MayAccess(pW->GetPath(), DONT_FOLLOW(rEvt.GetMask()))))
     return;
     
+  //#if 0
+  // log output for each dir + file + event
+  std::string events;
+  rEvt.DumpTypes(events);
+  syslog(LOG_INFO, "PATH (%s) FILE (%s) EVENT (%s)", pW->GetPath().c_str() , IncronTabEntry::GetSafePath(rEvt.GetName()).c_str() , events.c_str());
+  //#endif
+  
   // add new watch for newly created subdirs
-  syslog(LOG_INFO, "(%s) CMD (%s)", pW->GetPath().c_str() , rEvt.GetName().c_str() );
+  if ( rEvt.IsType(IN_ISDIR) && (rEvt.IsType(IN_CREATE) || rEvt.IsType(IN_MOVED_TO)) )
+  {
+	Dispose();
+	sleep (1);
+	Load();
+  // this is the fast way of registering new subsirs, but it 
+  // misses new sub-sub dirs if they are created too fast in a row
+  // eg by : mkdir -p /tmp/a/b/c/d/e
+  // so the reload is for now the better way to go
+  // the complete reload also happens if the incrontab file changes
+  /*
+  m_pEd->Unregister(this);
+	std::string * pECmd = new std::string(pE->GetCmd().c_str());
+	IncronTabEntry * newEntry = new IncronTabEntry(completeFile, pE->GetMask(),  *pECmd);
+	m_tab.Add(*newEntry);
+	AddTabEntry(*newEntry);
+  m_pEd->Register(this);
+  */ 
+  }
 
   std::string cmd;
   const std::string& cs = pE->GetCmd();
@@ -408,20 +456,15 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   }
   cmd.append(cs.substr(oldpos));
 
-  int argc;
-  char** argv;
-  if (!PrepareArgs(cmd, argc, argv)) {
-    syslog(LOG_ERR, "cannot prepare command arguments");
-    return;
-  }
-
   if (m_fSysTable)
     syslog(LOG_INFO, "(system::%s) CMD (%s)", m_user.c_str(), cmd.c_str());
   else
     syslog(LOG_INFO, "(%s) CMD (%s)", m_user.c_str(), cmd.c_str());
-
+    
+#ifdef LOOPER
   if (pE->IsNoLoop())
     pW->SetEnabled(false);
+#endif
 
   pid_t pid = fork();
   if (pid == 0) {
@@ -429,7 +472,6 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     // for system table
     if (m_fSysTable) {
       if (system(cmd.c_str()) != 0) // exec failed
-//      if (execvp(argv[0], argv) != 0) // exec failed
       {
         syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
         _exit(1);
@@ -437,13 +479,15 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     }
     else {
       // for user table
-//      RunAsUser(argv); 
       RunAsUser(cmd);
+#ifdef LOOPER
 	  if (pE->IsNoLoop())
 		pW->SetEnabled(true);
+#endif
     }
   }
   else if (pid > 0) {
+#ifdef LOOPER
     ProcData_t pd;
     if (pE->IsNoLoop()) {
       pd.onDone = on_proc_done;
@@ -455,15 +499,17 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
     }
 
     s_procMap.insert(PROC_MAP::value_type(pid, pd));
+#endif
   }
   else {
+#ifdef LOOPER
     if (pE->IsNoLoop())
       pW->SetEnabled(true);
+#endif
 
     syslog(LOG_ERR, "cannot fork process: %s", strerror(errno));
   }
 
-  CleanupArgs(argc, argv);
 }
 
 IncronTabEntry* UserTable::FindEntry(InotifyWatch* pWatch)
@@ -473,58 +519,6 @@ IncronTabEntry* UserTable::FindEntry(InotifyWatch* pWatch)
     return NULL;
 
   return (*it).second;
-}
-
-bool UserTable::PrepareArgs(const std::string& rCmd, int& argc, char**& argv)
-{
-  if (rCmd.empty())
-    return false;
-
-  StringTokenizer tok(rCmd, " \t", '\\');
-  std::deque<std::string> args;
-  while (tok.HasMoreTokens()) {
-    args.push_back(tok.GetNextToken());
-  }
-
-  if (args.empty())
-    return false;
-
-  argc = (int) args.size();
-  argv = new char*[argc+1];
-  argv[argc] = NULL;
-
-  for (int i=0; i<argc; i++) {
-    const std::string& s = args[i];
-    size_t len = s.length();
-    argv[i] = new char[len+1];
-    strcpy(argv[i], s.c_str());
-  }
-
-  return true;
-}
-
-void UserTable::CleanupArgs(int argc, char** argv)
-{
-  for (int i=0; i<argc; i++) {
-    delete[] argv[i];
-  }
-
-  delete[] argv;
-}
-
-void UserTable::FinishDone()
-{
-  pid_t res = 0;
-  int status = 0;
-  while ((res = waitpid(-1, &status, WNOHANG)) > 0) {
-    PROC_MAP::iterator it = s_procMap.find(res);
-    if (it != s_procMap.end()) {
-      ProcData_t pd = (*it).second;
-      if (pd.onDone != NULL)
-        (*pd.onDone)(pd.pWatch);
-      s_procMap.erase(it);
-    }
-  }
 }
 
 bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
