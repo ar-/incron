@@ -40,7 +40,6 @@
 #include "usertable.h"
 #include "incroncfg.h"
 
-
 /// Logging options (console as fallback, log PID)
 #define INCRON_LOG_OPTS (LOG_CONS | LOG_PID)
 
@@ -456,8 +455,7 @@ int main(int argc, char** argv)
       int res = poll(ed.GetPollData(), ed.GetSize(), -1);
       
       if (res > 0) {
-        if (ed.ProcessEvents())
-          UserTable::FinishDone();
+        ed.ProcessEvents();
       }
       else if (res < 0) {
         switch (errno) {
@@ -472,6 +470,9 @@ int main(int argc, char** argv)
         } 
       }
       
+      // TODO try to do the finish thing all the time (there is a race condition somewhere
+      // it seem ProcessEvents returns too ealy sometimes
+      //UserTable::FinishDone();
     }
     
     free_tables(&ed);

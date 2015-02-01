@@ -13,9 +13,12 @@ USER = root
 CXX ?= g++
 INSTALL = install
 
-OPTIMIZE = -O2 -pedantic
+#OPTIMIZE = -O2 -pedantic -std=c++11
+OPTIMIZE = -O2 -pedantic -std=c++11
 DEBUG = -g0
+#DEBUG = -g
 WARNINGS = -Wall -W -Wshadow -Wpointer-arith -Wwrite-strings -ffor-scope
+#WARNINGS = -Wall -W 
 CXXAUX = -pipe
 
 CXXFLAGS ?= $(OPTIMIZE) $(DEBUG) $(CXXAUX)

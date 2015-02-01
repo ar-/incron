@@ -100,6 +100,24 @@ public:
     return m_fNoLoop;
   }
   
+  /// Checks whether this entry has set recursion-avoidance.
+  /**
+   * \return true = no recursion, false = recursion allowed
+   */
+  inline bool IsNoRecursion() const
+  {
+    return m_fNoRecursion;
+  }
+  
+  /// Checks whether this entry has set dotdir-avoidance. true = dotdirs are included; false = dotdirs are excluded
+  /**
+   * \return true = no recursion, false = recursion allowed
+   */
+  inline bool IsDotDirs() const
+  {
+    return m_fDotDirs;
+  }
+  
   /// Add backslashes before spaces in the source path.
   /**
    * It also adds backslashes before all original backslashes
@@ -120,6 +138,8 @@ protected:
   uint32_t m_uMask;   ///< event mask
   std::string m_cmd;  ///< command string
   bool m_fNoLoop;     ///< no loop yes/no
+  bool m_fNoRecursion;///< no recursion yes/no
+  bool m_fDotDirs;    ///< dotdir included yes/no
 };
 
 

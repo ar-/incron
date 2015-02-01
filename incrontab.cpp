@@ -21,11 +21,18 @@
 #include <sstream>
 #include <cstdio>
 #include <errno.h>
+//#include <syslog.h> // TODO remove
 
 #include "inotify-cxx.h"
 
 #include "incrontab.h"
 #include "incroncfg.h"
+
+#define IN_NO_LOOP_OLD "IN_NO_LOOP" // depricated from original version: no loop is now default
+#define CT_LOOPABLE "loopable=true" // no loop is default. loopable must be set
+#define CT_NORECURSION "recursive=false" // recursive is default, no recusion must be set
+#define CT_DOTDIRS "dotdirs=true" // exclude dotdirs is default, include dotdirs must be set
+
 
 /*
  * ALLOW/DENY SEMANTICS
@@ -44,7 +51,9 @@
 
 IncronTabEntry::IncronTabEntry()
 : m_uMask(0),
-  m_fNoLoop(false)
+  m_fNoLoop(true),
+  m_fNoRecursion(false),
+  m_fDotDirs(false)
 {
   
 }
@@ -64,13 +73,33 @@ std::string IncronTabEntry::ToString() const
   std::string m;
   
   InotifyEvent::DumpTypes(m_uMask, m);
-  if (m.empty()) {
-    m = m_fNoLoop ? "IN_NO_LOOP" : "0";
-  }
-  else {
-    if (m_fNoLoop)
-      m.append(",IN_NO_LOOP");
-  }
+  // don't write IN_NO_LOOP anymore
+//  if (m.empty())
+//    m = m_fNoLoop ? IN_NO_LOOP_OLD : m;
+//  else
+//    if (m_fNoLoop) m.append(std::string(","+IN_NO_LOOP_OLD);
+
+  // add CT_NORECURSION artificially
+  if (m.empty())
+    m = m_fNoRecursion ? CT_NORECURSION : m;
+  else
+    if (m_fNoRecursion) m.append(std::string(",")+CT_NORECURSION);
+  
+  // add CT_LOOPABLE artificially
+  if (m.empty())
+    m = !m_fNoLoop ? CT_LOOPABLE : m;
+  else
+    if (!m_fNoLoop) m.append(std::string(",")+CT_LOOPABLE);
+  
+  // add CT_DOTDIRS artificially
+  if (m.empty())
+    m = m_fDotDirs ? CT_DOTDIRS : m;
+  else
+    if (m_fDotDirs) m.append(std::string(",")+CT_DOTDIRS);
+  
+  // fill a default value for broken lines
+  if (m.empty())
+    m = "IN_ALL_EVENTS";
   
   ss << GetSafePath(m_path) << "\t" << m << "\t" << m_cmd;
   return ss.str();
@@ -102,7 +131,9 @@ bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
   rEntry.m_path = s1;
   rEntry.m_cmd = s3;
   rEntry.m_uMask = 0;
-  rEntry.m_fNoLoop = false;
+  rEntry.m_fNoLoop = true;
+  rEntry.m_fNoRecursion = false;
+  rEntry.m_fDotDirs = false;
   
   if (sscanf(s2.c_str(), "%lu", &u) == 1) {
     rEntry.m_uMask = (uint32_t) u;
@@ -111,8 +142,14 @@ bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
     StringTokenizer tok2(s2);
     while (tok2.HasMoreTokens()) {
       std::string s(tok2.GetNextToken());
-      if (s == "IN_NO_LOOP")
+      if (s == IN_NO_LOOP_OLD)
         rEntry.m_fNoLoop = true;
+      else if (s == CT_LOOPABLE)
+        rEntry.m_fNoLoop = false;
+      else if (s == CT_NORECURSION)
+        rEntry.m_fNoRecursion = true;
+      else if (s == CT_DOTDIRS)
+        rEntry.m_fDotDirs = true;
       else
         rEntry.m_uMask |= InotifyEvent::GetMaskByName(s);
     }
