@@ -2,6 +2,7 @@
 PREFIX = /usr/local
 USERDATADIR = /var/spool/incron
 SYSDATADIR = /etc/incron.d
+INITDIR = /etc/init
 CFGDIR = /etc
 MANPATH = $(PREFIX)/share/man
 RELEASE = incron-`cat VERSION`
@@ -55,6 +56,7 @@ install:	all install-man
 	$(INSTALL) -m 0755 incrond $(DESTDIR)$(PREFIX)/sbin/
 	$(INSTALL) -m 0755 -o $(USER) -d $(DESTDIR)$(USERDATADIR)
 	$(INSTALL) -m 0755 -o $(USER) -d $(DESTDIR)$(SYSDATADIR)
+	$(INSTALL) -m 0644 incron.conf $(DESTDIR)$(INITDIR)
 	$(INSTALL) -m 0644 incron.conf.example $(DESTDIR)$(DOCDIR)/
 
 install-man:	incrontab.1 incrontab.5 incrond.8 incron.conf.5
