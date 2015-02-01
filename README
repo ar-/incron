@@ -1,8 +1,8 @@
 
 inotify cron system
 
-(c) Lukas Jelinek, 2006, 2007, 2008, 2009, 2012
 (c) Andreas Altair Redmer, 2014, 2015
+    Lukas Jelinek, 2006, 2007, 2008, 2009, 2012
 
 1. About
 2. Install a binary version
@@ -50,8 +50,13 @@ https://github.com/ar-/incron/releases
 
   
 5. How to build
-Because this version is very early it does not contain a standard
-portable build mechanism. There is only a Makefile which must be
+Short:
+
+make -j8 && sudo make install
+
+Long:
+This software does not contain a standard
+portable build mechanism. There is only a Makefile which may be
 modified manually. On many Linux systems you need not to change
 anything.
 
@@ -101,8 +106,11 @@ The command may contain these wildcards:
   $% - the event flags (textually)
   $& - the event flags (numerically)
 
-The mask may additionaly contain a special symbol IN_NO_LOOP which
+The mask may additionaly contain a special symbol loopable=true which
 disables events occurred during the event handling (to avoid loops).
+It also may contain recursive=false to ignore sub-directories.
+The mask can also be extended by dotdirs=true which will include 
+dotdirectories (hidden directories and hidden files) into the search.
 
 Example 1: You need to run program 'abc' with the full file path as
 an argument every time a file is changed in /var/mail. One of
@@ -123,10 +131,34 @@ are intended to be changed directly (without incrontab).
 Some parameters of both incrontab and incrond can be changed by
 the configuration. See the example file for more information.
 
+Example 3: You need to run program 'playmp3' with the full file path as
+an argument every time a MP3 file is moved to in /home/u1/Music. One of
+the solutions follows:
+
+/home/u1/Music/*.mp3 IN_MOVED_TO playmp3 $@/$#
+
+Example 4: You need to observe the directory /etc/ 
+recursively and report every change in the syslog. One of
+the solutions follows:
+
+/etc/ IN_CLOSE_WRITE echo $@/$# | logger
+
+Example 5: You need to observe the directory /etc/apache
+but exclude the sub-directories and report every change in the syslog.
+One of the solutions follows:
+
+/etc/apache IN_CLOSE_WRITE,recursive=false echo $@/$# | logger
+
+Example 6: You need to observe the directory /home/user1
+recursively, including all the hidden sub-directories and hidden files
+(dotfiles/dotdirectories) and report every change in the syslog.
+One of the solutions follows:
+
+/home/user1 IN_CLOSE_WRITE,dotdirs=true echo $@/$# | logger
+
 
 7. Bugs, suggestions
-THIS PROGRAM IS AN ALPHA VERSION. IT PROBABLY CONTAINS BUGS AND
-THEREFORE IT IS NOT INTENDED FOR PRODUCTION USE.
+incrond is currently not resistent against looping.
 
 If you find a bug or have a suggestion how to improve the program,
 please use the bug tracking system at 

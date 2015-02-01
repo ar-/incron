@@ -1,4 +1,4 @@
-.TH "incrontab" "5" "0.5.11" "Lukas Jelinek" "incron documentation"
+.TH "incrontab" "5" "0.5.12" "Lukas Jelinek" "incron documentation"
 .SH "NAME"
 incrontab \- tables for driving inotify cron (incron)
 .SH "DESCRIPTION"
@@ -17,6 +17,8 @@ Blank lines are ignored. The general line format is the following:
 Where \fIpath\fR is an absolute filesystem path, \fImask\fR is an event mask (in symbolic or numeric form) and \fIcommand\fR is an executable file (or a script) with its arguments. See bellow for event mask symbols. The executable file may be noted as an absolute path or only as the name itself (PATH locations are examined).
 
 Please remember that the same path may occur only once per table (otherwise only the first occurrence takes effect and an error message is emitted to the system log).
+Please not that the * wildcard is allowed to observe a range of files.
+
 .SH "EVENT SYMBOLS"
 These basic event mask symbols are defined:
 
@@ -56,7 +58,9 @@ The following further symbols can be specified in the mask:
 .br 
 \fBIN_ONLYDIR\fR 		Only watch pathname if it is a directory
 
-Additionally, there is a symbol which doesn't appear in the inotify symbol set. It it \fBIN_NO_LOOP\fR. This symbol disables monitoring events until the current one is completely handled (until its child process exits).
+Additionally, there is a symbol which doesn't appear in the inotify symbol set. It is \fBloopable=true\fR. This symbol disables monitoring events until the current one is completely handled (until its child process exits).
+Also, there is the symbol \fBrecursive=false\fR. This symbol limits the observation on the specified directory and does not include subdirectories.
+Finally, there is also the symbol \fBdotdirs=true\fR. This symbol will include the hidden directories (where the names starts with a dot) in the observation.
 
 .SH "WILDCARDS"
 The following wildards may be used inside command specification:
@@ -76,9 +80,13 @@ These are some example rules which can be used in an incrontab file:
 
 \fB/tmp IN_ALL_EVENTS abcd $@/$# $%\fR
 
-\fB/usr/bin IN_ACCESS,IN_NO_LOOP abcd $#\fR
+\fB/usr/bin IN_ACCESS,loopable=true abcd $#\fR
 
 \fB/home IN_CREATE /usr/local/bin/abcd $#\fR
+
+\fB/home IN_CREATE,dotdirs=true /usr/local/bin/abcd $#\fR
+
+\fB/home IN_CREATE,recursive=false /usr/local/bin/abcd $#\fR
 
 \fB/var/log 12 abcd $@/$#\fR
 
@@ -88,11 +96,16 @@ The second line monitors accesses (readings) on the /usr/bin directory. The appl
 
 The third example is used for monitoring the /home directory for newly create files or directories (it practically means an event is sent when a new user is added). This event is processed by a program specified by an absolute path.
 
+The fourth example is the third example, but it will include hidden directories in the observation.
+
+The fifth example is the third example, but it will exclude sub-directories from the observation.
+
 And the final line shows how to use numeric event mask instead of textual one. The value 12 is exactly the same as IN_ATTRIB,IN_CLOSE_WRITE.
 
 .SH "SEE ALSO"
 incrond(8), incrontab(1), incron.conf(5)
 .SH "AUTHOR"
-Lukas Jelinek <lukas@aiken.cz> (please report bugs to https://github.com/ar-/incron/issues ).
+Andreas Altair Redmer <altair.ibn.la.ahad.sy@gmail.com> (please report bugs to https://github.com/ar-/incron/issues ).
+Lukas Jelinek <lukas@aiken.cz> .
 .SH "COPYING"
 This program is free software. It can be used, redistributed and/or modified under the terms of the GNU General Public License, version 2.
