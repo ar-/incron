@@ -1,10 +1,10 @@
-incron (0.5.11-1) unstable; urgency=medium
+incron (0.5.12-1) unstable; urgency=medium
 
   * linked homepage, watch-file and bugtracker to changes upstream on github
   * removed 5 debian patches since they are now included in the upstream
   * Bump Standards-Version to 3.9.6
 
- -- Andreas Altair Redmer <altair.ibn.la.ahad.sy@gmail.com>  Mon, 26 Jan 2015 21:34:17 +0100
+ -- Andreas Altair Redmer <altair.ibn.la.ahad.sy@gmail.com>  Sun, 01 Feb 2015 21:34:17 +0100
 
 incron (0.5.10-3) unstable; urgency=medium
 

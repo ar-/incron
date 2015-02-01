@@ -1,3 +1,9 @@
+0.5.12   2015-02-01
+* added recursive directory watching
+* added configuration parameters: recursive, dotdirs and loopable
+* added upstart script
+* extended manpages and readme
+
 0.5.11   2015-01-26
 * first release from GitHub
 * swiched all readme and manpage files to new upstream
