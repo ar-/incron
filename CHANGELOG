@@ -1,3 +1,12 @@
+0.5.11   2015-01-26
+* first release from GitHub
+* swiched all readme and manpage files to new upstream
+* many bugfixes of improtant bugs
+* tab delimiteres in config files allowed
+* ignore dotfiles in /etc/incron.d
+* added proper redirection and piping abilities to commands
+* commands are now executed in a shel environment
+
 0.5.10   2012-04-05
 * some includes fixed to build correctly with GCC 4.6 (and 4.4-4.5 - #0000385, #0000447)
 * some type issues fixed (#0000447)
