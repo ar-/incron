@@ -118,7 +118,7 @@ It also may contain recursive=false to ignore sub-directories.
 The mask can also be extended by dotdirs=true which will include 
 dotdirectories (hidden directories and hidden files) into the search.
 
-Example 1: You need to run program 'abc' with the full file path as
+**Example 1**: You need to run program 'abc' with the full file path as
 an argument every time a file is changed in /var/mail. One of
 the solutions follows:
 
