@@ -39,8 +39,8 @@ There is a daily build running on Launchpad. You can install that
 build from a PPA in Ubuntu, to have always an up-to-date build.
 
 `
-sudo add-apt-repository ppa:altair-ibn-la-ahad/incron
-sudo apt-get update
+sudo add-apt-repository ppa:altair-ibn-la-ahad/incron  
+sudo apt-get update  
 sudo apt-get install incron
 `
 
@@ -75,10 +75,14 @@ https://github.com/ar-/incron/releases
 5. How to build
 ===============
 Short:
+------
 
+`
 make -j8 && sudo make install
+`
 
 Long:
+-----
 This software does not contain a standard
 portable build mechanism. There is only a Makefile which may be
 modified manually. On many Linux systems you need not to change
