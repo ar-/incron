@@ -1,9 +1,13 @@
 inotify cron system
+===================
+
 ![alt tag](https://travis-ci.org/ar-/incron.svg)
 
-(c) Andreas Altair Redmer, 2014, 2015
+(c) Andreas Altair Redmer, 2014, 2015  
     Lukas Jelinek, 2006, 2007, 2008, 2009, 2012
 
+Content
+=======
 1. About
 2. Install a binary version
 3. Obtain the source code
@@ -14,10 +18,10 @@ inotify cron system
 8. Documentation
 
 
-========================================================================
 
 
 1. About
+========
 This program is the "inotify cron" system. It consist of a daemon and
 a table manipulator. You can use it a similar way as the regular cron.
 The difference is that the inotify cron handles filesystem events
@@ -29,12 +33,14 @@ bug-tracking/fixing continued in 2014 on GitHub:
 https://github.com/ar-/incron .
 
 2. Install a binary version
+===========================
 On Debian and Ubuntu based systems you can install this software with
 sudo apt-get install incron
 
 On all other Linux based systems you have to build it from source.
 
 3. Obtain the source code
+=========================
 You can download the latest stable version from 
 https://github.com/ar-/incron/archive/master.tar.gz
 
@@ -42,6 +48,7 @@ You can download older versions from
 https://github.com/ar-/incron/releases
 
 4. Requirements
+===============
 * Linux kernel 2.6.13 or later (with inotify compiled in)
 * inotify headers (inotify.h, sometimes inotify-syscalls.h) installed in
   <INCLUDE_DIR>/sys. The most common place is /usr/include/sys.
@@ -50,6 +57,7 @@ https://github.com/ar-/incron/releases
 
   
 5. How to build
+===============
 Short:
 
 make -j8 && sudo make install
@@ -79,6 +87,7 @@ created for generating the API documentation.
 
 
 6. How to use
+=============
 The incron daemon (incrond) must be run under root (typically from
 runlevel script etc.). It loads the current user tables and hooks
 them for later changes.
@@ -112,18 +121,18 @@ It also may contain recursive=false to ignore sub-directories.
 The mask can also be extended by dotdirs=true which will include 
 dotdirectories (hidden directories and hidden files) into the search.
 
-Example 1: You need to run program 'abc' with the full file path as
+**Example 1**: You need to run program 'abc' with the full file path as
 an argument every time a file is changed in /var/mail. One of
 the solutions follows:
-
+`
 /var/mail IN_CLOSE_WRITE abc $@/$#
-
-Example 2: You need to run program 'efg' with the full file path as
+`
+**Example 2**: You need to run program 'efg' with the full file path as
 the first argument and the numeric event flags as the second one.
 It have to monitor all events on files in /tmp. Here is it:
-
+`
 /tmp IN_ALL_EVENTS efg $@/$# $&
-
+`
 Since 0.4.0 also system tables are supported. They are located in
 /etc/incron.d and their commands use root privileges. System tables
 are intended to be changed directly (without incrontab).
@@ -131,33 +140,34 @@ are intended to be changed directly (without incrontab).
 Some parameters of both incrontab and incrond can be changed by
 the configuration. See the example file for more information.
 
-Example 3: You need to run program 'playmp3' with the full file path as
+**Example 3**: You need to run program 'playmp3' with the full file path as
 an argument every time a MP3 file is moved to in /home/u1/Music. One of
 the solutions follows:
-
+`
 /home/u1/Music/*.mp3 IN_MOVED_TO playmp3 $@/$#
-
-Example 4: You need to observe the directory /etc/ 
+`
+**Example 4**: You need to observe the directory /etc/ 
 recursively and report every change in the syslog. One of
 the solutions follows:
-
+`
 /etc/ IN_CLOSE_WRITE echo $@/$# | logger
-
-Example 5: You need to observe the directory /etc/apache
+`
+**Example 5**: You need to observe the directory /etc/apache
 but exclude the sub-directories and report every change in the syslog.
 One of the solutions follows:
-
+`
 /etc/apache IN_CLOSE_WRITE,recursive=false echo $@/$# | logger
-
-Example 6: You need to observe the directory /home/user1
+`
+**Example 6**: You need to observe the directory /home/user1
 recursively, including all the hidden sub-directories and hidden files
 (dotfiles/dotdirectories) and report every change in the syslog.
 One of the solutions follows:
-
+`
 /home/user1 IN_CLOSE_WRITE,dotdirs=true echo $@/$# | logger
-
+`
 
 7. Bugs, suggestions
+====================
 incrond is currently not resistent against looping.
 
 If you find a bug or have a suggestion how to improve the program,
@@ -166,6 +176,7 @@ https://github.com/ar-/incron/issues.
 
 
 8. Licensing
+============
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License,
 version 2  (see LICENSE-GPL).
