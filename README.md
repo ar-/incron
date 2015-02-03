@@ -38,11 +38,11 @@ sudo apt-get install incron
 There is a daily build running on Launchpad. You can install that
 build from a PPA in Ubuntu, to have always an up-to-date build.
 
-`
-sudo add-apt-repository ppa:altair-ibn-la-ahad/incron  
-sudo apt-get update  
-sudo apt-get install incron
-`
+
+    sudo add-apt-repository ppa:altair-ibn-la-ahad/incron  
+    sudo apt-get update  
+    sudo apt-get install incron
+
 
 For more information follow the link to the PPA:  
 https://code.launchpad.net/~altair-ibn-la-ahad/+archive/ubuntu/incron
