@@ -106,11 +106,11 @@ Where:
 
 The command may contain these wildcards:
 
-  $$ - a dollar sign
-  $@ - the watched filesystem path (see above)
-  $# - the event-related file name
-  $% - the event flags (textually)
-  $& - the event flags (numerically)
+*  $$ - a dollar sign
+*  $@ - the watched filesystem path (see above)
+*  $# - the event-related file name
+*  $% - the event flags (textually)
+*  $& - the event flags (numerically)
 
 The mask may additionaly contain a special symbol loopable=true which
 disables events occurred during the event handling (to avoid loops).
