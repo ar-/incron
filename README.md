@@ -31,10 +31,29 @@ https://github.com/ar-/incron .
 
 2. Install a binary version
 ===========================
-On Debian and Ubuntu based systems you can install this software with
+On Debian and Ubuntu based systems you can install this software 
+(the version maintained by Debian) with
 sudo apt-get install incron
 
+There is a daily build running on Launchpad. You can install that
+build from a PPA in Ubuntu, to have always an up-to-date build.
+
+`
+sudo add-apt-repository ppa:altair-ibn-la-ahad/incron
+sudo apt-get update
+sudo apt-get install incron
+`
+
+For more information follow the link to the PPA:  
+https://code.launchpad.net/~altair-ibn-la-ahad/+archive/ubuntu/incron
+
+The build logs are available here:  
+https://code.launchpad.net/~altair-ibn-la-ahad/+recipe/incron-daily
+
 On all other Linux based systems you have to build it from source.
+If you would like to add a build script for other linux flavors
+(Gentoo, Suse, Ret Hat, ...) please send me a pull request. I will
+be happy to include it.
 
 3. Obtain the source code
 =========================
