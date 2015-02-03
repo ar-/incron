@@ -12,13 +12,10 @@ Content
 2. Install a binary version
 3. Obtain the source code
 4. Requirements
-5. How to use
-6. Bugs, suggestions
-7. Licensing
-8. Documentation
-
-
-
+5. How to build
+6. How to use
+7. Bugs, suggestions
+8. Licensing
 
 1. About
 ========
@@ -121,18 +118,22 @@ It also may contain recursive=false to ignore sub-directories.
 The mask can also be extended by dotdirs=true which will include 
 dotdirectories (hidden directories and hidden files) into the search.
 
-**Example 1**: You need to run program 'abc' with the full file path as
+Example 1: You need to run program 'abc' with the full file path as
 an argument every time a file is changed in /var/mail. One of
 the solutions follows:
+
 `
 /var/mail IN_CLOSE_WRITE abc $@/$#
 `
+
 **Example 2**: You need to run program 'efg' with the full file path as
 the first argument and the numeric event flags as the second one.
 It have to monitor all events on files in /tmp. Here is it:
+
 `
 /tmp IN_ALL_EVENTS efg $@/$# $&
 `
+
 Since 0.4.0 also system tables are supported. They are located in
 /etc/incron.d and their commands use root privileges. System tables
 are intended to be changed directly (without incrontab).
@@ -143,25 +144,32 @@ the configuration. See the example file for more information.
 **Example 3**: You need to run program 'playmp3' with the full file path as
 an argument every time a MP3 file is moved to in /home/u1/Music. One of
 the solutions follows:
+
 `
 /home/u1/Music/*.mp3 IN_MOVED_TO playmp3 $@/$#
 `
+
 **Example 4**: You need to observe the directory /etc/ 
 recursively and report every change in the syslog. One of
 the solutions follows:
+
 `
 /etc/ IN_CLOSE_WRITE echo $@/$# | logger
 `
+
 **Example 5**: You need to observe the directory /etc/apache
 but exclude the sub-directories and report every change in the syslog.
 One of the solutions follows:
+
 `
 /etc/apache IN_CLOSE_WRITE,recursive=false echo $@/$# | logger
 `
+
 **Example 6**: You need to observe the directory /home/user1
 recursively, including all the hidden sub-directories and hidden files
 (dotfiles/dotdirectories) and report every change in the syslog.
 One of the solutions follows:
+
 `
 /home/user1 IN_CLOSE_WRITE,dotdirs=true echo $@/$# | logger
 `

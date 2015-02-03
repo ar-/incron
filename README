@@ -1,23 +1,22 @@
-
 inotify cron system
+===================
 
-(c) Andreas Altair Redmer, 2014, 2015
+(c) Andreas Altair Redmer, 2014, 2015  
     Lukas Jelinek, 2006, 2007, 2008, 2009, 2012
 
+Content
+=======
 1. About
 2. Install a binary version
 3. Obtain the source code
 4. Requirements
-5. How to use
-6. Bugs, suggestions
-7. Licensing
-8. Documentation
-
-
-========================================================================
-
+5. How to build
+6. How to use
+7. Bugs, suggestions
+8. Licensing
 
 1. About
+========
 This program is the "inotify cron" system. It consist of a daemon and
 a table manipulator. You can use it a similar way as the regular cron.
 The difference is that the inotify cron handles filesystem events
@@ -29,12 +28,14 @@ bug-tracking/fixing continued in 2014 on GitHub:
 https://github.com/ar-/incron .
 
 2. Install a binary version
+===========================
 On Debian and Ubuntu based systems you can install this software with
 sudo apt-get install incron
 
 On all other Linux based systems you have to build it from source.
 
 3. Obtain the source code
+=========================
 You can download the latest stable version from 
 https://github.com/ar-/incron/archive/master.tar.gz
 
@@ -42,6 +43,7 @@ You can download older versions from
 https://github.com/ar-/incron/releases
 
 4. Requirements
+===============
 * Linux kernel 2.6.13 or later (with inotify compiled in)
 * inotify headers (inotify.h, sometimes inotify-syscalls.h) installed in
   <INCLUDE_DIR>/sys. The most common place is /usr/include/sys.
@@ -50,6 +52,7 @@ https://github.com/ar-/incron/releases
 
   
 5. How to build
+===============
 Short:
 
 make -j8 && sudo make install
@@ -79,6 +82,7 @@ created for generating the API documentation.
 
 
 6. How to use
+=============
 The incron daemon (incrond) must be run under root (typically from
 runlevel script etc.). It loads the current user tables and hooks
 them for later changes.
@@ -112,7 +116,7 @@ It also may contain recursive=false to ignore sub-directories.
 The mask can also be extended by dotdirs=true which will include 
 dotdirectories (hidden directories and hidden files) into the search.
 
-Example 1: You need to run program 'abc' with the full file path as
+**Example 1**: You need to run program 'abc' with the full file path as
 an argument every time a file is changed in /var/mail. One of
 the solutions follows:
 
@@ -158,6 +162,7 @@ One of the solutions follows:
 
 
 7. Bugs, suggestions
+====================
 incrond is currently not resistent against looping.
 
 If you find a bug or have a suggestion how to improve the program,
@@ -166,6 +171,7 @@ https://github.com/ar-/incron/issues.
 
 
 8. Licensing
+============
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License,
 version 2  (see LICENSE-GPL).
