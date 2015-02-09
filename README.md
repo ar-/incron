@@ -1,7 +1,7 @@
 inotify cron system
 ===================
 
-![alt tag](https://travis-ci.org/ar-/incron.svg)
+[![Build Status](https://travis-ci.org/ar-/incron.svg)](https://travis-ci.org/ar-/incron)
 
 (c) Andreas Altair Redmer, 2014, 2015  
     Lukas Jelinek, 2006, 2007, 2008, 2009, 2012
