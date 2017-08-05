@@ -152,9 +152,18 @@ void load_tables(EventDispatcher* pEd) throw (InotifyException)
       }
       
       if (ok) {
-		// ignore files that start with a dot
-		if (pDe->d_name[0] == '.')
-			continue;
+
+        // ignore hidden files starting with "." (dot)
+        // or backup files ending with "~" (tilde)
+        if (pDe->d_name[0] == '.') {
+          syslog(LOG_INFO, "ignoring hidden file %s", pDe->d_name);
+          continue;
+        }
+        if (pDe->d_name[strlen(pDe->d_name)-1] == '~') {
+          syslog(LOG_INFO, "ignoring backup file %s", pDe->d_name);
+          continue;
+        }
+
         syslog(LOG_INFO, "loading table %s", pDe->d_name);
         UserTable* pUt = new UserTable(pEd, un, true);
         g_ut.insert(SUT_MAP::value_type(path, pUt));
