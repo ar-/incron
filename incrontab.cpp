@@ -109,7 +109,11 @@ bool IncronTabEntry::Parse(const std::string& rStr, IncronTabEntry& rEntry)
 {
   unsigned long u;
   std::string s1, s2, s3;
-  
+
+  // ignore comment lines
+  if (rStr.at(0) == '#')
+    return false;
+
   StringTokenizer tok(rStr, " \t", '\\');
   if (!tok.HasMoreTokens())
     return false;
