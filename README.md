@@ -8,17 +8,18 @@ inotify cron system
 
 Content
 =======
-1. About
-2. Install a binary version
-3. Obtain the source code
-4. Requirements
-5. How to build
-6. How to use
-7. Bugs, suggestions
-8. Licensing
+1. [About](#about)
+2. [Install a binary version](#install-a-binary-version)
+3. [Obtain the source code](#obtain-the-source-code)
+4. [Requirements](#requirments)
+5. [How to build](#how-to-build)
+6. [How to use](#how-to-use)
+7. [Bugs, suggestions](#bugs-suggestions)
+8. [Licensing](#licensing)
 
-1. About
-========
+
+About
+=====
 This program is the "inotify cron" system. It consist of a daemon and
 a table manipulator. You can use it a similar way as the regular cron.
 The difference is that the inotify cron handles filesystem events
@@ -29,8 +30,8 @@ unfortunatally abandoned in 2012. Upstream development and
 bug-tracking/fixing continued in 2014 on GitHub:
 https://github.com/ar-/incron .
 
-2. Install a binary version
-===========================
+Install a binary version
+========================
 On Debian and Ubuntu based systems you can install this software 
 (the version maintained by Debian) with
 sudo apt-get install incron
@@ -55,16 +56,16 @@ If you would like to add a build script for other linux flavors
 (Gentoo, Suse, Ret Hat, ...) please send me a pull request. I will
 be happy to include it.
 
-3. Obtain the source code
-=========================
+Obtain the source code
+======================
 You can download the latest stable version from 
 https://github.com/ar-/incron/archive/master.tar.gz
 
 You can download older versions from 
 https://github.com/ar-/incron/releases
 
-4. Requirements
-===============
+Requirements
+============
 * Linux kernel 2.6.13 or later (with inotify compiled in)
 * inotify headers (inotify.h, sometimes inotify-syscalls.h) installed in
   <INCLUDE_DIR>/sys. The most common place is /usr/include/sys.
@@ -72,8 +73,8 @@ https://github.com/ar-/incron/releases
   older versions too)
 
   
-5. How to build
-===============
+How to build
+============
 Short:
 ------
 
@@ -106,8 +107,8 @@ The doxygen program must be installed and its control file 'Doxygen'
 created for generating the API documentation.
 
 
-6. How to use
-=============
+How to use
+==========
 The incron daemon (incrond) must be run under root (typically from
 runlevel script etc.). It loads the current user tables and hooks
 them for later changes.
@@ -197,8 +198,9 @@ One of the solutions follows:
 /home/user1 IN_CLOSE_WRITE,dotdirs=true echo $@/$# | logger
 `
 
-7. Bugs, suggestions
-====================
+Bugs, suggestions
+=================
+
 incrond is currently not resistent against looping.
 
 If you find a bug or have a suggestion how to improve the program,
@@ -206,8 +208,9 @@ please use the bug tracking system at
 https://github.com/ar-/incron/issues.
 
 
-8. Licensing
-============
+Licensing
+=========
+
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License,
 version 2  (see LICENSE-GPL).
