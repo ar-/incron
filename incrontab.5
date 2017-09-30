@@ -10,7 +10,7 @@ Each user has their own table, and commands in any given incrontab will be execu
 
 incrontab files are read when the \fIincrond\fR(8) daemon starts and after any change (incrontab file are being hooked when incrond is running).
 
-Blank lines are ignored. The general line format is the following:
+Blank lines and lines starting with a hash (#) are ignored. The general line format is the following:
 
 <path> <mask> <command>
 
