@@ -247,11 +247,7 @@ public:
     if (pEvt != NULL) {
       m_uMask = (uint32_t) pEvt->mask;
       m_uCookie = (uint32_t) pEvt->cookie;
-      if (pEvt->name != NULL) {
-        m_name = pEvt->len > 0
-            ? pEvt->name
-            : "";
-      }
+      m_name = pEvt->len > 0 ? pEvt->name : "";
       m_pWatch = pWatch;
     }
     else {
