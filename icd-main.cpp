@@ -19,7 +19,7 @@
 
 #include <map>
 #include <signal.h>
-#include <wait.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <pwd.h>
 #include <dirent.h>

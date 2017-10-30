@@ -573,6 +573,17 @@ bool UserTable::MayAccess(const std::string& rPath, bool fNoFollow) const
   return false; // no access right found
 }
 
+#ifndef __linux__
+static int
+clearenv(void)
+{
+  extern char **environ;
+
+  environ[0] = NULL;
+  return 0;
+}
+#endif
+
 void UserTable::RunAsUser(std::string cmd) const
 {
   struct passwd* pwd = getpwnam(m_user.c_str());

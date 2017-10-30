@@ -19,13 +19,12 @@
  */
 
 
-#include <argp.h>
+#include <errno.h>
 #include <pwd.h>
 #include <string>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <sys/inotify.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -504,7 +503,7 @@ int main(int argc, char** argv)
       if (uid != 0) {
         fprintf(stderr, "insufficient privileges to use custom configuration (will use default)\n");
       }
-      else if (euidaccess(cfg.c_str(), R_OK) != 0) {
+      else if (eaccess(cfg.c_str(), R_OK) != 0) {
         perror("cannot read configuration file (will use default)");
       }
     }
