@@ -104,6 +104,7 @@ void on_signal(int signo)
       g_fFinish = true;
       break;
     case SIGCHLD:
+      do {} while (waitpid((pid_t)-1, 0, WNOHANG) > 0); /* Prevent zombies */
       // first empty pipe (to prevent internal buffer overflow)
       do {} while (read(g_cldPipe[0], g_cldPipeBuf, CHILD_PIPE_BUF_LEN) > 0);
       
