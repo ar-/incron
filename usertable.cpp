@@ -500,8 +500,6 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
 
     s_procMap.insert(PROC_MAP::value_type(pid, pd));
 #endif
-    int status;
-    waitpid(pid, &status, 0);
   }
   else {
 #ifdef LOOPER
