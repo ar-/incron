@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <dirent.h>
+#include <stdlib.h>
 #include <syslog.h>
 #include <errno.h>
 #include <unistd.h>
