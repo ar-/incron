@@ -114,14 +114,16 @@ the same syntax as for the crontab program. You can import a table,
 remove and edit the current table.
 
 The user table rows have the following syntax:
- <path> <mask> <command>
+```
+<path> <mask> <command>
+```
 
 Where:
+- `<path>` is a filesystem path (currently avoid whitespaces!)
+- `<mask>` is a symbolic (see inotify.h; use commas for separating
+  symbols) or numeric mask for events
+- `<command>` is an application or script to run on the events
 
-  <path> is a filesystem path (currently avoid whitespaces!)
-  <mask> is a symbolic (see inotify.h; use commas for separating
-         symbols) or numeric mask for events
-  <command> is an application or script to run on the events
 
 The command may contain these wildcards:
 
