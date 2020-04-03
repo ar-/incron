@@ -471,11 +471,10 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
 
     // for system table
     if (m_fSysTable) {
-      if (system(cmd.c_str()) != 0) // exec failed
-      {
-        syslog(LOG_ERR, "cannot exec process: %s", strerror(errno));
-        _exit(1);
-      }
+       execl("/bin/sh", "sh", "-c", cmd.c_str(), (char *) 0);
+       int rc = errno;
+       syslog(LOG_ERR, "cannot exec process: %s", strerror(rc));
+       _exit(1);
     }
     else {
       // for user table
