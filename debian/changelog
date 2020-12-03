@@ -1,3 +1,11 @@
+incron (0.5.13-1) unstable; urgency=medium
+
+  * fixed bug #36 where incrond could die with SEGV.
+    (Closes: #973927)
+    (Closes: #947425)
+
+ -- Schplurtz le Déboulonné  <Schplurtz@laposte.net> Thu, 03 Dec 2020 10:11:32 +0100
+
 incron (0.5.12-1) unstable; urgency=medium
 
   * linked homepage, watch-file and bugtracker to changes upstream on github
