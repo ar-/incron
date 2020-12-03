@@ -370,6 +370,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
 {
   InotifyWatch* pW = rEvt.GetWatch();
   IncronTabEntry* pE = FindEntry(pW);
+  std::string pWPath = pW->GetPath();
 
   // no entry found - this shouldn't occur
   if (pE == NULL)
@@ -422,7 +423,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       else {
         cmd.append(cs.substr(oldpos, pos-oldpos));
         if (cs[px] == '@') {          // base path
-          cmd.append(IncronTabEntry::GetSafePath(pW->GetPath()));
+          cmd.append(IncronTabEntry::GetSafePath(pWPath));
           oldpos = pos + 2;
         }
         else if (cs[px] == '#') {     // file name
