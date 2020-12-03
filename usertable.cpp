@@ -386,6 +386,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
   syslog(LOG_INFO, "PATH (%s) FILE (%s) EVENT (%s)", pW->GetPath().c_str() , IncronTabEntry::GetSafePath(rEvt.GetName()).c_str() , events.c_str());
   //#endif
   
+  std::string WPath = pW->GetPath(); // FIXME: Should Dispose() be moved after "$@" param is treated ?
   // add new watch for newly created subdirs
   if ( rEvt.IsType(IN_ISDIR) && (rEvt.IsType(IN_CREATE) || rEvt.IsType(IN_MOVED_TO)) )
   {
@@ -422,7 +423,7 @@ void UserTable::OnEvent(InotifyEvent& rEvt)
       else {
         cmd.append(cs.substr(oldpos, pos-oldpos));
         if (cs[px] == '@') {          // base path
-          cmd.append(IncronTabEntry::GetSafePath(pW->GetPath()));
+          cmd.append(IncronTabEntry::GetSafePath(WPath));
           oldpos = pos + 2;
         }
         else if (cs[px] == '#') {     // file name

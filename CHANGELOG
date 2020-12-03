@@ -1,3 +1,5 @@
+0.5.12   2020-12-03
+* fix SEGV when directory are created in watched directories
 0.5.12   2015-02-01
 * added recursive directory watching
 * added configuration parameters: recursive, dotdirs and loopable
