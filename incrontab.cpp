@@ -169,6 +169,12 @@ std::string IncronTabEntry::GetSafePath(const std::string& rPath)
   SIZE len = rPath.length();
   for (SIZE i = 0; i < len; i++) {
     if (rPath[i] == ' ' ||
+        rPath[i] == '\'' ||
+        rPath[i] == '"' ||
+        rPath[i] == '(' ||
+        rPath[i] == ')' ||
+        rPath[i] == '<' ||
+        rPath[i] == '>' ||
         rPath[i] == '\\') {
       stream << "\\";
     }
