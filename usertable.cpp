@@ -275,9 +275,13 @@ void UserTable::Load()
     
     // skip if recursion is not wanted by user
     if (rE.IsNoRecursion())
+    {
+	syslog(LOG_INFO, "load path: `%s', recursion: %s", rE.GetPath().c_str(), "false");
 		continue;
+    }
     
     std::vector<std::string> ssvec = Executor::getSubDirVec (rE.GetPath(),rE.IsDotDirs());
+    syslog(LOG_INFO, "load path: `%s', recursion: %s, subdirs: %d", rE.GetPath().c_str(), "true", ssvec.size());
 	if (rE.GetPath().find("*") != std::string::npos) 
 	{
 		std::vector<std::string> allfilesvec = Executor::getAllFilesByDescriptor (rE.GetPath(),rE.IsDotDirs());
@@ -330,9 +334,9 @@ void UserTable::AddTabEntry(IncronTabEntry& rE)
       m_map.insert(IWCE_MAP::value_type(pW, &rE));
     } catch (InotifyException e) {
       if (m_fSysTable)
-        syslog(LOG_ERR, "cannot create watch for system table %s: (%i) %s", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()));
+        syslog(LOG_ERR, "cannot create watch for system table %s: (%i) %s, path: `%d'", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()), rE.GetPath().c_str());
       else
-        syslog(LOG_ERR, "cannot create watch for user %s: (%i) %s", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()));
+        syslog(LOG_ERR, "cannot create watch for user %s: (%i) %s, path: `%d'", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()), rE.GetPath().c_str());
       delete pW;
     }	
 }
