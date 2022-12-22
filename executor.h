@@ -111,7 +111,7 @@ class Executor
 		 */
 		static const std::vector<std::string> getSubDirVec (std::string dir, bool includeDotDirs=false)
 		{
-			return execBashVec("find "+dir+" -type d "+ (includeDotDirs?std::string():std::string("! -path '*/.*' ")) +"2>/dev/null");
+			return execBashVec("find \""+dir+"\" -type d "+ (includeDotDirs?std::string():std::string("! -path '*/.*' ")) +"2>/dev/null");
 		}
 		
 		/**
@@ -119,7 +119,7 @@ class Executor
 		 */
 		static const std::vector<std::string> getAllFilesByDescriptor (std::string dir, bool includeDotDirs=false)
 		{
-			return execBashVec("find "+dir+" "+ (includeDotDirs?std::string():std::string("! -path '*/.*' ")) +"2>/dev/null");
+			return execBashVec("find \""+dir+"\" "+ (includeDotDirs?std::string():std::string("! -path '*/.*' ")) +"2>/dev/null");
 		}
 };
 

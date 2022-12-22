@@ -102,7 +102,7 @@ void StringTokenizer::_GetNextTokenNoPrefix(std::string& rToken)
   for (SIZE i=m_pos; i<m_len; i++) {
     // check all possible delimiters
     for (SIZE delimIndex=0; delimIndex<m_cDelim.length(); delimIndex++) {
-      if (s[i] == m_cDelim[delimIndex]) {
+      if (s[i] == m_cDelim[delimIndex] && (s[i] != 0x20 || 0 == i || s[i-1] != '\\')) {
         rToken = m_str.substr(m_pos, i - m_pos);
         m_pos = i + 1;
         return;
@@ -120,7 +120,7 @@ void StringTokenizer::_GetNextTokenWithPrefix(std::string& rToken)
   const char* s = m_str.c_str();
   for (SIZE i=m_pos; i<m_len; i++) {
     for (SIZE delimIndex=0; delimIndex<m_cDelim.length(); delimIndex++) {
-      if (s[i] == m_cDelim[delimIndex]) {
+      if (s[i] == m_cDelim[delimIndex] && (s[i] != 0x20 || 0 == i || s[i-1] != '\\')) {
         if (pref == 0) {
           rToken = m_str.substr(m_pos, i - m_pos);
           m_pos = i + 1;
