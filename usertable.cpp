@@ -334,9 +334,9 @@ void UserTable::AddTabEntry(IncronTabEntry& rE)
       m_map.insert(IWCE_MAP::value_type(pW, &rE));
     } catch (InotifyException e) {
       if (m_fSysTable)
-        syslog(LOG_ERR, "cannot create watch for system table %s: (%i) %s, path: `%d'", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()), rE.GetPath().c_str());
+        syslog(LOG_ERR, "cannot create watch for system table %s: (%i) %s, path: `%s'", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()), rE.GetPath().c_str());
       else
-        syslog(LOG_ERR, "cannot create watch for user %s: (%i) %s, path: `%d'", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()), rE.GetPath().c_str());
+        syslog(LOG_ERR, "cannot create watch for user %s: (%i) %s, path: `%s'", m_user.c_str(), e.GetErrorNumber(), strerror(e.GetErrorNumber()), rE.GetPath().c_str());
       delete pW;
     }	
 }
