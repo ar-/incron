@@ -1,6 +1,6 @@
 # inotify cron system
 
-[![Build Status](https://travis-ci.org/ar-/incron.svg)](https://travis-ci.org/ar-/incron)
+[![Build Status](https://travis-ci.org/dpvpro/incron-next.svg)](https://travis-ci.org/dpvpro/incron-next)
 
 (c) Andreas Altair Redmer, 2014, 2015  
     Lukas Jelinek, 2006, 2007, 2008, 2009, 2012
@@ -26,7 +26,7 @@ rather than time periods.
 This project was kicked off by Lukas Jelinek in 2006 and then 
 unfortunatally abandoned in 2012. Upstream development and 
 bug-tracking/fixing continued in 2014 on GitHub:
-https://github.com/ar-/incron .
+https://github.com/dpvpro/incron-next .
 
 ## 2. Install a binary version
 
@@ -57,10 +57,10 @@ be happy to include it.
 ## 3. Obtain the source code
 
 You can download the latest stable version from 
-https://github.com/ar-/incron/archive/master.tar.gz
+https://github.com/dpvpro/incron-next/archive/master.tar.gz
 
 You can download older versions from 
-https://github.com/ar-/incron/releases
+https://github.com/dpvpro/incron-next/releases
 
 ## 4. Requirements
 
@@ -199,7 +199,7 @@ incrond is currently not resistent against looping.
 
 If you find a bug or have a suggestion how to improve the program,
 please use the bug tracking system at 
-https://github.com/ar-/incron/issues.
+https://github.com/dpvpro/incron-next/issues.
 
 
 ## 8. Licensing

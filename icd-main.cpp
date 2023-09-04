@@ -65,7 +65,7 @@
           "  -k, --kill                   terminates running instance of incrond\n" \
           "  -f <FILE>, --config=<FILE>   overrides default configuration file  (requires root privileges)\n" \
           "  -V, --version                prints program version\n\n" \
-          "For reporting bugs please use https://github.com/ar-/incron/issues\n"
+          "For reporting bugs please use https://github.com/dpvpro/incron-next/issues\n"
 
 
 
