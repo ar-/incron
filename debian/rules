@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-PACKAGE = incron
+PACKAGE = incron-next
 
 override_dh_auto_install:
 	echo
