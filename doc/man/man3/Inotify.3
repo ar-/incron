@@ -15,7 +15,7 @@ inotify class
 
 .in +1c
 .ti -1c
-.RI "\fBInotify\fP ()  throw (InotifyException)"
+.RI "\fBInotify\fP ()  noexcept(false)"
 .br
 .RI "\fIConstructor'\&. \fP"
 .ti -1c
@@ -27,19 +27,19 @@ inotify class
 .br
 .RI "\fIRemoves all watches and closes the inotify device'\&. \fP"
 .ti -1c
-.RI "void \fBAdd\fP (\fBInotifyWatch\fP *pWatch)  throw (InotifyException)"
+.RI "void \fBAdd\fP (\fBInotifyWatch\fP *pWatch)  noexcept(false)"
 .br
 .RI "\fIAdds a new watch'\&. \fP"
 .ti -1c
-.RI "void \fBAdd\fP (\fBInotifyWatch\fP &rWatch)  throw (InotifyException)"
+.RI "void \fBAdd\fP (\fBInotifyWatch\fP &rWatch)  noexcept(false)"
 .br
 .RI "\fIAdds a new watch'\&. \fP"
 .ti -1c
-.RI "void \fBRemove\fP (\fBInotifyWatch\fP *pWatch)  throw (InotifyException)"
+.RI "void \fBRemove\fP (\fBInotifyWatch\fP *pWatch)  noexcept(false)"
 .br
 .RI "\fIRemoves a watch'\&. \fP"
 .ti -1c
-.RI "void \fBRemove\fP (\fBInotifyWatch\fP &rWatch)  throw (InotifyException)"
+.RI "void \fBRemove\fP (\fBInotifyWatch\fP &rWatch)  noexcept(false)"
 .br
 .RI "\fIRemoves a watch'\&. \fP"
 .ti -1c
@@ -55,7 +55,7 @@ inotify class
 .br
 .RI "\fIReturns the count of enabled watches'\&. \fP"
 .ti -1c
-.RI "void \fBWaitForEvents\fP (bool fNoIntr=false)  throw (InotifyException)"
+.RI "void \fBWaitForEvents\fP (bool fNoIntr=false)  noexcept(false)"
 .br
 .RI "\fIWaits for inotify events'\&. \fP"
 .ti -1c
@@ -63,19 +63,19 @@ inotify class
 .br
 .RI "\fIReturns the count of received and queued events'\&. \fP"
 .ti -1c
-.RI "bool \fBGetEvent\fP (\fBInotifyEvent\fP *pEvt)  throw (InotifyException)"
+.RI "bool \fBGetEvent\fP (\fBInotifyEvent\fP *pEvt)  noexcept(false)"
 .br
 .RI "\fIExtracts a queued inotify event'\&. \fP"
 .ti -1c
-.RI "bool \fBGetEvent\fP (\fBInotifyEvent\fP &rEvt)  throw (InotifyException)"
+.RI "bool \fBGetEvent\fP (\fBInotifyEvent\fP &rEvt)  noexcept(false)"
 .br
 .RI "\fIExtracts a queued inotify event'\&. \fP"
 .ti -1c
-.RI "bool \fBPeekEvent\fP (\fBInotifyEvent\fP *pEvt)  throw (InotifyException)"
+.RI "bool \fBPeekEvent\fP (\fBInotifyEvent\fP *pEvt)  noexcept(false)"
 .br
 .RI "\fIExtracts a queued inotify event (without removing)'\&. \fP"
 .ti -1c
-.RI "bool \fBPeekEvent\fP (\fBInotifyEvent\fP &rEvt)  throw (InotifyException)"
+.RI "bool \fBPeekEvent\fP (\fBInotifyEvent\fP &rEvt)  noexcept(false)"
 .br
 .RI "\fIExtracts a queued inotify event (without removing)'\&. \fP"
 .ti -1c
@@ -91,11 +91,11 @@ inotify class
 .br
 .RI "\fIReturns the file descriptor'\&. \fP"
 .ti -1c
-.RI "void \fBSetNonBlock\fP (bool fNonBlock)  throw (InotifyException)"
+.RI "void \fBSetNonBlock\fP (bool fNonBlock)  noexcept(false)"
 .br
 .RI "\fIEnables/disables non-blocking mode'\&. \fP"
 .ti -1c
-.RI "void \fBSetCloseOnExec\fP (bool fClOnEx)  throw (InotifyException)"
+.RI "void \fBSetCloseOnExec\fP (bool fClOnEx)  noexcept(false)"
 .br
 .RI "\fIEnables/disables closing on exec'\&. \fP"
 .in -1c
@@ -103,35 +103,35 @@ inotify class
 
 .in +1c
 .ti -1c
-.RI "static uint32_t \fBGetCapability\fP (\fBInotifyCapability_t\fP cap)  throw (InotifyException)"
+.RI "static uint32_t \fBGetCapability\fP (\fBInotifyCapability_t\fP cap)  noexcept(false)"
 .br
 .RI "\fIAcquires a particular inotify capability/limit'\&. \fP"
 .ti -1c
-.RI "static void \fBSetCapability\fP (\fBInotifyCapability_t\fP cap, uint32_t val)  throw (InotifyException)"
+.RI "static void \fBSetCapability\fP (\fBInotifyCapability_t\fP cap, uint32_t val)  noexcept(false)"
 .br
 .RI "\fIModifies a particular inotify capability/limit'\&. \fP"
 .ti -1c
-.RI "static uint32_t \fBGetMaxEvents\fP ()  throw (InotifyException)"
+.RI "static uint32_t \fBGetMaxEvents\fP ()  noexcept(false)"
 .br
 .RI "\fIReturns the maximum number of events in the kernel queue'\&. \fP"
 .ti -1c
-.RI "static void \fBSetMaxEvents\fP (uint32_t val)  throw (InotifyException)"
+.RI "static void \fBSetMaxEvents\fP (uint32_t val)  noexcept(false)"
 .br
 .RI "\fISets the maximum number of events in the kernel queue'\&. \fP"
 .ti -1c
-.RI "static uint32_t \fBGetMaxInstances\fP ()  throw (InotifyException)"
+.RI "static uint32_t \fBGetMaxInstances\fP ()  noexcept(false)"
 .br
 .RI "\fIReturns the maximum number of inotify instances per process'\&. \fP"
 .ti -1c
-.RI "static void \fBSetMaxInstances\fP (uint32_t val)  throw (InotifyException)"
+.RI "static void \fBSetMaxInstances\fP (uint32_t val)  noexcept(false)"
 .br
 .RI "\fISets the maximum number of inotify instances per process'\&. \fP"
 .ti -1c
-.RI "static uint32_t \fBGetMaxWatches\fP ()  throw (InotifyException)"
+.RI "static uint32_t \fBGetMaxWatches\fP ()  noexcept(false)"
 .br
 .RI "\fIReturns the maximum number of inotify watches per instance'\&. \fP"
 .ti -1c
-.RI "static void \fBSetMaxWatches\fP (uint32_t val)  throw (InotifyException)"
+.RI "static void \fBSetMaxWatches\fP (uint32_t val)  noexcept(false)"
 .br
 .RI "\fISets the maximum number of inotify watches per instance'\&. \fP"
 .in -1c

@@ -226,7 +226,7 @@ void InotifyEvent::DumpTypes(std::string& rStr) const
 }
 
 
-void InotifyWatch::SetMask(uint32_t uMask) throw (InotifyException)
+void InotifyWatch::SetMask(uint32_t uMask) noexcept(false)
 {
   IN_WRITE_BEGIN
   
@@ -243,7 +243,7 @@ void InotifyWatch::SetMask(uint32_t uMask) throw (InotifyException)
   IN_WRITE_END
 }
 
-void InotifyWatch::SetEnabled(bool fEnabled) throw (InotifyException)
+void InotifyWatch::SetEnabled(bool fEnabled) noexcept(false)
 {
   //syslog(LOG_INFO, "(SetEnabled) NOW (%i)", fEnabled);
   IN_WRITE_BEGIN
@@ -298,7 +298,7 @@ void InotifyWatch::__Disable()
 }
 
 
-Inotify::Inotify() throw (InotifyException)
+Inotify::Inotify() noexcept(false)
 {
   IN_LOCK_INIT
   
@@ -329,7 +329,7 @@ void Inotify::Close()
   IN_WRITE_END
 }
 
-void Inotify::Add(InotifyWatch* pWatch) throw (InotifyException)
+void Inotify::Add(InotifyWatch* pWatch) noexcept(false)
 {
   IN_WRITE_BEGIN
   
@@ -383,7 +383,7 @@ void Inotify::Add(InotifyWatch* pWatch) throw (InotifyException)
   IN_WRITE_END
 }
 
-void Inotify::Remove(InotifyWatch* pWatch) throw (InotifyException)
+void Inotify::Remove(InotifyWatch* pWatch) noexcept(false)
 {
   IN_WRITE_BEGIN
   
@@ -432,7 +432,7 @@ void Inotify::RemoveAll()
   IN_WRITE_END
 }
 
-void Inotify::WaitForEvents(bool fNoIntr) throw (InotifyException)
+void Inotify::WaitForEvents(bool fNoIntr) noexcept(false)
 {
   ssize_t len = 0;
   
@@ -465,7 +465,7 @@ void Inotify::WaitForEvents(bool fNoIntr) throw (InotifyException)
   IN_WRITE_END
 }
   
-bool Inotify::GetEvent(InotifyEvent* pEvt) throw (InotifyException)
+bool Inotify::GetEvent(InotifyEvent* pEvt) noexcept(false)
 {
   if (pEvt == NULL)
     throw InotifyException(IN_EXC_MSG("null pointer to event"), EINVAL, this);
@@ -483,7 +483,7 @@ bool Inotify::GetEvent(InotifyEvent* pEvt) throw (InotifyException)
   return b;
 }
   
-bool Inotify::PeekEvent(InotifyEvent* pEvt) throw (InotifyException)
+bool Inotify::PeekEvent(InotifyEvent* pEvt) noexcept(false)
 {
   if (pEvt == NULL)
     throw InotifyException(IN_EXC_MSG("null pointer to event"), EINVAL, this);
@@ -524,7 +524,7 @@ InotifyWatch* Inotify::FindWatch(const std::string& rPath)
   return pW;
 }
   
-void Inotify::SetNonBlock(bool fNonBlock) throw (InotifyException)
+void Inotify::SetNonBlock(bool fNonBlock) noexcept(false)
 {
   IN_WRITE_BEGIN
   
@@ -554,7 +554,7 @@ void Inotify::SetNonBlock(bool fNonBlock) throw (InotifyException)
   IN_WRITE_END
 }
 
-void Inotify::SetCloseOnExec(bool fClOnEx) throw (InotifyException)
+void Inotify::SetCloseOnExec(bool fClOnEx) noexcept(false)
 {
   IN_WRITE_BEGIN
   
@@ -584,7 +584,7 @@ void Inotify::SetCloseOnExec(bool fClOnEx) throw (InotifyException)
   IN_WRITE_END
 }
 
-uint32_t Inotify::GetCapability(InotifyCapability_t cap) throw (InotifyException)
+uint32_t Inotify::GetCapability(InotifyCapability_t cap) noexcept(false)
 {
   FILE* f = fopen(GetCapabilityPath(cap).c_str(), "r");
   if (f == NULL)
@@ -601,7 +601,7 @@ uint32_t Inotify::GetCapability(InotifyCapability_t cap) throw (InotifyException
   return (uint32_t) val;
 }
 
-void Inotify::SetCapability(InotifyCapability_t cap, uint32_t val) throw (InotifyException)
+void Inotify::SetCapability(InotifyCapability_t cap, uint32_t val) noexcept(false)
 {
   FILE* f = fopen(GetCapabilityPath(cap).c_str(), "w");
   if (f == NULL)
@@ -615,7 +615,7 @@ void Inotify::SetCapability(InotifyCapability_t cap, uint32_t val) throw (Inotif
   fclose(f);
 }
 
-std::string Inotify::GetCapabilityPath(InotifyCapability_t cap) throw (InotifyException)
+std::string Inotify::GetCapabilityPath(InotifyCapability_t cap) noexcept(false)
 {
   std::string path(PROCFS_INOTIFY_BASE);
   

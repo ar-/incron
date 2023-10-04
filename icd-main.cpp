@@ -129,7 +129,7 @@ void on_signal(int signo)
  * 
  * \throw InotifyException thrown if base table directory cannot be read
  */
-void load_tables(EventDispatcher* pEd) throw (InotifyException)
+void load_tables(EventDispatcher* pEd) noexcept(false)
 {
   // WARNING - this function has not been optimized!!!
   

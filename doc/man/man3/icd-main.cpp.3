@@ -87,7 +87,7 @@ inotify cron daemon main file
 .br
 .RI "\fIHandles a signal'\&. \fP"
 .ti -1c
-.RI "void \fBload_tables\fP (\fBEventDispatcher\fP *pEd)  throw (InotifyException)"
+.RI "void \fBload_tables\fP (\fBEventDispatcher\fP *pEd)  noexcept(false)"
 .br
 .RI "\fIAttempts to load all (user and system) incron tables'\&. \fP"
 .ti -1c
