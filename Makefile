@@ -15,7 +15,7 @@ CXX ?= g++
 INSTALL = install
 
 #OPTIMIZE = -O2 -pedantic -std=c++11
-OPTIMIZE = -O2 -pedantic -std=c++11
+OPTIMIZE = -O2 -pedantic
 DEBUG = -g0
 #DEBUG = -g
 WARNINGS = -Wall -W -Wshadow -Wpointer-arith -Wwrite-strings -ffor-scope
