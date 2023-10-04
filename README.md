@@ -24,9 +24,13 @@ The difference is that the inotify cron handles filesystem events
 rather than time periods.
 
 This project was kicked off by Lukas Jelinek in 2006 and then 
-unfortunatally abandoned in 2012. Upstream development and 
-bug-tracking/fixing continued in 2014 on GitHub:
-https://github.com/dpvpro/incron-next .
+unfortunatally abandoned in 2012. 
+
+Upstream development and bug-tracking/fixing continued in 2014 on GitHub:
+https://github.com/ar-/incron. Andreas Altair Redmer stop support your fork.
+
+Now upstream development and bug-tracking/fixing continued in 2023 on GitHub:
+https://github.com/dpvpro/incron-next.
 
 ## 2. Install a binary version
 
@@ -67,8 +71,7 @@ https://github.com/dpvpro/incron-next/releases
 * Linux kernel 2.6.13 or later (with inotify compiled in)
 * inotify headers (inotify.h, sometimes inotify-syscalls.h) installed in
   <INCLUDE_DIR>/sys. The most common place is /usr/include/sys.
-* GCC 4.x compiler (probably works also with GCC 3.4, possibly with
-  older versions too)
+* GCC => 10.x compiler 
 
 ## 5. How to build
 
@@ -76,6 +79,12 @@ https://github.com/dpvpro/incron-next/releases
 
 `
 make -j8 && sudo make install
+`
+
+OR
+
+`
+dpkg-buildpackage -b -uc
 `
 
 ### Long:
