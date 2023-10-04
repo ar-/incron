@@ -5,7 +5,6 @@ Maintainer: Emmanuel Bouthenot <kolter@debian.org>
 Uploaders: Michael Prokop <mika@grml.org>
 Build-Depends:
     debhelper (>= 9),
-    dh-systemd (>= 1.5)
 Standards-Version: 3.9.6
 Homepage: https://github.com/ar-/incron
 Vcs-Git: https://github.com/ar-/incron.git

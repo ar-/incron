@@ -1,3 +1,9 @@
+incron (0.5.13-1) unstable; urgency=medium
+
+  * bump to 0.5.13 version
+
+ -- Denis Proskurin <dpvpro@gmail.com>  Tue, 17 Aug 2021 22:53:33 +0300
+
 incron (0.5.12-1) unstable; urgency=medium
 
   * linked homepage, watch-file and bugtracker to changes upstream on github
