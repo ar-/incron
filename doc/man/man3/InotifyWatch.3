@@ -35,7 +35,7 @@ inotify watch class
 .br
 .RI "\fIReturns the watch event mask'\&. \fP"
 .ti -1c
-.RI "void \fBSetMask\fP (uint32_t uMask)  throw (InotifyException)"
+.RI "void \fBSetMask\fP (uint32_t uMask)  noexcept(false)"
 .br
 .RI "\fISets the watch event mask'\&. \fP"
 .ti -1c
@@ -43,7 +43,7 @@ inotify watch class
 .br
 .RI "\fIReturns the appropriate inotify class instance'\&. \fP"
 .ti -1c
-.RI "void \fBSetEnabled\fP (bool fEnabled)  throw (InotifyException)"
+.RI "void \fBSetEnabled\fP (bool fEnabled)  noexcept(false)"
 .br
 .RI "\fIEnables/disables the watch'\&. \fP"
 .ti -1c

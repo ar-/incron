@@ -28,7 +28,7 @@
 #define INCRONTAB_NAME "incrontab"
 
 /// Application version (release)
-#define INCRON_VERSION "0.5.12"
+#define INCRON_VERSION "0.5.13"
 
 /// Default configuration file
 #define INCRON_CONFIG "/etc/incron.conf"

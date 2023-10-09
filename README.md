@@ -1,6 +1,6 @@
 # inotify cron system
 
-[![Build Status](https://travis-ci.org/ar-/incron.svg)](https://travis-ci.org/ar-/incron)
+[![Build Status](https://travis-ci.org/dpvpro/incron-next.svg)](https://travis-ci.org/dpvpro/incron-next)
 
 (c) Andreas Altair Redmer, 2014, 2015  
     Lukas Jelinek, 2006, 2007, 2008, 2009, 2012
@@ -24,9 +24,13 @@ The difference is that the inotify cron handles filesystem events
 rather than time periods.
 
 This project was kicked off by Lukas Jelinek in 2006 and then 
-unfortunatally abandoned in 2012. Upstream development and 
-bug-tracking/fixing continued in 2014 on GitHub:
-https://github.com/ar-/incron .
+unfortunatally abandoned in 2012. 
+
+Upstream development and bug-tracking/fixing continued in 2014 on GitHub:
+https://github.com/ar-/incron. Andreas Altair Redmer stop support your fork.
+
+Now upstream development and bug-tracking/fixing continued in 2023 on GitHub:
+https://github.com/dpvpro/incron-next.
 
 ## 2. Install a binary version
 
@@ -57,18 +61,17 @@ be happy to include it.
 ## 3. Obtain the source code
 
 You can download the latest stable version from 
-https://github.com/ar-/incron/archive/master.tar.gz
+https://github.com/dpvpro/incron-next/archive/master.tar.gz
 
 You can download older versions from 
-https://github.com/ar-/incron/releases
+https://github.com/dpvpro/incron-next/releases
 
 ## 4. Requirements
 
 * Linux kernel 2.6.13 or later (with inotify compiled in)
 * inotify headers (inotify.h, sometimes inotify-syscalls.h) installed in
   <INCLUDE_DIR>/sys. The most common place is /usr/include/sys.
-* GCC 4.x compiler (probably works also with GCC 3.4, possibly with
-  older versions too)
+* GCC => 10.x compiler 
 
 ## 5. How to build
 
@@ -76,6 +79,12 @@ https://github.com/ar-/incron/releases
 
 `
 make -j8 && sudo make install
+`
+
+OR
+
+`
+dpkg-buildpackage -b -uc
 `
 
 ### Long:
@@ -199,7 +208,7 @@ incrond is currently not resistent against looping.
 
 If you find a bug or have a suggestion how to improve the program,
 please use the bug tracking system at 
-https://github.com/ar-/incron/issues.
+https://github.com/dpvpro/incron-next/issues.
 
 
 ## 8. Licensing

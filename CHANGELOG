@@ -1,3 +1,8 @@
+0.5.13   2021-08-17
+* fix zombies without blocking too much
+* new upstream release
+* various changes
+
 0.5.12   2015-02-01
 * added recursive directory watching
 * added configuration parameters: recursive, dotdirs and loopable

@@ -1,5 +1,9 @@
-incron for Debian
+incron-next for Debian
 -----------------
+New package for old unmaintained incron.
+
+ -- Denis Proskurin <dpvpro@gmail.com>, Mon, 04 Sep 2007 17:14:30 +0100
+
 
  By default users are not allowed to use incron. To allow or deny some users,
  take a look at the information related to /etc/incron.allow and
